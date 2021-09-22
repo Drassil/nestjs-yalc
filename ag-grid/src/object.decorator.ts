@@ -122,11 +122,22 @@ export const hasAgGridFieldMetadata = (
   return metadata && !metadata[propertyName];
 };
 
-export const AgGridObject = (options?: FilterOption): ClassDecorator => {
+export const AgGridObject = (options?: AgGridObjectOptions): ClassDecorator => {
   return (target) => {
+    const copyFrom = options?.copyFrom;
+    let metadata = options ?? {};
+
+    if (copyFrom) {
+      metadata = { ...metadata, ...getAgGridObjectMetadata(copyFrom) };
+
+      const fieldMetadata = getAgGridFieldMetadataList(copyFrom);
+
+      Reflect.defineMetadata(AGGRID_FIELD_METADATA_KEY, fieldMetadata, target);
+    }
+
     Reflect.defineMetadata(
       AGGRID_OBJECT_METADATA_KEY,
-      options ?? {},
+      metadata,
       target.constructor,
     );
   };
@@ -158,6 +169,16 @@ export enum FilterOptionType {
 export type FilterOption = {
   type: FilterOptionType;
   fields: string[];
+};
+
+export type AgGridObjectOptions = {
+  /**
+   * Copy agGrid decorator metadata from another class
+   * Useful when the classes are similar but they don't share the prototype
+   * E.G. when you use OmitType or similar techniques
+   */
+  copyFrom?: ClassType;
+  filters?: FilterOption;
 };
 
 export interface IFieldAndFilterMapper {
