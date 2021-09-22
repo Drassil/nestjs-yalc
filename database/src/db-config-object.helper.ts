@@ -14,7 +14,7 @@ import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOpti
 type TypeOrmEntityType = Function | string | EntitySchema<any>;
 
 type DbConfigObjectParams = {
-  dbName: string;
+  dbName?: string;
   entities: TypeOrmEntityType[];
   seeds?: { new (): Seeder }[];
   sourceDir?: string;
@@ -30,7 +30,16 @@ export function buildDbConfigObject({
   migrationsDir,
   connectionName,
 }: DbConfigObjectParams): IDbConfObject {
-  const connName = getConnectionName(connectionName ?? dbName);
+  let connNameTemp = connectionName;
+  if (!connNameTemp && dbName) {
+    connNameTemp = dbName;
+  }
+  if (!connNameTemp) {
+    throw new Error(
+      'Cannot create a connection without a name, provide at least a dbName or connectionName',
+    );
+  }
+  const connName = getConnectionName(connNameTemp);
 
   const dbConfObj: IDbConfObject = () => {
     const noSelDb = envIsTrue(process.env.TYPEORM_NO_SEL_DB || 'false');
@@ -50,7 +59,7 @@ export function buildDbConfigObject({
   };
 
   dbConfObj.connName = connName;
-  dbConfObj.dbName = dbName;
+  dbConfObj.dbName = dbName ?? connNameTemp;
 
   return dbConfObj;
 }

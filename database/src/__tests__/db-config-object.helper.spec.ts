@@ -210,6 +210,7 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
   it("should not have a database key when dbName isn't provided", () => {
     const result = buildDbConfigObject({
       dbName: undefined,
+      connectionName: 'name',
       entities: [],
     })();
 
@@ -223,9 +224,25 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
 
     const result = buildDbConfigObject({
       dbName: undefined,
+      connectionName: 'name',
       entities: [],
     })();
 
     expect(result.replication.slaves[0].database).toBe(undefined);
+  });
+
+  it("should throw an error when dbName and connectionName aren't provided", async () => {
+    try {
+      buildDbConfigObject({
+        dbName: undefined,
+        entities: [],
+      });
+    } catch (error) {
+      expect(error).toEqual(
+        new Error(
+          'Cannot create a connection without a name, provide at least a dbName or connectionName',
+        ),
+      );
+    }
   });
 });

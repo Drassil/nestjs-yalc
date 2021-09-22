@@ -33,7 +33,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
   public getFormattedAgGridQueryBuilder(
     findOptions: AgGridFindManyOptions<Entity>,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
     qb?: SelectQueryBuilder<Entity>,
   ): SelectQueryBuilder<Entity> {
     //We will use functions to apply sorting and filters
@@ -94,7 +97,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
   public getAgGridQueryBuilder(
     findOptions: AgGridFindManyOptions<Entity>,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
   ) {
     const queryBuilder = this.createQueryBuilder();
 
@@ -137,7 +143,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
    */
   public async getManyAndCountAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
   ): Promise<[Entity[], number]> {
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
 
@@ -168,7 +177,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
    */
   public async getManyAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
   ): Promise<Entity[]> {
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
 

@@ -164,7 +164,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
 
     const dataLoader = new _DataLoaderWithCount(
       this.batchFn,
-      searchKey ?? this.searchKey,
+      searchKey,
       findOptions,
       this.options,
     );
@@ -239,6 +239,12 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   }
 }
 
+export const getFn = <Entity>(service: GenericService<Entity>) => async (
+  findManyOptions: AgGridFindManyOptions,
+) => {
+  return service.getEntityListAgGrid(findManyOptions, true);
+};
+
 export function DataLoaderFactory<Entity>(
   defaultSearchKey: keyof Entity,
   entity: ClassType,
@@ -248,9 +254,7 @@ export function DataLoaderFactory<Entity>(
     provide: getDataloaderToken(entity.name),
     useFactory: (service: GenericService<Entity>) => {
       return new GQLDataLoader<Entity>(
-        async (findManyOptions: AgGridFindManyOptions) => {
-          return service.getEntityListAgGrid(findManyOptions, true);
-        },
+        getFn<Entity>(service),
         defaultSearchKey,
       );
     },

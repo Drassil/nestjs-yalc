@@ -9,7 +9,10 @@ import {
 import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver';
 import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver';
 import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import {
+  IFieldMapper,
+  isFieldMapper,
+} from '@nestjs-yalc/interfaces/maps.interface';
 
 export type FindAndCountResult<Entity> = [Entity[], number];
 type GetOneResult<Entity> = Entity | undefined;
@@ -210,6 +213,18 @@ export class QueryBuilderHelper {
     );
   }
 
+  public static getMapper(
+    fieldMap: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
+    alias: string,
+  ): IFieldMapper {
+    return isFieldMapper(fieldMap.joined)
+      ? fieldMap.joined
+      : fieldMap.joined[alias];
+  }
+
   public static convertFieldWithMap(field: string, map: IFieldMapper) {
     if (field in map) {
       return map[field].dst;
@@ -220,16 +235,24 @@ export class QueryBuilderHelper {
   public static applyOrderToJoinedQueryBuilder(
     findOptions: FindManyOptions,
     parentName: string,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
   ): { key: string; operator: SortDirection }[] {
     const sortingColumns: any[] = [];
+    let alias: string;
+    let mapper: IFieldMapper;
     for (const key in findOptions.order as ObjectLiteral) {
       //If is a nested resource we need to change the name format into Parent__Joined_resource
       if (key.includes('.') && fieldMap) {
         const splitted = key.split('.');
+        alias = splitted[0];
+        mapper = this.getMapper(fieldMap, alias);
+
         const newKey = `${splitted[0]}.${this.convertFieldWithMap(
           splitted[1],
-          fieldMap.joined,
+          mapper,
         )}`;
         sortingColumns.push({
           key: newKey, // we have to alias this way
@@ -258,15 +281,23 @@ export class QueryBuilderHelper {
   public static addAlias(
     key: string,
     alias?: string,
-    fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
   ): string {
     //If the name is of a joined resource we take the joined table name
     if (key.includes('.')) {
       const splitted = key.split('.');
       alias = splitted[0];
-      key = fieldMap
-        ? this.convertFieldWithMap(splitted[1], fieldMap.joined)
-        : splitted[1];
+
+      if (fieldMap) {
+        const mapper = this.getMapper(fieldMap, alias);
+
+        key = this.convertFieldWithMap(splitted[1], mapper);
+      } else {
+        key = splitted[1];
+      }
     }
     return alias ? `\`${alias}\`.\`${key}\`` : key;
   }

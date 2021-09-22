@@ -142,7 +142,10 @@ export function whereObjectToSqlString<Entity>(
   queryBuilder: SelectQueryBuilder<Entity> | undefined,
   where: IWhereCondition,
   alias?: string,
-  fieldMap?: { parent: IFieldMapper; joined: IFieldMapper },
+  fieldMap?: {
+    parent: IFieldMapper;
+    joined: IFieldMapper | { [key: string]: IFieldMapper };
+  },
 ) {
   let sql = '';
 

@@ -1,8 +1,14 @@
 import { createMock } from '@golevelup/ts-jest';
 import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
 import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
-import { NotAcceptableException, NotFoundException } from '@nestjs/common';
-import { GQLDataLoader } from './dataloader.helper';
+import {
+  FactoryProvider,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
+import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
+
+import { GenericService } from '@nestjs-yalc/ag-grid/generic-service.service';
 
 describe('GQLDataLoader class', () => {
   class EntityTest {
@@ -33,6 +39,10 @@ describe('GQLDataLoader class', () => {
 
   it('should getCount', () => {
     expect(dataLoader.getCount()).toBe(0);
+  });
+
+  it('should getSearchKey', () => {
+    expect(dataLoader.getSearchKey()).toBe('databaseKey');
   });
 
   it('should loadOne', async () => {
@@ -140,5 +150,40 @@ describe('GQLDataLoader class', () => {
     const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
     mockLoadFn.mockResolvedValue(output);
     await dataLoader.loadOneToMany('asset_1', {});
+  });
+
+  it('should be able to load key with input parameter SearchKeyType as an Array', async () => {
+    const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
+    mockLoadFn.mockResolvedValue(output);
+    await dataLoader.loadOneToMany(['databaseKey', 'asset_1'], {});
+  });
+
+  it('should call the factory function properly', async () => {
+    const genericService = createMock<GenericService>();
+
+    const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
+    genericService.getEntityListAgGrid.mockResolvedValue(output);
+
+    const result: FactoryProvider = DataLoaderFactory<EntityTest>(
+      'databaseKey',
+      EntityTest,
+      'service_token',
+    );
+
+    const getFunction = getFn<EntityTest>(genericService);
+
+    expect(result).toBeDefined();
+    expect(result.useFactory()).toBeDefined();
+    expect(await getFunction({})).toBe(output);
+  });
+
+  it('should call the factory function properly with correct providers injected', () => {
+    const result: FactoryProvider = DataLoaderFactory<EntityTest>(
+      'databaseKey',
+      EntityTest,
+    );
+
+    expect(result).toBeDefined();
+    expect(result.inject).toBeDefined();
   });
 });

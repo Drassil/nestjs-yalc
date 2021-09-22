@@ -613,4 +613,26 @@ describe('QueryBuilderHelper', () => {
 
     expect(result).toBe(`\`joined\`.\`${fixedKey}\``);
   });
+
+  it('should return the correct field mapper', async () => {
+    // const spiedIsFieldMapper = jest.spyOn(MapsInterface, 'isFieldMapper');
+    // spiedIsFieldMapper.mockReturnValue(true);
+    let result = QueryBuilderHelper.getMapper(
+      { parent: dummyFieldMap, joined: dummyFieldMap },
+      '',
+    );
+    expect(result).toEqual(dummyFieldMap);
+
+    result = QueryBuilderHelper.getMapper(
+      { parent: dummyFieldMap, joined: { correct: dummyFieldMap } },
+      'correct',
+    );
+    expect(result).toEqual(dummyFieldMap);
+
+    result = QueryBuilderHelper.getMapper(
+      { parent: dummyFieldMap, joined: { correct: dummyFieldMap } },
+      'wrong',
+    );
+    expect(result).not.toEqual(dummyFieldMap);
+  });
 });
