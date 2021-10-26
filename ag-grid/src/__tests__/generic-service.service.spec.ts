@@ -20,7 +20,15 @@ import { createMock } from '@golevelup/ts-jest';
 import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
 import { ConnectionNotFoundError } from 'typeorm';
 import { FactoryProvider } from '@nestjs/common';
-
+import {
+  CreateEntityError,
+  DeleteEntityError,
+  UpdateEntityError,
+} from '../entity.error';
+import {
+  NoResultsFoundError,
+  ConditionsTooBroadError,
+} from '../conditions.error';
 jest.mock('typeorm');
 
 describe('GenericService', () => {
@@ -46,16 +54,37 @@ describe('GenericService', () => {
       .spyOn(GenericServiceModule, 'GenericService')
       .mockImplementation(jest.fn());
 
-    const result: FactoryProvider = GenericServiceFactory(
-      GenericService,
-      BaseEntity,
+    const result: FactoryProvider = GenericServiceFactory<BaseEntity>(
+      () => BaseEntity,
       'fakeConnection',
+      GenericService,
     );
     expect(result).toBeDefined();
     expect(result.useFactory()).toBeDefined();
+
     expect(spiedGenerciService).toHaveBeenCalledTimes(1);
 
     spiedGenerciService.mockRestore();
+  });
+
+  it('test aiondoajsdajsda ', () => {
+    const spiedGenerciService = jest
+      .spyOn(GenericServiceModule, 'GenericService')
+      .mockImplementation(jest.fn());
+
+    const result: FactoryProvider = GenericServiceFactory<BaseEntity>(
+      BaseEntity,
+      'fakeConnection',
+    );
+
+    expect(result).toBeDefined();
+    expect(result.provide).toEqual('BaseEntityGenericService');
+    spiedGenerciService.mockRestore();
+  });
+
+  it('test getServiceToken', () => {
+    const serviceToken = GenericServiceModule.getServiceToken(BaseEntity);
+    expect(serviceToken).toEqual('BaseEntityGenericService');
   });
 
   it('test getEntity', async () => {
@@ -102,14 +131,14 @@ describe('GenericService', () => {
       '',
       undefined,
       undefined,
-      DBNames.BTC,
+      'databaseName',
     );
 
     expect(mockedConnection.getRepository).toHaveBeenCalledWith(
       baseEntityRepository.target,
     );
     expect(mockedGetConnection).toHaveBeenCalledWith(
-      getConnectionName(DBNames.BTC),
+      getConnectionName('databaseName'),
     );
     expect(service.getRepository()).toBe(testRepository);
     expect(entity).toBe(mockedEntity);
@@ -172,13 +201,18 @@ describe('GenericService', () => {
     // Checks the base repository to be set before changing it
     expect(service.getRepository()).toBe(baseEntityRepository);
 
-    const entityList = await service.getEntityList({}, false, [], DBNames.KMD);
+    const entityList = await service.getEntityList(
+      {},
+      false,
+      [],
+      'databaseName',
+    );
 
     expect(mockedConnection.getRepository).toHaveBeenCalledWith(
       baseEntityRepository.target,
     );
     expect(mockedGetConnection).toHaveBeenCalledWith(
-      getConnectionName(DBNames.KMD),
+      getConnectionName('databaseName'),
     );
     expect(service.getRepository()).toBe(testRepository);
     expect(entityList).toBe(mockedList);
@@ -190,7 +224,7 @@ describe('GenericService', () => {
     insertResult.identifiers = [{ id: '123' }];
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
-    baseEntityRepository.findOneOrFail.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
     const result = await service.createEntity({});
     expect(result).toBe(mockedEntity);
   });
@@ -200,7 +234,7 @@ describe('GenericService', () => {
 
     baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
     baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
-    baseEntityRepository.findOneOrFail.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
 
     const result = await service.updateEntity({}, {});
     expect(result).toBe(mockedEntity);
@@ -310,13 +344,13 @@ describe('GenericService', () => {
     // Checks the base repository to be set before changing it
     expect(service.getRepository()).toBe(baseEntityRepository);
 
-    await service.getEntityListAgGrid({}, false, [], DBNames.KMD);
+    await service.getEntityListAgGrid({}, false, [], 'databaseName');
 
     expect(mockedConnection.getRepository).toHaveBeenCalledWith(
       baseEntityRepository.target,
     );
     expect(mockedGetConnection).toHaveBeenCalledWith(
-      getConnectionName(DBNames.KMD),
+      getConnectionName('databaseName'),
     );
     expect(service.getRepository()).toBe(testRepository);
   });

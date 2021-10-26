@@ -11,7 +11,9 @@ export const envToArray = <T>(key: string): T[] => {
   );
 };
 
-export function envIsTrue(value: string) {
+export function envIsTrue(value?: string) {
+  if (!value) return false;
+
   const val = value.toLowerCase();
   return val === 'true' || val === '1' || val === 'on';
 }

@@ -4,13 +4,18 @@ import {
   FindOptionsUtils,
   SelectQueryBuilder,
 } from 'typeorm';
-import { AgGridRepository } from '../ag-grid.repository';
+import {
+  AgGridRepository,
+  AgGridRepositoryFactory,
+  qbGetOne,
+  qbGetOneOrFail,
+} from '../ag-grid.repository';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
 import { SortDirection } from '../ag-grid.enum';
 import { DeepMocked } from '@golevelup/ts-jest';
 import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper';
 import { Alias } from 'typeorm/query-builder/Alias';
-
+import * as Typeorm from 'typeorm';
 jest.mock('typeorm');
 jest.mock('typeorm/find-options/FindOptionsUtils');
 jest.mock('@nestjs-yalc/database/query-builder.helper');
@@ -75,10 +80,6 @@ describe('AgGrid Repoository', () => {
     jest
       .spyOn(FindOptionsUtils, 'applyFindManyOptionsOrConditionsToQueryBuilder')
       .mockImplementation(() => mockedQueryBuilder);
-
-    QueryBuilderHelper.applyOperationToQueryBuilder = jest
-      .fn()
-      .mockResolvedValue([BaseEntity]);
   });
 
   afterEach(() => {
@@ -87,6 +88,16 @@ describe('AgGrid Repoository', () => {
 
   it('Should be defined', () => {
     expect(newAgGridRepository).toBeDefined();
+  });
+
+  it('qbGetOne should be defined', () => {
+    const fnReturned = qbGetOne({});
+    expect(fnReturned(mockedQueryBuilder)).toBeDefined();
+  });
+
+  it('qbGetOneOrFail should be defined', () => {
+    const fnReturned = qbGetOneOrFail({});
+    expect(fnReturned(mockedQueryBuilder)).toBeDefined();
   });
 
   it('getManyAgGrid should work', async () => {
@@ -243,5 +254,45 @@ describe('AgGrid Repoository', () => {
     );
 
     expect(testData).toEqual(mockedQueryBuilder);
+  });
+
+  it('getOneAgGrid should return an entity correctly', async () => {
+    jest
+      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .mockReturnValueOnce(mockedQueryBuilder);
+
+    QueryBuilderHelper.applyOperationToQueryBuilder = jest
+      .fn()
+      .mockResolvedValue(BaseEntity);
+
+    const result = await newAgGridRepository.getOneAgGrid({});
+    expect(result).toStrictEqual(BaseEntity);
+  });
+
+  it('getOneAgGrid should return an entity correctly with fail', async () => {
+    jest
+      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .mockReturnValueOnce(mockedQueryBuilder);
+
+    QueryBuilderHelper.applyOperationToQueryBuilder = jest
+      .fn()
+      .mockResolvedValue(BaseEntity);
+
+    const result = await newAgGridRepository.getOneAgGrid({}, true);
+    expect(result).toStrictEqual(BaseEntity);
+  });
+
+  it('AGGridRepoFactory should return the repo already cached', () => {
+    const spiedEntityRepository = jest
+      .spyOn(Typeorm, 'EntityRepository')
+      .mockImplementationOnce(() => jest.fn());
+
+    let result = AgGridRepositoryFactory<BaseEntity>(BaseEntity);
+    expect(result).toBeDefined();
+
+    result = AgGridRepositoryFactory<BaseEntity>(BaseEntity);
+    expect(result).toBeDefined();
+
+    expect(spiedEntityRepository).toBeCalledTimes(1);
   });
 });

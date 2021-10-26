@@ -1,4 +1,7 @@
-import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
+import {
+  QueryBuilderHelper,
+  ReplicationMode,
+} from '@nestjs-yalc/database/query-builder.helper';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
@@ -17,9 +20,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
   /**
    * @todo we should create a class helper/adapter for the findOptions and move this method there
    */
-  public getActualLimits(
-    findOptions: AgGridFindManyOptions<Entity>,
-  ): { skip?: number; take?: number } {
+  public getActualLimits(findOptions: AgGridFindManyOptions<Entity>): {
+    skip?: number;
+    take?: number;
+  } {
     if (findOptions.subQueryFilters) {
       // findOptions limits take precedence over subQuery limits
       return {
@@ -54,10 +58,11 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
     let queryBuilder = qb ?? this.createQueryBuilder();
 
-    queryBuilder = FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
-      queryBuilder,
-      strippedFindOptions,
-    );
+    queryBuilder =
+      FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
+        queryBuilder,
+        strippedFindOptions,
+      );
 
     if (extra && extra.rawLimit === true) {
       // .take() and .skip() methods create
@@ -186,6 +191,37 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
     return queryBuilder.getMany();
   }
+
+  async getOneAgGrid(
+    findOptions: AgGridFindManyOptions<Entity>,
+    withFail?: boolean,
+    mode?: ReplicationMode,
+  ): Promise<Entity>;
+  async getOneAgGrid(
+    findOptions: AgGridFindManyOptions<Entity>,
+    withFail?: boolean,
+    mode: ReplicationMode = ReplicationMode.SLAVE,
+  ): Promise<Entity | undefined> {
+    const queryBuilder = this.getFormattedAgGridQueryBuilder(findOptions);
+    const returnFunction = withFail
+      ? qbGetOneOrFail(findOptions)
+      : qbGetOne(findOptions);
+
+    return QueryBuilderHelper.applyOperationToQueryBuilder(
+      queryBuilder,
+      mode,
+      returnFunction,
+    );
+  }
+}
+
+export function qbGetOne<Entity>(conditions: any) {
+  return (qb: SelectQueryBuilder<Entity>) => qb.where(conditions).getOne();
+}
+
+export function qbGetOneOrFail<Entity>(conditions: any) {
+  return (qb: SelectQueryBuilder<Entity>) =>
+    qb.where(conditions).getOneOrFail();
 }
 
 const repositoryMap = new WeakMap();

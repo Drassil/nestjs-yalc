@@ -10,5 +10,5 @@ export function getTestFilenameWithoutExtension(
     .basename(testPath)
     .replace('.spec.ts', '')
     .replace('.e2e-spec.ts', '')
-    .replace(testExtension, '');
+    .replace(testExtension ?? '', '');
 }

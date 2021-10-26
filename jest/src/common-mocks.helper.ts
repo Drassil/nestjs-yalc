@@ -13,7 +13,8 @@ import {
 import { SelectQueryBuilder } from 'typeorm';
 
 export const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
-export const mockedGqlCtxCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
+export const mockedGqlCtxCreate =
+  (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
 export const mockedExecutionContext = createMock<ExecutionContext>();
 
 /**

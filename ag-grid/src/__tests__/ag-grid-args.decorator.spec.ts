@@ -14,49 +14,65 @@ import {
   Like,
   Between,
   In,
+  BaseEntity,
 } from 'typeorm';
-import {
-  FilterOption,
-  FilterOptionType,
-  IFieldMapper,
-} from '@nestjs-yalc/interfaces/maps.interface';
 import { IAgQueryParams } from '../ag-grid.args';
-import {
-  CustomWhereKeys,
-  FilterType,
-  GeneralFilters,
-  Operators,
-  SortDirection,
-} from '../ag-grid.enum';
+import { ExtraArgsStrategy, GeneralFilters } from '../ag-grid.enum';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
 } from '@nestjs-yalc/jest/common-mocks.helper';
 import {
-  DateFilterModel,
   FilterInput,
+  FilterModel,
+  IAgGridArgsOptions,
   ICombinedSimpleModel,
-  IMultiColumnJoinOptions,
-  ISetFilterModel,
-  ISimpleFilterModel,
-  ITextFilterModel,
-  NumberFilterModel,
 } from '../ag-grid.interface';
 import * as graphql from '@nestjs/graphql';
+import * as AgGridInput from '../ag-grid.input';
+import * as GqlAgGridDecorator from '../gqlfields.decorator';
+import * as AgGridHelpers from '../ag-grid.helpers';
 import {
   AgGridFilterNotSupportedError,
   AgGridFilterProhibited,
   AgGridInvalidArgumentError,
   AgGridInvalidOperatorError,
-  AgGridInvalidPropertyError,
-  AgGridConditionNotSupportedError,
+  AgGridError,
 } from '../ag-grid.error';
 import { DateHelper } from '@nestjs-yalc/utils/date.helper';
-import { IWhereCondition } from '../ag-grid.type';
-import { IAgGridArgsOptions } from '../ag-grid-args.decorator';
 import { GraphQLResolveInfo } from 'graphql';
 import { createMock } from '@golevelup/ts-jest';
+import {
+  fixedArgsNoFilters,
+  fixedArgsNOTFilter,
+  fixedArgsOptions,
+  fixedArgsQueryParams,
+  fixeDatedArgs,
+  fixedBadArgs,
+  fixedCombinedAndTextFilter,
+  fixedCombinedInvalidArgsTextFilter,
+  fixedCombinedInvalidOperatorTextFilter,
+  fixedCombinedOrTextFilter,
+  fixedDataWithDefault,
+  fixedExcludefilterOption,
+  fixedIFieldMapper,
+  fixedIncludefilterOption,
+  fixedJoinOptionsAndOrObject,
+  fixedNotTextFilter,
+  fixedSetFilter,
+  fixedSimpleBadFilter,
+  fixedSimpleDateFilter,
+  fixedSimpleNumberFilter,
+  fixedSimpleTextFilter,
+  fixedUndefinedTextFilter,
+  fixedWhereTransformed,
+  fixedWhereTransformedNested,
+  fixedWhereTransformedWithExcluded,
+  fixedWhereTransformedWithNotInclude,
+  fixeNumberArgs,
+  genExtraArgs,
+} from '../__mocks__/filter.mocks';
 
 const firstTextParameter = 'a';
 const firstNumberParameter = 1;
@@ -85,6 +101,7 @@ const inDateResults = [
     ),
   },
 ];
+
 const switchCaseTextTests = [
   {
     filter: 'equals',
@@ -198,66 +215,6 @@ const infoObj = {
   ],
 };
 
-interface IFieldMapperTest {
-  data: IFieldMapper;
-  result: string;
-}
-const columnConversionTests: IFieldMapperTest[] = [
-  {
-    data: { [fixedKey]: { dst: dbName, isRequired: true } },
-    result: dbName,
-  },
-  {
-    data: { [fixedKey]: { dst: '', isRequired: true } },
-    result: fixedKey,
-  },
-  {
-    data: {
-      [`not${fixedKey}`]: { dst: dbName, isRequired: true },
-    },
-    result: fixedKey,
-  },
-];
-
-const fixedIFieldMapper: IFieldMapper<any> = {
-  ...columnConversionTests[0].data,
-  [`second_${fixedKey}`]: {
-    dst: `second_${dbName}`,
-    isRequired: true,
-  },
-  [`third_${fixedKey}`]: {
-    dst: `third_${dbName}`,
-    isSymbolic: true,
-  },
-};
-
-const fixedData: IAgGridArgsOptions = {
-  fieldMap: fixedIFieldMapper,
-};
-
-const fixedDataWithDefault: IAgGridArgsOptions = {
-  fieldMap: fixedIFieldMapper,
-  defaultValue: {
-    sorting: [
-      {
-        colId: '',
-        sort: SortDirection.ASC,
-      },
-    ],
-    startRow: 5,
-  },
-};
-
-const fixedIncludefilterOption: FilterOption = {
-  type: FilterOptionType.INCLUDE,
-  fields: [dbName, `second_${dbName}`, `third_${dbName}`],
-};
-
-const fixedExcludefilterOption: FilterOption = {
-  type: FilterOptionType.EXCLUDE,
-  fields: [`excluded_${dbName}`],
-};
-
 const fixedDataFilterToInclude: IAgGridArgsOptions = {
   fieldMap: {
     field: fixedIFieldMapper,
@@ -265,269 +222,11 @@ const fixedDataFilterToInclude: IAgGridArgsOptions = {
   },
 };
 
-const fixedDataFilter = {
-  [fixedKey]: {
-    filterType: FilterType.DATE,
-    type: GeneralFilters.CONTAINS,
-    filter: '_',
-  },
-};
-
-const fixedFilterNotContains = {
-  [fixedKey]: {
-    filterType: FilterType.TEXT,
-    type: GeneralFilters.NOT_CONTAINS,
-    filter: '_',
-  },
-};
-
-const fixedSimpleBadFilter: ISimpleFilterModel = {
-  filterType: 'wrong' as any,
-  type: GeneralFilters.CONTAINS,
-  filter: '_',
-};
-
-const fixedSimpleTextFilter: ITextFilterModel = {
-  filterType: FilterType.TEXT,
-  type: GeneralFilters.CONTAINS,
-  filter: '_',
-};
-
-const fixedFilterInputText = {
-  [fixedKey]: fixedSimpleTextFilter,
-};
-
-const fixedUndefinedTextFilter: ITextFilterModel = {
-  filterType: FilterType.TEXT,
-  type: GeneralFilters.CONTAINS,
-  filter: undefined,
-};
-
-const fixedCombinedOrTextFilter: ICombinedSimpleModel = {
-  filterType: FilterType.TEXT,
-  operator: Operators.OR,
-  condition1: fixedSimpleTextFilter,
-  condition2: fixedSimpleTextFilter,
-};
-
-const fixedCombinedAndTextFilter: ICombinedSimpleModel = {
-  filterType: FilterType.TEXT,
-  operator: Operators.AND,
-  condition1: fixedSimpleTextFilter,
-  condition2: fixedSimpleTextFilter,
-};
-
-const fixedCombinedInvalidArgsTextFilter: ICombinedSimpleModel = {
-  filterType: FilterType.TEXT,
-  operator: Operators.OR,
-  condition1: undefined,
-  condition2: undefined,
-};
-
-const fixedCombinedInvalidOperatorTextFilter = {
-  filterType: FilterType.TEXT,
-  operator: 'invalid',
-  condition1: fixedSimpleTextFilter,
-  condition2: fixedSimpleTextFilter,
-};
-
-const fixedSimpleNumberFilter: NumberFilterModel = {
-  filterType: FilterType.NUMBER,
-  type: GeneralFilters.LESS_THAN,
-  filter: 0,
-};
-
-const fixedSetFilter: ISetFilterModel = {
-  filterType: FilterType.SET,
-  values: [1, 2],
-};
-
-const fixedFilterInputNumber = {
-  [fixedKey]: fixedSimpleNumberFilter,
-};
-
-const fixedCombinedOrNumberFilter: ICombinedSimpleModel = {
-  filterType: FilterType.NUMBER,
-  operator: Operators.OR,
-  condition1: fixedSimpleNumberFilter,
-  condition2: fixedSimpleNumberFilter,
-};
-
-const fixedSimpleDateFilter: DateFilterModel = {
-  filterType: FilterType.DATE,
-  type: GeneralFilters.LESS_THAN,
-  dateFrom: '2020',
-};
-
-const fixedFilterInputDate = {
-  [fixedKey]: fixedSimpleDateFilter,
-};
-
-const fixedCombinedOrDateFilter: ICombinedSimpleModel = {
-  filterType: FilterType.DATE,
-  operator: Operators.OR,
-  condition1: fixedSimpleDateFilter,
-  condition2: fixedSimpleDateFilter,
-};
-
-const fixedMulticolumnJoinOptionsAndObject: IMultiColumnJoinOptions = {
-  multiColumnJoinOperator: Operators.AND,
-  [fixedKey]: fixedSimpleTextFilter,
-  [`second_${fixedKey}`]: fixedCombinedOrTextFilter,
-};
-
-const fixedMulticolumnJoinOptionsAndOrObject: IMultiColumnJoinOptions = {
-  multiColumnJoinOperator: Operators.AND,
-  [fixedKey]: fixedSimpleTextFilter,
-  [`second_${fixedKey}`]: fixedSimpleTextFilter,
-  multiColumnJoinOptions: {
-    multiColumnJoinOperator: Operators.OR,
-    [`third_${fixedKey}`]: fixedSimpleTextFilter,
-    [`second_${fixedKey}`]: fixedSimpleNumberFilter,
-  },
-};
-
-const fixedMulticolumnJoinOptionsAndOrAndOrAndOrObject: IMultiColumnJoinOptions = {
-  multiColumnJoinOperator: Operators.AND,
-  [fixedKey]: fixedSimpleTextFilter,
-  [`second_${fixedKey}`]: fixedSimpleTextFilter,
-  multiColumnJoinOptions: {
-    multiColumnJoinOperator: Operators.OR,
-    [`third_${fixedKey}`]: fixedSimpleTextFilter,
-    [`second_${fixedKey}`]: fixedSimpleNumberFilter,
-    multiColumnJoinOptions: {
-      multiColumnJoinOperator: Operators.AND,
-      [fixedKey]: fixedSimpleTextFilter,
-      [`second_${fixedKey}`]: fixedSimpleTextFilter,
-      multiColumnJoinOptions: {
-        multiColumnJoinOperator: Operators.OR,
-        [`third_${fixedKey}`]: fixedSimpleTextFilter,
-        [`second_${fixedKey}`]: fixedSimpleNumberFilter,
-        multiColumnJoinOptions: {
-          multiColumnJoinOperator: Operators.AND,
-          [`third_${fixedKey}`]: fixedCombinedOrTextFilter,
-          [`second_${fixedKey}`]: fixedCombinedOrNumberFilter,
-          multiColumnJoinOptions: {
-            multiColumnJoinOperator: Operators.OR,
-            [`third_${fixedKey}`]: fixedCombinedOrTextFilter,
-            [`second_${fixedKey}`]: fixedCombinedOrNumberFilter,
-          },
-        },
-      },
-    },
-  },
-};
-
-const fixedWhereAndObject: FilterInput = {
-  multiColumnJoinOptions: { ...fixedMulticolumnJoinOptionsAndObject },
-};
-
-const fixedWhereMulticolumnObject: FilterInput = {
-  multiColumnJoinOptions: { ...fixedMulticolumnJoinOptionsAndOrObject },
-};
-
-const fixedWhereMulticolumnAndFiltersObject: FilterInput = {
-  [fixedKey]: fixedCombinedOrTextFilter,
-  multiColumnJoinOptions: { ...fixedMulticolumnJoinOptionsAndOrObject },
-};
-
-const fixedLongWhereMulticolumnAndFiltersObject: FilterInput = {
-  [fixedKey]: fixedCombinedOrTextFilter,
-  multiColumnJoinOptions: {
-    ...fixedMulticolumnJoinOptionsAndOrAndOrAndOrObject,
-  },
-};
-
-const fixedArgsNoFilters: IAgQueryParams = {
-  startRow: 0,
-  endRow: 0,
-  sorting: [
-    {
-      colId: '',
-      sort: SortDirection.ASC,
-    },
-  ],
-  /*rowGroups: [
-    {
-      colId: '',
-      aggFunc: '',
-    },
-  ],
-  groupKeys: [''],*/
-  filters: null,
-};
-
-const fixedArgs: IAgQueryParams = {
-  ...fixedArgsNoFilters,
-  filters: { ...fixedFilterInputText },
-};
-
-const fixeNumberArgs: IAgQueryParams = {
-  ...fixedArgsNoFilters,
-  filters: { ...fixedFilterInputNumber },
-};
-
-const fixeDatedArgs: IAgQueryParams = {
-  ...fixedArgsNoFilters,
-  filters: { ...fixedFilterInputDate },
-};
-
-const fixedBadArgs: IAgQueryParams = {
-  ...fixedArgs,
-  filters: { ...fixedDataFilter },
-};
-
-const fixedBadFilter: IAgQueryParams = {
-  ...fixedArgs,
-  filters: { [fixedKey]: fixedSimpleBadFilter },
-};
-
-const fixedArgsNOTFilter: IAgQueryParams = {
-  ...fixedArgs,
-  filters: { ...fixedFilterNotContains },
-};
-
 const mockedInfo = createMock<GraphQLResolveInfo>();
 
-const fixedWhereTransformed: IWhereCondition = {
-  filters: { [dbName]: Equal('') },
-  [CustomWhereKeys.MULTICOLUMNJOINOPTIONS]: {
-    operator: Operators.AND,
-    filters: { [`table.${dbName}`]: Equal('') },
-  },
-};
-
-const fixedWhereTransformedWithNotInclude: IWhereCondition = {
-  filters: { [dbName]: Equal(''), exluded: Equal('') },
-  [CustomWhereKeys.MULTICOLUMNJOINOPTIONS]: {
-    operator: Operators.AND,
-    filters: { [`table.${dbName}`]: Equal('') },
-  },
-};
-
-const fixedWhereTransformedWithExcluded: IWhereCondition = {
-  filters: { [dbName]: Equal(''), [`excluded_${dbName}`]: Equal('') },
-  [CustomWhereKeys.MULTICOLUMNJOINOPTIONS]: {
-    operator: Operators.AND,
-    filters: { [`table.${dbName}`]: Equal('') },
-  },
-};
-
-const fixedWhereTransformedNested: IWhereCondition = {
-  filters: { [dbName]: Equal('') },
-  [CustomWhereKeys.MULTICOLUMNJOINOPTIONS]: {
-    operator: Operators.AND,
-    filters: { [`table.${dbName}`]: Equal('') },
-    [CustomWhereKeys.MULTICOLUMNJOINOPTIONS]: {
-      operator: Operators.AND,
-      filters: { [`table.${dbName}`]: Equal('') },
-    },
-  },
-};
-//mockedGqlExecutionContext.getArgs.mockReturnValue(fixedArgs);
 const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
 mockCreate.mockImplementation(() => ({
-  getArgs: jest.fn().mockReturnValue(fixedArgs),
+  getArgs: jest.fn().mockReturnValue(fixedArgsQueryParams),
   getInfo: jest.fn().mockReturnValue(infoObj),
 }));
 const mockedGqlExecutionContext = GqlExecutionContext.create(
@@ -599,95 +298,103 @@ describe('Ag-grid args decorator', () => {
   it('Check get filters errors', async () => {
     expect(() =>
       agGridArgsDecorator.getTextFilter('ImAnError', firstTextParameter),
-    ).toThrowError(new AgGridFilterNotSupportedError());
+    ).toThrowError(
+      new AgGridFilterNotSupportedError(`filter: ImAnError type: TEXT`),
+    );
     expect(() =>
       agGridArgsDecorator.getNumberFilter('ImAnError', firstNumberParameter),
-    ).toThrowError(new AgGridFilterNotSupportedError());
+    ).toThrowError(
+      new AgGridFilterNotSupportedError(`filter: ImAnError type: NUMBER`),
+    );
     expect(() =>
       agGridArgsDecorator.getDateFilter('ImAnError', firstDateParameter),
-    ).toThrowError(new AgGridFilterNotSupportedError());
+    ).toThrowError(
+      new AgGridFilterNotSupportedError(`filter: ImAnError type: DATE`),
+    );
   });
 
   it('Check AgGridArgsFactory functionality', async () => {
     const testData = agGridArgsDecorator.AgGridArgsFactory(
-      fixedData,
+      fixedArgsOptions,
       mockedExecutionContext,
     );
 
     expect(testData).toBeDefined();
   });
 
-  it('Check mapAgGridParams functionality on text filter', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedData,
-      mockedGqlExecutionContext,
-      fixedArgs,
-      mockedInfo,
-    );
+  describe('Check mapAgGridParams', () => {
+    const testData: [string, IAgQueryParams][] = [
+      ['text filter', fixedArgsQueryParams],
+      ['number filter', fixeNumberArgs],
+      ['data filter', fixeDatedArgs],
+      ['bad filter', fixedBadArgs],
+      ['no filter', fixedArgsNoFilters],
+    ];
 
-    expect(testData).toBeDefined();
-  });
-
-  it('Check mapAgGridParams functionality on number filter', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedData,
-      mockedGqlExecutionContext,
-      fixeNumberArgs,
-      mockedInfo,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check mapAgGridParams functionality on data filter', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedData,
-      mockedGqlExecutionContext,
-      fixeDatedArgs,
-      mockedInfo,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check mapAgGridParams functionality on bad filter', async () => {
-    try {
+    const resultFn = (params) => () =>
       agGridArgsDecorator.mapAgGridParams(
-        fixedData,
+        params,
         mockedGqlExecutionContext,
-        fixedBadFilter,
+        fixedArgsQueryParams,
         mockedInfo,
       );
-    } catch (error) {
-      expect(error).toEqual(new AgGridFilterNotSupportedError());
-    }
-  });
 
-  it('Check mapAgGridParams functionality with no filters', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedData,
-      mockedGqlExecutionContext,
-      fixedArgsNoFilters,
-      mockedInfo,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check mapAgGridParams with an invalid argument', async () => {
-    expect(() =>
-      agGridArgsDecorator.mapAgGridParams(
-        fixedData,
+    it.each(testData)('Should map on %s', (name, args) => {
+      const result = agGridArgsDecorator.mapAgGridParams(
+        fixedArgsOptions,
         mockedGqlExecutionContext,
-        fixedBadArgs,
+        args,
         mockedInfo,
-      ),
-    ).toThrowError(new AgGridInvalidArgumentError());
+      );
+
+      expect(result).toBeDefined();
+    });
+
+    it('Should throw error with bad extraArgs property', () => {
+      const params: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
+        extraArgs: {
+          ...genExtraArgs('extra'),
+        },
+      };
+
+      expect(resultFn(params)).toThrowError();
+
+      params.extraArgsStrategy = ExtraArgsStrategy.ONLY_ONE;
+      params.extraArgs = {
+        ...genExtraArgs('rowGroups'),
+        ...genExtraArgs('groupKeys'),
+      };
+
+      expect(resultFn(params)).toThrowError();
+    });
+
+    it('Should work properly with extraArgs property', () => {
+      const params: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
+        extraArgs: {
+          ...genExtraArgs('groupKeys'),
+        },
+      };
+
+      expect(resultFn(params)()).toBeDefined();
+      params.extraArgsStrategy = ExtraArgsStrategy.ONLY_ONE;
+      params.extraArgs = {
+        ...genExtraArgs('rowGroups'),
+      };
+
+      expect(resultFn(params)()).toBeDefined();
+
+      params.extraArgsStrategy = ExtraArgsStrategy.DEFAULT;
+      expect(resultFn(params)()).toBeDefined();
+    });
   });
 
   it('Check filters not functionality', async () => {
     const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedData,
+      fixedArgsOptions,
       mockedGqlExecutionContext,
       fixedArgsNOTFilter,
       mockedInfo,
@@ -711,7 +418,7 @@ describe('Ag-grid args decorator', () => {
     const testData = agGridArgsDecorator.mapAgGridParams(
       fixedDataFilterToInclude,
       mockedGqlExecutionContext,
-      fixedArgs,
+      fixedArgsQueryParams,
       mockedInfo,
     );
 
@@ -729,6 +436,24 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toBeDefined();
   });
 
+  it('Check mapAgGridParams throws error if row selected is too high', () => {
+    try {
+      agGridArgsDecorator.mapAgGridParams(
+        fixedArgsOptions,
+        mockedGqlExecutionContext,
+        { filters: {}, startRow: 0, endRow: 500 },
+        mockedInfo,
+      );
+    } catch (error) {
+      const { maxRow } = fixedArgsOptions.options;
+      expect(error).toEqual(
+        new AgGridError(
+          `Invalid max number of row selected: cannot exeed max ${maxRow}`,
+        ),
+      );
+    }
+  });
+
   it('Check mapAgGridParams functionality with no sorting', async () => {
     const testData = agGridArgsDecorator.mapAgGridParams(
       { ...fixedDataWithDefault, defaultValue: undefined },
@@ -740,88 +465,56 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toBeDefined();
   });
 
-  it('Check convertFilter with simple Filter', async () => {
-    const testData = agGridArgsDecorator.convertFilter(fixedSimpleTextFilter);
+  describe('resolveFilter', () => {
+    const testData: [string, FilterModel][] = [
+      ['text', fixedSimpleTextFilter],
+      ['number', fixedSimpleNumberFilter],
+      ['date', fixedSimpleDateFilter],
+      ['set', fixedSetFilter],
+      ['not supported', {} as FilterModel],
+    ];
 
-    expect(testData).toBeDefined();
+    it.each(testData)('Check conversion with %s filter', (name, filter) => {
+      try {
+        const result = agGridArgsDecorator.resolveFilter(filter);
+        expect(result).toBeDefined();
+      } catch (error) {
+        expect(error).toBeInstanceOf(AgGridFilterNotSupportedError);
+      }
+    });
   });
-
-  it('Check convertFilter with undefined Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(fixedUndefinedTextFilter);
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidArgumentError());
-    }
-  });
-
-  it('Check convertFilter with combined OR Filter', async () => {
-    const testData = agGridArgsDecorator.convertFilter(
-      fixedCombinedOrTextFilter,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check convertFilter with combined AND Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(fixedCombinedAndTextFilter);
-    } catch (error) {
-      expect(error).toEqual(new AgGridConditionNotSupportedError());
-    }
-  });
-
-  it('Check convertFilter with combined invalid args Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(fixedCombinedInvalidArgsTextFilter);
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidArgumentError());
-    }
-  });
-
-  it('Check convertFilter with combined invalid operator Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(
+  describe('Check convertFilter', () => {
+    const testData: [
+      string,
+      FilterModel | ICombinedSimpleModel,
+      AgGridError?,
+    ][] = [
+      ['simple', fixedSimpleTextFilter, undefined],
+      ['undefined', fixedUndefinedTextFilter, new AgGridInvalidArgumentError()],
+      ['combined OR', fixedCombinedOrTextFilter, undefined],
+      ['combined AND', fixedCombinedAndTextFilter, undefined],
+      [
+        'combined invalid operator',
         <ICombinedSimpleModel>fixedCombinedInvalidOperatorTextFilter,
-      );
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidOperatorError());
-    }
-  });
+        new AgGridInvalidOperatorError(),
+      ],
+      [
+        'combined invalid args',
+        fixedCombinedInvalidArgsTextFilter,
+        new AgGridInvalidArgumentError(),
+      ],
+      ['not type in text', fixedNotTextFilter, undefined],
+    ];
 
-  it('Check convertFilter with simple number Filter', async () => {
-    const testData = agGridArgsDecorator.convertFilter(fixedSimpleNumberFilter);
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check convertFilter with combined invalid args Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(fixedCombinedInvalidArgsTextFilter);
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidArgumentError());
-    }
-  });
-
-  it('Check convertFilter with combined invalid operator Filter', async () => {
-    try {
-      agGridArgsDecorator.convertFilter(
-        <ICombinedSimpleModel>fixedCombinedInvalidOperatorTextFilter,
-      );
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidOperatorError());
-    }
-  });
-
-  it('Check convertFilter with simple number Filter', async () => {
-    const testData = agGridArgsDecorator.convertFilter(fixedSimpleNumberFilter);
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check convertFilter with simple date Filter', async () => {
-    const testData = agGridArgsDecorator.convertFilter(fixedSimpleDateFilter);
-
-    expect(testData).toBeDefined();
+    it.each(testData)(`Should convert %s Filter`, (name, filter, error) => {
+      if (error) {
+        const result = () => agGridArgsDecorator.convertFilter(filter);
+        expect(result).toThrowError(error);
+      } else {
+        const result = agGridArgsDecorator.convertFilter(filter);
+        expect(result).toBeDefined();
+      }
+    });
   });
 
   it('should check filterSwitch is working properly', async () => {
@@ -831,220 +524,28 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toStrictEqual(In(fixedSetFilter.values));
 
     // with TEXT
-    testData = agGridArgsDecorator.filterSwitch(fixedSimpleTextFilter);
-
+    testData = agGridArgsDecorator.filterSwitch(
+      fixedSimpleTextFilter,
+      'contains',
+    );
     expect(testData).toStrictEqual(Like(`%${fixedSimpleTextFilter.filter}%`));
+
+    // with Date
+    testData = agGridArgsDecorator.filterSwitch(fixedSimpleDateFilter, 'equal');
+    expect(testData).toStrictEqual(Equal(`${fixedSimpleDateFilter.dateFrom}`));
+
+    // With number
+    testData = agGridArgsDecorator.filterSwitch(
+      fixedSimpleNumberFilter,
+      'equal',
+    );
+    expect(testData).toStrictEqual(Equal(fixedSimpleNumberFilter.filter));
 
     // with INVALID
 
     expect(() =>
       agGridArgsDecorator.filterSwitch(fixedSimpleBadFilter),
     ).toThrow(AgGridFilterNotSupportedError);
-  });
-
-  it('should check isCombinedWhereModel is working properly', async () => {
-    let testData = agGridArgsDecorator.isCombinedWhereModel({});
-
-    expect(testData).toBeFalsy();
-
-    testData = agGridArgsDecorator.isCombinedWhereModel({
-      operator: Operators.AND,
-      filter_1: {},
-      filter_2: {},
-    } as any);
-
-    expect(testData).toBeTruthy();
-  });
-
-  it('should check isFindOperator is working properly', async () => {
-    let testData = agGridArgsDecorator.isFindOperator({});
-
-    expect(testData).toBeFalsy();
-
-    testData = agGridArgsDecorator.isFindOperator({
-      type: FilterType.TEXT,
-      value: {},
-    } as any);
-
-    expect(testData).toBeTruthy();
-
-    testData = agGridArgsDecorator.isFindOperator({
-      type: FilterType.TEXT,
-      child: {},
-    } as any);
-
-    expect(testData).toBeTruthy();
-  });
-
-  it('isFilterModel should return false with undefined input', async () => {
-    const testData = agGridArgsDecorator.isFilterModel(undefined);
-
-    expect(testData).toEqual(false);
-  });
-  it('Check isTextFilterModel simple case', async () => {
-    const testData = agGridArgsDecorator.isTextFilterModel(
-      fixedSimpleTextFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isTextFilterModel combined case', async () => {
-    const testData = agGridArgsDecorator.isTextFilterModel(
-      fixedCombinedOrTextFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isTextFilterModel simple case false', async () => {
-    const testData = agGridArgsDecorator.isTextFilterModel(
-      fixedSimpleNumberFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isTextFilterModel combined case false', async () => {
-    const testData = agGridArgsDecorator.isTextFilterModel(
-      fixedCombinedOrNumberFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isNumberFilterModel simple case', async () => {
-    const testData = agGridArgsDecorator.isNumberFilterModel(
-      fixedSimpleNumberFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isNumberFilterModel combined case', async () => {
-    const testData = agGridArgsDecorator.isNumberFilterModel(
-      fixedCombinedOrNumberFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isNumberFilterModel simple case false', async () => {
-    const testData = agGridArgsDecorator.isNumberFilterModel(
-      fixedSimpleDateFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isNumberFilterModel combined case false', async () => {
-    const testData = agGridArgsDecorator.isNumberFilterModel(
-      fixedCombinedOrDateFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isDateFilterModel simple case', async () => {
-    const testData = agGridArgsDecorator.isDateFilterModel(
-      fixedSimpleDateFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isDateFilterModel combined case', async () => {
-    const testData = agGridArgsDecorator.isDateFilterModel(
-      fixedCombinedOrDateFilter,
-    );
-
-    expect(testData).toEqual(true);
-  });
-
-  it('Check isDateFilterModel simple case false', async () => {
-    const testData = agGridArgsDecorator.isDateFilterModel(
-      fixedSimpleTextFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isDateFilterModel combined case false', async () => {
-    const testData = agGridArgsDecorator.isDateFilterModel(
-      fixedCombinedOrTextFilter,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('should return false because of missing filters', async () => {
-    const isDate = agGridArgsDecorator.isDateFilterModel(null);
-    const isText = agGridArgsDecorator.isTextFilterModel(null);
-    const isNumber = agGridArgsDecorator.isNumberFilterModel(null);
-
-    expect(isDate).toBeFalsy();
-    expect(isText).toBeFalsy();
-    expect(isNumber).toBeFalsy();
-  });
-
-  it('Check isIFieldAndFilterMapper with IFieldMapper', async () => {
-    const testData = agGridArgsDecorator.isIFieldAndFilterMapper(
-      fixedIFieldMapper,
-    );
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isIFieldAndFilterMapper with undefined', async () => {
-    const testData = agGridArgsDecorator.isIFieldAndFilterMapper(undefined);
-
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isIFieldAndFilterMapper with IFieldAndFilterMapper', async () => {
-    const testData = agGridArgsDecorator.isIFieldAndFilterMapper({
-      field: fixedIFieldMapper as IFieldMapper,
-    });
-
-    expect(testData).toEqual(true);
-  });
-
-  it('should not resolve multicolumn', async () => {
-    const spy = jest.spyOn(
-      agGridArgsDecorator,
-      'resolveMultiColumnJoinOptions',
-    );
-
-    agGridArgsDecorator.resolveMultiColumnJoinOptions(
-      fixedMulticolumnJoinOptionsAndObject,
-      {},
-    );
-
-    expect(spy).toHaveBeenCalledTimes(1);
-
-    spy.mockClear();
-  });
-
-  it('should throw not supported filter error on resolveMultiColumnJoinOptions', async () => {
-    expect(() => {
-      agGridArgsDecorator.resolveMultiColumnJoinOptions(
-        {
-          nothing: 'test',
-        } as any,
-        {},
-      );
-    }).toThrowError(AgGridFilterNotSupportedError);
-  });
-
-  it('should throw not supported filter error on createWhere', async () => {
-    expect(() => {
-      agGridArgsDecorator.createWhere(
-        {
-          nothing: 'test',
-        } as any,
-        {},
-      );
-    }).toThrowError(AgGridFilterNotSupportedError);
   });
 
   it('Check removeSymbolicSelection work', async () => {
@@ -1056,113 +557,52 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toEqual([`second_${fixedKey}`]);
   });
 
-  it('Check isMulticolumnJoinOptions', () => {
-    let testData = agGridArgsDecorator.isMulticolumnJoinOptions(
-      fixedMulticolumnJoinOptionsAndOrObject,
-    );
-    expect(testData).toEqual(true);
-
-    testData = agGridArgsDecorator.isMulticolumnJoinOptions(
-      fixedSimpleTextFilter,
-    );
-    expect(testData).toEqual(false);
-  });
-
-  it('Check isOperator', () => {
-    let testData = agGridArgsDecorator.isOperator(
-      fixedMulticolumnJoinOptionsAndOrObject.multiColumnJoinOperator,
-    );
-    expect(testData).toEqual(true);
-
-    testData = agGridArgsDecorator.isMulticolumnJoinOptions(
-      fixedSimpleTextFilter,
-    );
-    expect(testData).toEqual(false);
-  });
-  it('Check takeOnlyFilters', () => {
-    const testData = agGridArgsDecorator.takeOnlyFilters(
-      fixedMulticolumnJoinOptionsAndOrObject,
-    );
-    expect(testData).not.toEqual(fixedMulticolumnJoinOptionsAndOrObject);
-    expect(testData).toEqual({
-      [fixedKey]: fixedSimpleTextFilter,
-      [`second_${fixedKey}`]: fixedSimpleTextFilter,
+  describe('Check createWhere', () => {
+    it('Should work with void where', async () => {
+      const testData = agGridArgsDecorator.createWhere(null, fixedIFieldMapper);
+      expect(testData).toEqual({ filters: {} });
     });
-  });
 
-  it('Check takeOnlyFilters null value', () => {
-    const testData = agGridArgsDecorator.takeOnlyFilters(null);
-    expect(testData).toEqual({});
-  });
+    it(`Should work properly with filterInput object`, () => {
+      const testData = agGridArgsDecorator.createWhere(
+        fixedJoinOptionsAndOrObject,
+        fixedIFieldMapper,
+        'alias',
+      );
 
-  it('Check takeOnlyFilters property null value', () => {
-    const testData = agGridArgsDecorator.takeOnlyFilters({ [fixedKey]: null });
-    expect(testData).toEqual({});
-  });
+      expect(testData).toBeDefined();
+    });
 
-  it('Check getSelectedFilters', () => {
-    const testData = agGridArgsDecorator.getSelectedFilters(
-      fixedMulticolumnJoinOptionsAndOrObject,
-    );
-    expect(testData).not.toEqual(fixedMulticolumnJoinOptionsAndOrObject);
-    expect(testData).toEqual([fixedKey, `second_${fixedKey}`]);
-  });
+    it('Should throw error with bad filters', () => {
+      const badFilter: FilterInput = {
+        ...fixedJoinOptionsAndOrObject,
+        expressions: [
+          {
+            text: fixedSimpleTextFilter,
+            number: fixedSimpleNumberFilter,
+          },
+        ],
+      };
+      const func = (badFilter) => () =>
+        agGridArgsDecorator.createWhere(badFilter, fixedIFieldMapper);
 
-  it('Check getSelectedFilters null value', () => {
-    const testData = agGridArgsDecorator.getSelectedFilters(null);
-    expect(testData).toEqual([]);
-  });
+      expect(func(badFilter)).toThrowError();
 
-  it('Check getSelectedFilters property null value', async () => {
-    try {
-      agGridArgsDecorator.getSelectedFilters({
-        [fixedKey]: null,
-      });
-    } catch (error) {
-      expect(error).toEqual(new AgGridInvalidPropertyError());
-    }
-  });
+      badFilter.expressions = [
+        {
+          nothing: undefined,
+        } as any,
+      ];
 
-  it('Check createWhere with void where', async () => {
-    const testData = agGridArgsDecorator.createWhere(null, fixedIFieldMapper);
+      expect(func(badFilter)).toThrowError();
 
-    expect(testData).toEqual({ filters: {} });
-  });
-
-  it('Check createWhere with multicolumn object', async () => {
-    const testData = agGridArgsDecorator.createWhere(
-      fixedWhereMulticolumnObject,
-      fixedIFieldMapper,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check createWhere with multicolumn object and filters', async () => {
-    const testData = agGridArgsDecorator.createWhere(
-      fixedWhereMulticolumnAndFiltersObject,
-      fixedIFieldMapper,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check createWhere with long multicolumn object and filters', async () => {
-    const testData = agGridArgsDecorator.createWhere(
-      fixedLongWhereMulticolumnAndFiltersObject,
-      fixedIFieldMapper,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check createWhere with multicolumn and object', async () => {
-    const testData = agGridArgsDecorator.createWhere(
-      fixedWhereAndObject,
-      fixedIFieldMapper,
-    );
-
-    expect(testData).toBeDefined();
+      badFilter.expressions = [
+        {
+          nothing: 'test',
+        } as any,
+      ];
+      expect(func(badFilter)).toThrowError(AgGridFilterNotSupportedError);
+    });
   });
 
   it('Check checkFilterScope with where and include option', async () => {
@@ -1234,15 +674,12 @@ describe('Ag-grid args decorator', () => {
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
     //Without params type
-    let decorator = agGridArgsDecorator.AgGridArgs({ fieldMap: {} });
+    let decorator = agGridArgsDecorator.AgGridArgs(fixedArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
     //With params type
-    decorator = agGridArgsDecorator.AgGridArgs({
-      fieldMap: {},
-      type: () => String,
-    });
+    decorator = agGridArgsDecorator.AgGridArgs(fixedArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
@@ -1252,20 +689,190 @@ describe('Ag-grid args decorator', () => {
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
-    //Without params type
-    let decorator = agGridArgsDecorator.AgGridArgsNoPagination({
-      fieldMap: {},
-    });
-    expect(decorator).toEqual(expect.any(Function));
-    decorator('', '', 0);
-    expect(returnFunc).toHaveBeenCalled();
     //With params type
-    decorator = agGridArgsDecorator.AgGridArgsNoPagination({
-      fieldMap: {},
-      type: () => String,
-    });
+    const argsOptions: IAgGridArgsOptions = {
+      ...fixedArgsOptions,
+      entityType: BaseEntity,
+    };
+    let decorator = agGridArgsDecorator.AgGridArgsNoPagination(argsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
+    //Without params type
+    decorator = agGridArgsDecorator.AgGridArgsNoPagination({});
+    expect(decorator).toEqual(expect.any(Function));
+    decorator('', '', 0);
+    expect(returnFunc).toHaveBeenCalled();
+  });
+
+  it('Should combine decorators with AgGridCombineDecorators', () => {
+    const ArgsFunc = jest.spyOn(graphql, 'Args');
+    const returnFunc = jest.fn().mockReturnValue('somestring');
+    ArgsFunc.mockReturnValue(returnFunc);
+
+    const decorator =
+      agGridArgsDecorator.AgGridCombineDecorators(fixedArgsOptions);
+    expect(decorator).toEqual(expect.any(Function));
+  });
+
+  describe('Check AgGridArgsSingleDecoratorMapper', () => {
+    const qqlAgGridFieldsMapper = jest.spyOn(
+      GqlAgGridDecorator,
+      'GqlAgGridFieldsMapper',
+    );
+
+    const objectToFieldMapper = jest.spyOn(
+      AgGridHelpers,
+      'objectToFieldMapper',
+    );
+
+    beforeEach(() => {
+      qqlAgGridFieldsMapper.mockReturnValueOnce(['field']);
+      objectToFieldMapper.mockReturnValueOnce({ field: {} });
+    });
+
+    afterEach(() => {
+      qqlAgGridFieldsMapper.mockReset();
+      objectToFieldMapper.mockReset();
+    });
+
+    it('Should map to FindManyOptions', () => {
+      const argsOptions: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        entityType: BaseEntity,
+      };
+      const result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+        argsOptions,
+        fixedArgsQueryParams,
+        mockedInfo,
+      );
+
+      expect(result.select).toEqual(['field']);
+    });
+
+    it('Should map to findManyOptions with bad arguments', () => {
+      const argsOptions: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        entityType: BaseEntity,
+      };
+
+      const queryParam: IAgQueryParams = {
+        ...fixedArgsQueryParams,
+        join: null,
+      };
+      const result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+        argsOptions,
+        queryParam,
+        mockedInfo,
+      );
+
+      expect(result.select).toEqual(['field']);
+      expect(qqlAgGridFieldsMapper).toHaveBeenCalled();
+      expect(objectToFieldMapper).toHaveBeenCalled();
+    });
+
+    it('Should return an empty findManyOptions with bad arguments', () => {
+      const argsOptions: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+      };
+
+      let result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+        argsOptions,
+        fixedArgsQueryParams,
+        mockedInfo,
+      );
+
+      expect(result).toEqual({});
+
+      result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+        null,
+        fixedArgsQueryParams,
+        mockedInfo,
+      );
+      expect(result).toEqual({});
+      expect(qqlAgGridFieldsMapper).not.toHaveBeenCalled();
+      expect(objectToFieldMapper).not.toHaveBeenCalled();
+    });
+  });
+
+  it('Should be able to use the AgGridArgsSingle', () => {
+    const ArgsFunc = jest.spyOn(graphql, 'Args');
+    const returnFunc = jest.fn().mockReturnValue('somestring');
+    ArgsFunc.mockReturnValue(returnFunc);
+
+    const joinArgFactory = jest
+      .spyOn(AgGridInput, 'agJoinArgFactory')
+      .mockReturnValueOnce({});
+
+    const checkExpect = () => {
+      decorator('', '', 0);
+      expect(returnFunc).toHaveBeenCalled();
+      expect(joinArgFactory).toHaveBeenCalled();
+    };
+
+    const argsOptions: IAgGridArgsOptions = {
+      ...fixedArgsOptions,
+      entityType: BaseEntity,
+    };
+
+    let decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    checkExpect();
+
+    joinArgFactory.mockReturnValueOnce(null);
+    decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    checkExpect();
+
+    argsOptions.entityType = null;
+    decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    checkExpect;
+  });
+
+  it('Should be call AgGridArgsSingleDecoratorFactory correctly', () => {
+    const decorator = agGridArgsDecorator.AgGridArgsSingleDecoratorFactory(
+      fixedArgsOptions,
+      mockedGqlExecutionContext,
+    );
+    expect(decorator).toBeDefined();
+  });
+
+  describe('getFindOperator', () => {
+    const testData = [
+      {
+        type: fixedSimpleTextFilter.filterType,
+        name: GeneralFilters.EQUALS,
+        arg1: firstTextParameter,
+        arg2: undefined,
+      },
+      {
+        type: fixedSimpleDateFilter.filterType,
+        name: GeneralFilters.EQUALS,
+        arg1: firstDateParameter,
+        arg2: secondDateParameter,
+      },
+      {
+        type: fixedSimpleNumberFilter.filterType,
+        name: GeneralFilters.EQUALS,
+        arg1: firstNumberParameter,
+        arg2: undefined,
+      },
+      {
+        type: fixedSetFilter.filterType,
+        name: GeneralFilters.EQUALS,
+        arg1: '',
+        arg2: undefined,
+      },
+    ];
+
+    it('Should work properly', () => {
+      testData.forEach((test) => {
+        const result = agGridArgsDecorator.getFindOperator(
+          test.type,
+          test.name,
+          test.arg1,
+          test.arg2,
+        );
+        expect(result).toBeDefined();
+      });
+    });
   });
 });

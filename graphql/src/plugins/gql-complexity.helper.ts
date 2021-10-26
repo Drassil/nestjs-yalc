@@ -3,6 +3,7 @@ import {
   DocumentNode,
   isExecutableDefinitionNode,
   SelectionNode,
+  GraphQLSchema,
 } from 'graphql';
 import { GqlASTHelper } from './gql-ast.helper';
 import { GqlError, GqlErrorMsgs } from './gql.error';
@@ -27,11 +28,21 @@ export class GqlComplexityHelper {
    * We want to avoid circular depencies or queries that are too deep
    * before resolving the GraphQL Request.
    */
-  static processDocumentAST(document: DocumentNode) {
+
+  static customMaxDepth: number;
+
+  static processDocumentAST(document: DocumentNode, schema?: GraphQLSchema) {
     document.definitions
       .filter(isExecutableDefinitionNode)
       .forEach((operation) => {
         const { selectionSet } = operation;
+
+        const { name } = selectionSet.selections[0] as FieldNode;
+        const queryContext = schema?.getQueryType()?.getFields()[name.value];
+
+        GqlComplexityHelper.customMaxDepth =
+          queryContext?.extensions?.complexity ?? MAX_DEPTH;
+
         const totalOperations = selectionSet.selections.length;
         if (totalOperations > MAX_EXECUTABLE_DEFINITIONS) {
           throw new GqlError(GqlErrorMsgs.MAX_OPERATIONS);
@@ -93,7 +104,7 @@ export class GqlComplexityHelper {
     if (selectionSet) {
       if (notNodesField) depth++;
 
-      if (depth > MAX_DEPTH) {
+      if (depth > GqlComplexityHelper.customMaxDepth) {
         throw new GqlError(GqlErrorMsgs.MAX_DEPTH);
       }
 

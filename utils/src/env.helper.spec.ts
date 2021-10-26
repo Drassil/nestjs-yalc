@@ -19,6 +19,10 @@ describe('environment helper test', () => {
     expect(res).toEqual([]);
   });
 
+  it('should return false for "undefined"', () => {
+    expect(envIsTrue(undefined)).toEqual(false);
+  });
+
   it('should return true for "true"', () => {
     expect(envIsTrue('true')).toEqual(true);
   });

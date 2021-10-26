@@ -46,7 +46,11 @@ export interface ISortModelStrict<T> extends ISortModel<T> {
 @InputType()
 export class SortModel<T = any> implements ISortModel<T> {
   colId!: string;
-  @Field(() => SortDirection, { nullable: true, defaultValue: 'ASC' })
+  @Field(
+    /* istanbul ignore next */
+    () => SortDirection,
+    { nullable: true, defaultValue: 'ASC' },
+  )
   sort!: SortDirection;
 }
 
@@ -58,9 +62,16 @@ export function sortModelFactory<Entity>(entityModel: ClassType<Entity>) {
   const fieldsEnum = entityFieldsEnumFactory(entityModel);
   @InputType(`${entityModel.name}SortModel`)
   class SortModel implements ISortModelStrict<typeof fieldsEnum> {
-    @Field(() => fieldsEnum)
+    @Field(
+      /* istanbul ignore next */
+      () => fieldsEnum,
+    )
     colId!: keyof typeof fieldsEnum;
-    @Field(() => SortDirection, { nullable: true, defaultValue: 'ASC' })
+    @Field(
+      /* istanbul ignore next */
+      () => SortDirection,
+      { nullable: true, defaultValue: 'ASC' },
+    )
     sort!: SortDirection;
   }
 
@@ -89,7 +100,10 @@ export function filterExpressionInputFactory<Entity>(
     @HideField()
     filterType: FilterType.TEXT;
     type: GeneralFilters;
-    @Field(() => FieldEnum)
+    @Field(
+      /* istanbul ignore next */
+      () => FieldEnum,
+    )
     field: string;
     filter: string;
   }
@@ -99,7 +113,10 @@ export function filterExpressionInputFactory<Entity>(
     @HideField()
     filterType: FilterType.NUMBER;
     type: GeneralFilters;
-    @Field(() => FieldEnum)
+    @Field(
+      /* istanbul ignore next */
+      () => FieldEnum,
+    )
     field: string;
     filter: number;
   }
@@ -109,7 +126,10 @@ export function filterExpressionInputFactory<Entity>(
     @HideField()
     filterType: FilterType.DATE;
     type: GeneralFilters;
-    @Field(() => FieldEnum)
+    @Field(
+      /* istanbul ignore next */
+      () => FieldEnum,
+    )
     field: string;
     filter: number;
   }
@@ -119,7 +139,10 @@ export function filterExpressionInputFactory<Entity>(
     @HideField()
     filterType: FilterType.SET;
     values: string[];
-    @Field(() => FieldEnum)
+    @Field(
+      /* istanbul ignore next */
+      () => FieldEnum,
+    )
     field: string;
   }
 
@@ -129,23 +152,49 @@ export function filterExpressionInputFactory<Entity>(
    */
   @InputType(`${entityModel.name}FilterInput`)
   class FilterExpressionProperty implements IFilterExpressionsProperty {
-    @Field(() => FilterText, { nullable: true })
+    @Field(
+      /* istanbul ignore next */
+      () => FilterText,
+      { nullable: true },
+    )
     [FilterType.TEXT]: FilterText;
-    @Field(() => FilterNumber, { nullable: true })
+    @Field(
+      /* istanbul ignore next */
+      () => FilterNumber,
+      { nullable: true },
+    )
     [FilterType.NUMBER]: FilterNumber;
-    @Field(() => FilterDate, { nullable: true })
+    @Field(
+      /* istanbul ignore next */
+      () => FilterDate,
+      { nullable: true },
+    )
     [FilterType.DATE]: FilterDate;
-    @Field(() => FilterSet, { nullable: true })
+    @Field(
+      /* istanbul ignore next */
+      () => FilterSet,
+      { nullable: true },
+    )
     [FilterType.SET]: FilterSet;
   }
 
   @InputType(`${entityModel.name}FilterExpressionInput`)
   class FilterExpression implements FilterInput {
-    @Field(() => Operators, { defaultValue: Operators.AND, nullable: true })
+    @Field(
+      /* istanbul ignore next */
+      () => Operators,
+      { defaultValue: Operators.AND, nullable: true },
+    )
     operator?: Operators;
-    @Field(() => [FilterExpressionProperty])
+    @Field(
+      /* istanbul ignore next */
+      () => [FilterExpressionProperty],
+    )
     expressions?: FilterExpressionProperty[];
-    @Field(() => [FilterExpression])
+    @Field(
+      /* istanbul ignore next */
+      () => [FilterExpression],
+    )
     childExpressions?: FilterInput[];
   }
 
@@ -179,7 +228,10 @@ export function agJoinArgFactory<Entity>(
 
   @InputType(`${entityModel.name}JoinInputTypePartial`)
   class JoinInput {
-    @Field(() => JoinTypes)
+    @Field(
+      /* istanbul ignore next */
+      () => JoinTypes,
+    )
     joinType?: JoinTypes;
   }
 
@@ -203,10 +255,11 @@ export function agJoinArgFactory<Entity>(
       ) {}
 
       JoinOptionInput.prototype[r.relation.propertyName] = JoinFullInput;
-      Field(() => JoinFullInput, { nullable: true })(
-        JoinOptionInput.prototype,
-        r.relation.propertyName,
-      );
+      Field(
+        /* istanbul ignore next */
+        () => JoinFullInput,
+        { nullable: true },
+      )(JoinOptionInput.prototype, r.relation.propertyName);
     }
   });
 

@@ -1,7 +1,17 @@
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { ClassType } from '@nestjs-yalc/types';
+import { ArgsOptions, ReturnTypeFuncValue } from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
 import { FindManyOptions, FindOperator } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from './ag-grid.enum';
+import { IAgQueryParams } from './ag-grid.args';
+import {
+  ExtraArgsStrategy,
+  FilterType,
+  GeneralFilters,
+  Operators,
+} from './ag-grid.enum';
 import { IWhereCondition } from './ag-grid.type';
+import { IFieldAndFilterMapper } from './object.decorator';
 
 export interface IBaseFilterModel {
   filterType: FilterType;
@@ -153,4 +163,44 @@ export interface ICombinedWhereModel {
   // two instances of the filter model
   filter_1: FindOperator<string | number | Date> | ICombinedWhereModel;
   filter_2: FindOperator<string | number | Date> | ICombinedWhereModel;
+}
+
+export interface IExtraArg {
+  options?: ArgsOptions;
+  filterType: FilterType;
+  filterCondition: GeneralFilters;
+}
+
+export interface IAgGridArgsSingleOptions {
+  /**
+   * @property Options for the nestjs Args decorator
+   */
+  gql?: ArgsOptions;
+  /**
+   * @deprecated use fieldType instead
+   * @property fieldMap is used internally to convert names of exposed fields to database fields
+   */
+  fieldMap?: IFieldMapper | IFieldAndFilterMapper;
+  /**
+   * @property fieldType is used internally to retrieve information about the returned type
+   */
+  fieldType?: ClassType | ReturnTypeFuncValue;
+  /**
+   * @property entityType is used internally to generate graphql types for the inputs
+   */
+  entityType?: ClassType;
+}
+
+export interface IAgGridArgsOptions extends IAgGridArgsSingleOptions {
+  defaultValue?: IAgQueryParams;
+  /**
+   * Filters with direct arguments
+   */
+  extraArgsStrategy?: ExtraArgsStrategy;
+  extraArgs?: {
+    [index: string]: IExtraArg;
+  };
+  options?: {
+    maxRow: number;
+  };
 }

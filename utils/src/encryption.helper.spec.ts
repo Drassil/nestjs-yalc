@@ -5,7 +5,7 @@ import * as crypto from 'crypto';
 jest
   .spyOn(crypto, 'randomBytes')
   .mockReturnValue(
-    (Buffer.from('173606b5fe22770c890b48c41866abc3', 'hex') as unknown) as void,
+    Buffer.from('173606b5fe22770c890b48c41866abc3', 'hex') as unknown as void,
   );
 
 describe('Utils encryption helper test', () => {

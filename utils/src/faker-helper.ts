@@ -3,8 +3,8 @@ import * as faker from 'faker';
 // TODO: Probably we can use the internal faker of typeorm-seeding to create uniqueness, like we do here
 // (mentioned in https://github.com/w3tecch/typeorm-seeding/issues/98#issuecomment-849585576)
 
-export const DEF_FAKER_MAX_RETRIES = 1000;
-export const DEF_FAKER_MAX_TIME = 100;
+export const DEF_FAKER_MAX_RETRIES = 1500;
+export const DEF_FAKER_MAX_TIME = 250;
 
 export class FakerHelper {
   // We could also create a new email from the same person,

@@ -1,13 +1,30 @@
 /* istanbul ignore file */
 
 import { Injectable, LoggerService, Provider } from '@nestjs/common';
-import { Connection, ConnectionOptions } from 'typeorm';
+import {
+  CannotExecuteNotConnectedError,
+  Connection,
+  ConnectionOptions,
+  MigrationExecutor,
+} from 'typeorm';
 import { getDBNameByConnection } from './conn.helper';
 import * as Engine from 'typeorm-model-generator/dist/src/Engine';
 import { getDefaultConnectionOptions } from 'typeorm-model-generator/dist/src/IConnectionOptions';
 import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import IConnectionOptions from 'typeorm-model-generator/dist/src/IConnectionOptions';
+
+export type MigrationSelection = { [database: string]: string[] };
+
+export interface MigrationOptions {
+  /**
+   * An object to define migrations to explicitly select
+   * it's composed by:
+   * property name -> name of the database
+   * property value -> array of migration class names to skip
+   */
+  selMigrations?: MigrationSelection;
+}
 
 /**
  * Application service
@@ -60,13 +77,51 @@ export class DbOpsService {
     }
   }
 
-  public async migrate() {
+  public async migrate(options?: MigrationOptions) {
     this.loggerService.debug?.('Migrating db...');
 
     for (const v of this.dbConnections) {
-      await v.conn.runMigrations({
-        transaction: 'all',
-      });
+      if (!v.conn.isConnected)
+        throw new CannotExecuteNotConnectedError(v.conn.name);
+
+      const queryRunner = v.conn.createQueryRunner();
+
+      const migrationExecutor = new MigrationExecutor(v.conn, queryRunner);
+      migrationExecutor.transaction = 'all';
+
+      const migrations = await migrationExecutor.getAllMigrations();
+
+      // if there are no migrations, then do not execute anything!
+      if (!Array.isArray(migrations) || migrations.length <= 0) continue;
+
+      const dbName = v.conn.driver.database;
+
+      this.loggerService.debug?.(`Executing migration for ${dbName}`);
+
+      if (options && options.selMigrations) {
+        const pendingMigrations =
+          await migrationExecutor.getPendingMigrations();
+
+        const selectedMigrations = dbName
+          ? options.selMigrations[dbName]
+          : true; // execute all migrations when it's a connection without db specified
+
+        for (const migration of pendingMigrations) {
+          if (
+            selectedMigrations === true ||
+            (Array.isArray(selectedMigrations) &&
+              selectedMigrations.includes(migration.name))
+          ) {
+            this.loggerService.debug?.(
+              `Executing migration ${migration.name} for ${dbName}`,
+            );
+            await migrationExecutor.executeMigration(migration);
+          }
+        }
+      } else {
+        this.loggerService.debug?.(`Executing migration for ${dbName}`);
+        await migrationExecutor.executePendingMigrations();
+      }
     }
 
     this.loggerService.debug?.('Migration completed!');

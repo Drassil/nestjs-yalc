@@ -49,8 +49,8 @@ registerEnumType(FilterType, {
 });
 
 export enum Operators {
-  AND = 'and',
-  OR = 'or',
+  AND = 'AND',
+  OR = 'OR',
 }
 
 registerEnumType(Operators, {
@@ -86,6 +86,12 @@ export enum ExtraArgsStrategy {
    * NOTE: it's better to implement this by using native graphql https://stackoverflow.com/a/50042675/1964544
    */
   ONLY_ONE,
+}
+
+export enum RowDefaultValues {
+  END_ROW = 100,
+  START_ROW = 0,
+  MAX_ROW = 0,
 }
 
 const fieldsEnumCache = new WeakMap();

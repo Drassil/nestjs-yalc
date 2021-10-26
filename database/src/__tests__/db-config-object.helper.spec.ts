@@ -12,18 +12,11 @@ describe('buildDbConfigObject()', () => {
   });
 
   it('should return default config', () => {
-    const {
-      name,
-      database,
-      entities,
-      seeds,
-      factories,
-      migrations,
-      cli,
-    } = buildDbConfigObject({
-      dbName: 'DB_TEST_NAME',
-      entities: ['ENTITY_TEST'],
-    })();
+    const { name, database, entities, seeds, factories, migrations, cli } =
+      buildDbConfigObject({
+        dbName: 'DB_TEST_NAME',
+        entities: ['ENTITY_TEST'],
+      })();
 
     expect(name).toBe(`DB_TEST_NAME${CONN_SUFFIX}`);
     expect(database).toBe('DB_TEST_NAME');
@@ -36,22 +29,35 @@ describe('buildDbConfigObject()', () => {
     });
   });
 
+  it('should return default config withouth migration dir', () => {
+    const saveStatuts = env.getEnvValue('NODE_ENV');
+    env.setEnv('NODE_ENV', 'production');
+    const { name, database, entities, seeds, factories, migrations, cli } =
+      buildDbConfigObject({
+        dbName: 'DB_TEST_NAME',
+        entities: ['ENTITY_TEST'],
+      })();
+
+    expect(name).toBe(`DB_TEST_NAME${CONN_SUFFIX}`);
+    expect(database).toBe('DB_TEST_NAME');
+    expect(entities).toStrictEqual(['ENTITY_TEST']);
+    expect(seeds).toBe(undefined);
+    expect(factories).toBe(undefined);
+    expect(migrations).toBe(undefined);
+    expect(cli).toEqual({
+      migrationsDir: undefined,
+    });
+    env.setEnv('NODE_ENV', saveStatuts);
+  });
   it('should set database config when optional values were provided', () => {
-    const {
-      name,
-      database,
-      entities,
-      seeds,
-      factories,
-      migrations,
-      cli,
-    } = buildDbConfigObject({
-      dbName: 'DB_TEST_NAME',
-      entities: ['ENTITY_TEST'],
-      sourceDir: 'TEST_SOURCE_DIR',
-      migrationsDir: 'TEST_MIGRATIONS_DIR',
-      connectionName: 'CONNECTION_TEST',
-    })();
+    const { name, database, entities, seeds, factories, migrations, cli } =
+      buildDbConfigObject({
+        dbName: 'DB_TEST_NAME',
+        entities: ['ENTITY_TEST'],
+        sourceDir: 'TEST_SOURCE_DIR',
+        migrationsDir: 'TEST_MIGRATIONS_DIR',
+        connectionName: 'CONNECTION_TEST',
+      })();
 
     expect(name).toBe(`CONNECTION_TEST${CONN_SUFFIX}`);
     expect(database).toBe('DB_TEST_NAME');
@@ -171,6 +177,7 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
 
   it('should set defaults when optional env vars are missing', () => {
     env.build({
+      NODE_ENV: 'production',
       MYSQL_HOST: 'HOST_TEST',
       MYSQL_ROOT_PASSWORD: 'ROOT_PWD_TEST',
     });

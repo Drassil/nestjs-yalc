@@ -10,6 +10,7 @@ import {
 import { FilterScalar } from './filter.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { ClassType } from '@nestjs-yalc/types';
+import { RowDefaultValues } from './ag-grid.enum';
 
 export interface IAgQueryParams<T = any> {
   [index: string]: any; // dynamic parameters
@@ -32,8 +33,8 @@ export function agQueryParamsFactory(
 
   @ArgsType()
   class AgQueryParams implements IAgQueryParams {
-    startRow?: number;
-    endRow?: number;
+    startRow: number = defaultValues?.startRow ?? RowDefaultValues.START_ROW;
+    endRow: number = defaultValues?.endRow ?? RowDefaultValues.END_ROW;
     @Field(returnValue(SortType), {
       nullable: true,
       defaultValue: defaultValues?.sorting,

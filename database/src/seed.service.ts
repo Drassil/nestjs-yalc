@@ -31,6 +31,12 @@ export class SeedService {
     name: string,
     reseed: boolean,
   ) {
+    const dbConf = this.configService.get<IDbConfType>(
+      getConfNameByConnection(connection.name),
+    );
+
+    if (!dbConf?.seeds || dbConf?.seeds.length === 0) return;
+
     this.loggerService.debug?.(`Seeding: ${name}`);
 
     const option: ConfigureOption = {
@@ -59,11 +65,7 @@ export class SeedService {
 
     this.setConnection(connection);
 
-    const dbConf = this.configService.get<IDbConfType>(
-      getConfNameByConnection(connection.name),
-    );
-
-    const seeders = dbConf?.seeds ?? [];
+    const seeders = dbConf?.seeds;
     for (const seeder of seeders) {
       const label = `${seeder.name} execution time:`;
       // eslint-disable-next-line no-console

@@ -4,7 +4,7 @@ import { LoggerAbstractService } from './logger-abstract.service';
 
 class DummyLogger extends LoggerAbstractService {
   constructor(logLevels) {
-    super(logLevels, createMock<LoggerService>());
+    super('test', logLevels, createMock<LoggerService>());
   }
 }
 

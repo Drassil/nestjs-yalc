@@ -1,17 +1,23 @@
 import { ObjectValueNode, StringValueNode } from 'graphql';
-import { FilterType, GeneralFilters } from '../ag-grid.enum';
-import { FilterInput } from '../ag-grid.interface';
+import { FilterType, GeneralFilters, Operators } from '../ag-grid.enum';
+import { FilterInput, IMultiColumnJoinOptions } from '../ag-grid.interface';
 import { FilterScalar } from '../filter.scalar';
+import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
 
 const createdFilterScalar = new FilterScalar();
 const fixedString =
   '{"ID":{"filterType":"text","type":"contains","filter":"_"}}';
 const fixedObj: FilterInput = {
-  ID: {
-    filterType: FilterType.TEXT,
-    type: GeneralFilters.CONTAINS,
-    filter: '_',
-  },
+  expressions: [
+    {
+      [FilterType.TEXT]: {
+        type: GeneralFilters.CONTAINS,
+        filterType: FilterType.TEXT,
+        field: 'ID',
+        filter: '_',
+      },
+    },
+  ],
 };
 const objectValueNode: ObjectValueNode = {
   kind: 'ObjectValue',
@@ -21,14 +27,29 @@ const stringValueNode: StringValueNode = {
   kind: 'StringValue',
   value: '{"ID":{"filterType":"text","type":"contains","filter":"_"}}',
 };
+
+const fixedMultiColumnObject: IMultiColumnJoinOptions = {
+  multiColumnJoinOperator: Operators.AND,
+  ['fixedKey']: fixedSimpleTextFilter,
+  multiColumnJoinOptions: {
+    multiColumnJoinOperator: Operators.OR,
+    ['fixedKey']: fixedSimpleTextFilter,
+  },
+};
 describe('Filter scalar', () => {
   it('Check parsevalue functionality', async () => {
     const testData = createdFilterScalar.parseValue(fixedString);
-    expect(testData).toEqual(fixedObj);
+    expect(testData).toStrictEqual(fixedObj);
+    expect(createdFilterScalar.resultMemoizeInverse.has(testData)).toBeTruthy();
   });
   it('Check serialize functionality', async () => {
-    const testData = createdFilterScalar.serialize(fixedObj);
+    const filter = createdFilterScalar.parseValue(fixedString);
+
+    let testData = createdFilterScalar.serialize(filter);
     expect(testData).toEqual(fixedString);
+
+    testData = createdFilterScalar.serialize(fixedString);
+    expect(fixedString).toEqual(fixedString);
   });
   it('Check parseLiteral functionality', async () => {
     const testData = createdFilterScalar.parseLiteral(stringValueNode);
@@ -38,5 +59,13 @@ describe('Filter scalar', () => {
     expect(() =>
       createdFilterScalar.parseLiteral(objectValueNode),
     ).toThrowError();
+  });
+
+  it('test it test it', () => {
+    const testData = createdFilterScalar.parseValue(
+      JSON.stringify(fixedMultiColumnObject),
+    );
+    expect(testData.expressions).toBeDefined();
+    expect(testData.childExpressions).toBeDefined();
   });
 });

@@ -24,6 +24,7 @@ import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
 import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from './ag-grid.helpers';
+import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
 
 /**
  *
@@ -231,7 +232,11 @@ export class GenericService<Entity> {
       .insert(newEntity)
       .catch(validateSupportedError(CreateEntityError));
 
-    return this.getEntityOrFail(identifiers[0]);
+    return this.repository.getOneAgGrid(
+      identifiers[0],
+      true,
+      ReplicationMode.MASTER,
+    );
   }
 
   /**
@@ -252,7 +257,7 @@ export class GenericService<Entity> {
       .update(conditions, input)
       .catch(validateSupportedError(UpdateEntityError));
 
-    return this.getEntityOrFail(input);
+    return this.repository.getOneAgGrid(input, true, ReplicationMode.MASTER);
   }
 
   /**

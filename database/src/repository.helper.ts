@@ -16,11 +16,10 @@ export class RepositoryHelper {
     connection: Connection,
     entity: Entity,
   ) {
-    const entityRepositoryMetadataArgs = getMetadataArgsStorage().entityRepositories.find(
-      function (repository) {
+    const entityRepositoryMetadataArgs =
+      getMetadataArgsStorage().entityRepositories.find(function (repository) {
         return repository.target === entity.constructor;
-      },
-    );
+      });
 
     if (!entityRepositoryMetadataArgs)
       throw new CustomRepositoryNotFoundError(entity);
@@ -28,10 +27,8 @@ export class RepositoryHelper {
     const entityMetadata = entityRepositoryMetadataArgs.entity
       ? connection.getMetadata(entityRepositoryMetadataArgs.entity)
       : undefined;
-    const entityRepositoryInstance = new (entityRepositoryMetadataArgs.target as any)(
-      this,
-      entityMetadata,
-    );
+    const entityRepositoryInstance =
+      new (entityRepositoryMetadataArgs.target as any)(this, entityMetadata);
 
     // NOTE: dynamic access to protected properties. We need this to prevent unwanted properties in those classes to be exposed,
     // however we need these properties for internal work of the class

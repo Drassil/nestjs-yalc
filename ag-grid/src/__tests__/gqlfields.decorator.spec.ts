@@ -9,48 +9,65 @@ import {
   mockedExecutionContext,
   mockedNestGraphql,
 } from '@nestjs-yalc/jest/common-mocks.helper';
+import { GraphQLResolveInfo } from 'graphql';
 
-const infoObj = {
+const infoObj: GraphQLResolveInfo = {
   fieldNodes: [
     {
       selectionSet: {
         selections: [
           {
+            kind: 'Field',
             name: {
+              kind: 'Name',
               value: 'first',
             },
           },
           {
+            kind: 'Field',
             name: {
+              kind: 'Name',
               value: 'second',
             },
           },
           {
             name: {
               value: 'nodes',
+              kind: 'Name',
             },
+            kind: 'Field',
             selectionSet: {
+              kind: 'SelectionSet',
               selections: [
                 {
                   name: {
                     value: 'sub',
+                    kind: 'Name',
                   },
+                  kind: 'Field',
                 },
                 {
                   name: {
                     value: 'subToChange',
+                    kind: 'Name',
                   },
+                  kind: 'Field',
                 },
                 {
                   name: {
                     value: 'node',
+                    kind: 'Name',
                   },
+                  kind: 'Field',
                   selectionSet: {
+                    kind: 'SelectionSet',
                     selections: [
                       {
                         name: {
                           value: 'sub2',
+                          kind: 'Name',
                         },
+                        kind: 'Field',
                       },
                     ],
                   },
@@ -61,13 +78,18 @@ const infoObj = {
           {
             name: {
               value: 'node',
+              kind: 'Name',
             },
+            kind: 'Field',
             selectionSet: {
+              kind: 'SelectionSet',
               selections: [
                 {
                   name: {
                     value: 'sub',
+                    kind: 'Name',
                   },
+                  kind: 'Field',
                 },
               ],
             },
@@ -78,7 +100,7 @@ const infoObj = {
   ],
 };
 
-const edgesObj = {
+const edgesObj: GraphQLResolveInfo = {
   fieldNodes: [
     {
       selectionSet: {
@@ -86,19 +108,23 @@ const edgesObj = {
           {
             name: {
               value: 'edges',
+              kind: 'Name',
             },
             selectionSet: {
               selections: [
                 {
                   name: {
                     value: 'node',
+                    kind: 'Name',
                   },
                   selectionSet: {
                     selections: [
                       {
                         name: {
                           value: 'fieldAlias',
+                          kind: 'Name',
                         },
+                        kind: 'Field',
                       },
                     ],
                   },
@@ -114,7 +140,8 @@ const edgesObj = {
 
 describe('Graphql decorator test', () => {
   it('Check GqlInfoGenerator', async () => {
-    const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
+    const mockCreate = (mockedNestGraphql.GqlExecutionContext.create =
+      jest.fn());
     const mockGetInfo = mockCreate.mockImplementation(() => ({
       getInfo: jest.fn().mockReturnValue(infoObj),
     }));
@@ -129,7 +156,7 @@ describe('Graphql decorator test', () => {
     const arr: IFieldMapper = {
       ['first']: { dst: 'specified', isRequired: true },
     };
-    const GqlFieldsMapperTest = $.GqlFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest).toEqual([
       'specified',
@@ -143,7 +170,7 @@ describe('Graphql decorator test', () => {
     const arr: IFieldMapper = {
       ['toAdd']: { dst: 'specified', isRequired: true },
     };
-    const GqlFieldsMapperTest = $.GqlFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest).toEqual([
       'first',
@@ -172,7 +199,7 @@ describe('Graphql decorator test', () => {
 
   it('Check with nested', async () => {
     const arr: IFieldMapper = { ['first']: { dst: 'specified' } };
-    const GqlFieldsMapperTest = $.GqlFieldsMapper(arr, edgesObj);
+    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, edgesObj);
 
     expect(GqlFieldsMapperTest).toEqual([]);
   });

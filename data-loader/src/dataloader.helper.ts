@@ -23,7 +23,7 @@ export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
  * Only used internally to add extra data to the Dataloader result
  */
 class _DataLoaderWithCount<
-  Entity extends Record<string, any>
+  Entity extends Record<string, any>,
 > extends _DataLoader<string, Entity[], string> {
   private count: number;
 
@@ -213,13 +213,13 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    withCount: boolean,
-  ): Promise<FindAndCountResult<Entity>>;
+    withCount: false,
+  ): Promise<Entity[]>;
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    withCount?: false,
-  ): Promise<Entity[]>;
+    withCount?: true,
+  ): Promise<FindAndCountResult<Entity>>;
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
@@ -239,11 +239,11 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   }
 }
 
-export const getFn = <Entity>(service: GenericService<Entity>) => async (
-  findManyOptions: AgGridFindManyOptions,
-) => {
-  return service.getEntityListAgGrid(findManyOptions, true);
-};
+export const getFn =
+  <Entity>(service: GenericService<Entity>) =>
+  async (findManyOptions: AgGridFindManyOptions) => {
+    return service.getEntityListAgGrid(findManyOptions, true);
+  };
 
 export function DataLoaderFactory<Entity>(
   defaultSearchKey: keyof Entity,

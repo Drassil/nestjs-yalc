@@ -44,16 +44,20 @@ export function buildDbConfigObject({
   const dbConfObj: IDbConfObject = () => {
     const noSelDb = envIsTrue(process.env.TYPEORM_NO_SEL_DB || 'false');
 
+    const isDev = process.env.NODE_ENV !== 'production';
+
     return {
       ..._getDefaultDbConnectionConfig(dbName),
       name: connName,
       database: noSelDb ? undefined : dbName,
       entities: noSelDb ? undefined : entities,
       seeds,
-      factories: sourceDir ? [`${sourceDir}/**/*.factory.{ts,js}`] : undefined,
-      migrations: migrationsDir ? [`${migrationsDir}/**/*.{ts,js}`] : undefined,
+      factories:
+        sourceDir && isDev ? [`${sourceDir}/**/*.factory.{ts,js}`] : undefined,
+      migrations:
+        migrationsDir && isDev ? [`${migrationsDir}/**/*.{ts,js}`] : undefined,
       cli: {
-        migrationsDir: migrationsDir,
+        migrationsDir: isDev ? migrationsDir : undefined,
       },
     };
   };
@@ -143,10 +147,8 @@ function _makeReplicatedDbConfigParams(
   totalReplicaNodes: number,
   dbName?: string,
 ): MysqlReplicationConnectionCredentialsOptions {
-  const replicas: MysqlConnectionCredentialsOptions[] = _getSingleDbConfigParams(
-    totalReplicaNodes,
-    dbName,
-  );
+  const replicas: MysqlConnectionCredentialsOptions[] =
+    _getSingleDbConfigParams(totalReplicaNodes, dbName);
 
   return {
     replication: {

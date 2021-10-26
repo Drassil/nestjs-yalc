@@ -1,10 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import {
-  Args,
-  ArgsOptions,
-  GqlExecutionContext,
-  ReturnTypeFuncValue,
-} from '@nestjs/graphql';
+import { Args, GqlExecutionContext } from '@nestjs/graphql';
 import {
   Not,
   Equal,
@@ -30,6 +25,7 @@ import {
   SortDirection,
   Operators,
   ExtraArgsStrategy,
+  RowDefaultValues,
 } from './ag-grid.enum';
 import {
   AgGridFindManyOptions,
@@ -38,11 +34,10 @@ import {
   FilterModel,
   ICombinedWhereModel,
   ICombinedSimpleModel,
-  IMultiColumnJoinOptions,
   ISimpleFilterModel,
-  ITextFilterModel,
-  INumberFilterModel,
   ISetFilterModel,
+  IAgGridArgsOptions,
+  IAgGridArgsSingleOptions,
 } from './ag-grid.interface';
 import {
   findOperatorTypes,
@@ -70,151 +65,19 @@ import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
 import { agJoinArgFactory } from './ag-grid.input';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { GraphQLResolveInfo } from 'graphql';
-import {
-  FilterOption,
-  FilterOptionType,
-  IFieldAndFilterMapper,
-} from './object.decorator';
-import { ClassType } from '@nestjs-yalc/types';
+import { FilterOption, FilterOptionType } from './object.decorator';
 import {
   ArgumentsError,
   MissingArgumentsError,
 } from '@nestjs-yalc/ag-grid/missing-arguments.error';
-
-export function isFilterInputStrict(
-  currentFilter:
-    | FilterInput
-    | FilterModel
-    | ICombinedSimpleModel
-    | Operators
-    | IMultiColumnJoinOptions,
-): currentFilter is FilterModel | ICombinedSimpleModel {
-  return !isMulticolumnJoinOptions(currentFilter) && !isOperator(currentFilter);
-}
-
-export function isFilterModel(
-  filter:
-    | FilterModel
-    | ICombinedSimpleModel
-    | IMultiColumnJoinOptions
-    | Operators
-    | undefined,
-): filter is FilterModel {
-  const casted = filter as FilterModel;
-  return (
-    isSetFilterModel(casted) ||
-    (casted?.type !== undefined && casted.filterType !== undefined)
-  );
-}
-
-export function isTextFilterModel(
-  filter: FilterModel | ICombinedSimpleModel,
-): filter is ITextFilterModel | ICombinedSimpleModel {
-  if (!filter) return false;
-
-  if (isCombinedFilterModel(filter)) {
-    return (
-      isTextFilterModel(filter.condition1) &&
-      isTextFilterModel(filter.condition2)
-    );
-  } else {
-    return filter.filterType === FilterType.TEXT;
-  }
-}
-
-export function isNumberFilterModel(
-  filter: FilterModel | ICombinedSimpleModel,
-): filter is INumberFilterModel | ICombinedSimpleModel {
-  if (!filter) return false;
-
-  if (isCombinedFilterModel(filter)) {
-    return (
-      isNumberFilterModel(filter.condition1) &&
-      isNumberFilterModel(filter.condition2)
-    );
-  } else {
-    return filter.filterType === FilterType.NUMBER;
-  }
-}
-
-export function isSetFilterModel(
-  filter: FilterModel,
-): filter is ISetFilterModel {
-  if (!filter) return false;
-
-  return filter.filterType === FilterType.SET;
-}
-
-export function isDateFilterModel(
-  filter: FilterModel | ICombinedSimpleModel,
-): filter is DateFilterModel | ICombinedSimpleModel {
-  if (!filter) return false;
-
-  if (isCombinedFilterModel(filter)) {
-    return (
-      isDateFilterModel(filter.condition1) &&
-      isDateFilterModel(filter.condition2)
-    );
-  } else {
-    return filter.filterType === FilterType.DATE;
-  }
-}
-
-export function isCombinedFilterModel(
-  filter:
-    | FilterModel
-    | ICombinedSimpleModel
-    | IMultiColumnJoinOptions
-    | Operators
-    | undefined,
-): filter is ICombinedSimpleModel {
-  const casted = filter as any;
-  return (
-    casted &&
-    casted.operator !== undefined &&
-    casted.condition1 !== undefined &&
-    casted.condition2 !== undefined
-  );
-}
-
-export function isCombinedWhereModel(
-  filter: IWhereConditionType,
-): filter is ICombinedWhereModel {
-  const casted = filter as ICombinedWhereModel;
-  return (
-    casted &&
-    casted.operator !== undefined &&
-    casted.filter_1 !== undefined &&
-    casted.filter_2 !== undefined
-  );
-}
-
-export function isMulticolumnJoinOptions(
-  filter: any,
-): filter is IMultiColumnJoinOptions {
-  return (
-    filter &&
-    (<IMultiColumnJoinOptions>filter).multiColumnJoinOperator !== undefined
-  );
-}
-
-export function isFindOperator<T = findOperatorTypes>(
-  filter: any,
-): filter is FindOperator<T> {
-  const casted = filter as FindOperator<T>;
-
-  return (
-    casted &&
-    casted.type !== undefined &&
-    (casted.value !== undefined || casted.child !== undefined)
-  );
-}
-
-export function isOperator(val: any): val is Operators {
-  return Object.values(Operators).includes(
-    typeof val === 'string' ? val.toLowerCase() : val,
-  );
-}
+import {
+  isCombinedFilterModel,
+  isDateFilterModel,
+  isFilterModel,
+  isNumberFilterModel,
+  isSetFilterModel,
+  isTextFilterModel,
+} from './ag-grid-type-checker.utils';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {
@@ -351,8 +214,8 @@ export function convertFilter(
 ): FindOperator<string | number | Date> | ICombinedWhereModel {
   if (isCombinedFilterModel(filter)) {
     if (
-      filter.operator.toLowerCase() !== Operators.OR &&
-      filter.operator.toLowerCase() !== Operators.AND
+      filter.operator.toUpperCase() !== Operators.OR &&
+      filter.operator.toUpperCase() !== Operators.AND
     ) {
       throw new AgGridInvalidOperatorError();
     }
@@ -564,8 +427,21 @@ export function mapAgGridParams(
   }
 
   // MAP startRow/endRow -> take/skip
-  const skip = args.startRow ?? 0;
-  const take = args.endRow ? args.endRow - skip : undefined;
+  const maxRow = params?.options?.maxRow ?? RowDefaultValues.MAX_ROW;
+  const skip = args.startRow ?? RowDefaultValues.START_ROW;
+
+  const checkMaxRow = (requestRow: number) => {
+    if (maxRow === 0 || requestRow < maxRow) {
+      return requestRow;
+    } else {
+      throw new AgGridError(
+        `Invalid max number of row selected: cannot exeed max ${maxRow}`,
+      );
+    }
+  };
+
+  // args.endRow is always defined due to the default value in agQueryParamsFactory!
+  const take = args.endRow && checkMaxRow(args.endRow - skip);
 
   const skipCount = !isAskingForCount(ctx.getInfo());
 
@@ -626,43 +502,6 @@ export function mapAgGridParams(
   }
 
   return findManyOptions;
-}
-
-export interface IExtraArg {
-  options?: ArgsOptions;
-  filterType: FilterType;
-  filterCondition: GeneralFilters;
-}
-
-export interface IAgGridArgsSingleOptions {
-  /**
-   * @property Options for the nestjs Args decorator
-   */
-  gql?: ArgsOptions;
-  /**
-   * @deprecated use fieldType instead
-   * @property fieldMap is used internally to convert names of exposed fields to database fields
-   */
-  fieldMap?: IFieldMapper | IFieldAndFilterMapper;
-  /**
-   * @property fieldType is used internally to retrieve information about the returned type
-   */
-  fieldType?: ClassType | ReturnTypeFuncValue;
-  /**
-   * @property entityType is used internally to generate graphql types for the inputs
-   */
-  entityType?: ClassType;
-}
-
-export interface IAgGridArgsOptions extends IAgGridArgsSingleOptions {
-  defaultValue?: IAgQueryParams;
-  /**
-   * Filters with direct arguments
-   */
-  extraArgsStrategy?: ExtraArgsStrategy;
-  extraArgs?: {
-    [index: string]: IExtraArg;
-  };
 }
 
 export const AgGridArgsFactory = <T>(

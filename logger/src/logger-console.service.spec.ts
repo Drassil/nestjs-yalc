@@ -5,12 +5,12 @@ describe('Console logger service test', () => {
   let logger: ConsoleLogger;
 
   beforeEach(async () => {
-    logger = new ConsoleLogger(LOG_LEVEL_ALL);
+    logger = new ConsoleLogger('test', LOG_LEVEL_ALL);
   });
 
   it('Test undefined levels', async () => {
     const method = jest.spyOn(console, 'log');
-    logger = new ConsoleLogger(undefined);
+    logger = new ConsoleLogger('test', undefined);
     logger.log?.('test');
 
     expect(method).not.toHaveBeenCalled();
@@ -28,7 +28,7 @@ describe('Console logger service test', () => {
     logger.error?.('error', 'trace');
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith('error', 'trace');
+    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace');
   });
 
   it('Test warn', async () => {

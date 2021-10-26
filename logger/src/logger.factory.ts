@@ -4,21 +4,22 @@ import { Logger as NestLogger, LoggerService, LogLevel } from '@nestjs/common';
 import { LoggerTypeEnum } from './logger.enum';
 
 export const AppLoggerFactory = (
+  context: string,
   loggerLevels: LogLevel[],
   loggerType?: string,
-) => {
+): LoggerService => {
   let logger: LoggerService;
   switch (loggerType) {
     case LoggerTypeEnum.CONSOLE:
-      logger = new ConsoleLogger(loggerLevels);
+      logger = new ConsoleLogger(context, loggerLevels);
       break;
     case LoggerTypeEnum.PINO:
-      logger = new PinoLogger(loggerLevels);
+      logger = new PinoLogger(context, loggerLevels);
       break;
     case LoggerTypeEnum.NEST:
     default:
-      NestLogger.overrideLogger(loggerLevels);
-      logger = new NestLogger();
+      logger = new NestLogger(context);
+      logger.setLogLevels?.(loggerLevels);
       break;
   }
 

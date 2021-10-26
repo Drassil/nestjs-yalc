@@ -114,20 +114,17 @@ export const hasAgGridFieldMetadata = (
   target: Record<string, unknown> | ClassType,
   propertyName: string,
 ): boolean => {
-  const metadata = Reflect.getMetadata(
-    AGGRID_FIELD_METADATA_KEY,
-    target.constructor,
-  );
+  const metadata = Reflect.getMetadata(AGGRID_FIELD_METADATA_KEY, target);
 
-  return metadata && !metadata[propertyName];
+  return metadata && !!metadata[propertyName];
 };
 
 export const AgGridObject = (options?: AgGridObjectOptions): ClassDecorator => {
   return (target) => {
-    const copyFrom = options?.copyFrom;
     let metadata = options ?? {};
 
-    if (copyFrom) {
+    if (metadata.copyFrom) {
+      const copyFrom = metadata.copyFrom;
       metadata = { ...metadata, ...getAgGridObjectMetadata(copyFrom) };
 
       const fieldMetadata = getAgGridFieldMetadataList(copyFrom);

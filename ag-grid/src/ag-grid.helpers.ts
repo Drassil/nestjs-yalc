@@ -11,13 +11,11 @@ import { GraphQLResolveInfo } from 'graphql';
 import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs';
+import { createWhere, getFindOperator } from './ag-grid-args.decorator';
 import {
-  createWhere,
-  getFindOperator,
-  IExtraArg,
   isCombinedWhereModel,
   isFindOperator,
-} from './ag-grid-args.decorator';
+} from './ag-grid-type-checker.utils';
 import { FilterType, Operators } from './ag-grid.enum';
 import {
   AgGridConditionNotSupportedError,
@@ -25,7 +23,11 @@ import {
   AgGridStringWhereError,
 } from './ag-grid.error';
 import { JoinArgOptions, JoinTypes } from './ag-grid.input';
-import { AgGridFindManyOptions, FilterInput } from './ag-grid.interface';
+import {
+  IExtraArg,
+  AgGridFindManyOptions,
+  FilterInput,
+} from './ag-grid.interface';
 import {
   AgGridRepository,
   AgGridRepositoryFactory,
@@ -264,7 +266,7 @@ export const objectToFieldMapper = (
     const fieldMetadataList = getAgGridFieldMetadataList(object as any);
 
     if (fieldMetadataList) {
-      for (const propertyName of Object.keys(fieldMetadataList ?? [])) {
+      for (const propertyName of Object.keys(fieldMetadataList)) {
         const fieldMetadata = fieldMetadataList[propertyName];
         const { src, dst, ...fieldMapperProperties } = fieldMetadata;
         if (src) {
@@ -362,7 +364,7 @@ export function AgGridDependencyFactory<Entity>({
     } else {
       providers.push(
         GenericServiceFactory<Entity>(
-          service?.entityModel ?? entityModel,
+          service.entityModel ?? entityModel,
           service.dbConnection,
         ),
       );
@@ -380,7 +382,7 @@ export function AgGridDependencyFactory<Entity>({
       providers.push(
         DataLoaderFactory<Entity>(
           dataloader.databaseKey,
-          dataloader?.entityModel ?? entityModel,
+          dataloader.entityModel ?? entityModel,
           serviceToken,
         ),
       );
@@ -435,7 +437,7 @@ export function filterTypeToNativeType(type: FilterType) {
   }
 
   throw new TypeError(
-    `Filter type not supported for native conversion: ${FilterType.SET}`,
+    `Filter type not supported for native conversion: ${type}`,
   );
 }
 

@@ -4,7 +4,7 @@ import {
   isCombinedFilterModel,
   isFilterModel,
   isMulticolumnJoinOptions,
-} from './ag-grid-args.decorator';
+} from './ag-grid-type-checker.utils';
 import { CustomWhereKeys } from './ag-grid.enum';
 import { AgGridBadFilterTypeError } from './ag-grid.error';
 import {

@@ -3,13 +3,13 @@ import { LogLevel } from '@nestjs/common';
 import { LoggerAbstractService } from './logger-abstract.service';
 
 export class ConsoleLogger extends LoggerAbstractService {
-  constructor(logLevels: LogLevel[] | undefined) {
-    super(logLevels, {
-      log: (message) => console.log(message),
-      error: (message, trace) => console.error(message, trace),
-      debug: (message) => console.debug(message),
-      warn: (message) => console.warn(message),
-      verbose: (message) => console.info(message),
+  constructor(context: string, logLevels: LogLevel[] | undefined) {
+    super(context, logLevels, {
+      log: (message) => console.log(`[${context}]`, message),
+      error: (message, trace) => console.error(`[${context}]`, message, trace),
+      debug: (message) => console.debug(`[${context}]`, message),
+      warn: (message) => console.warn(`[${context}]`, message),
+      verbose: (message) => console.info(`[${context}]`, message),
     });
   }
 }
