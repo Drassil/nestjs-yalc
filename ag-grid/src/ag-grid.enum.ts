@@ -91,7 +91,7 @@ export enum ExtraArgsStrategy {
 export enum RowDefaultValues {
   END_ROW = 100,
   START_ROW = 0,
-  MAX_ROW = 0,
+  MAX_ROW = 200,
 }
 
 const fieldsEnumCache = new WeakMap();
