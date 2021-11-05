@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import * as path from 'path';
 
 export function getTestFilenameWithoutExtension(

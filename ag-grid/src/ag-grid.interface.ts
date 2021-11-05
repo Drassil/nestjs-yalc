@@ -161,8 +161,8 @@ export type IMultiColumnJoinOptions = {
 export interface ICombinedWhereModel {
   operator: Operators;
   // two instances of the filter model
-  filter_1: FindOperator<string | number | Date> | ICombinedWhereModel;
-  filter_2: FindOperator<string | number | Date> | ICombinedWhereModel;
+  filter_1: FindOperator<string | number | Date | null> | ICombinedWhereModel;
+  filter_2: FindOperator<string | number | Date | null> | ICombinedWhereModel;
 }
 
 export interface IExtraArg {

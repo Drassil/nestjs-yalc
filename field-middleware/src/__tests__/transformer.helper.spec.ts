@@ -1,4 +1,4 @@
-import { enumTransformer } from './transformer.helper';
+import { enumTransformer } from '../transformer.helper';
 
 enum TestEnum {
   TEST = 'test',

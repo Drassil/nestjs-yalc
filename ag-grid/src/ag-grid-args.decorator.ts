@@ -11,6 +11,7 @@ import {
   Like,
   Between,
   In,
+  IsNull,
 } from 'typeorm';
 import { GqlAgGridFieldsMapper } from '@nestjs-yalc/ag-grid/gqlfields.decorator';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
@@ -159,7 +160,7 @@ export function getDateFilter(
 export function filterSwitch(
   filter: FilterModel,
   filterName?: string,
-): FindOperator<number | string | Date> {
+): FindOperator<number | string | Date | null> {
   let arg1: findOperatorTypes = undefined;
   let arg2: findOperatorTypes = undefined;
 
@@ -192,7 +193,10 @@ export function getFindOperator(
   filterName: string,
   arg1: any,
   arg2?: any,
-): FindOperator<number | string | Date> {
+): FindOperator<number | string | Date | null> {
+  if (filterName.toLowerCase() === GeneralFilters.IS_NULL.toLowerCase()) {
+    return IsNull();
+  }
   switch (filterType) {
     case FilterType.TEXT:
       return getTextFilter(filterName, <string>arg1);
@@ -211,7 +215,7 @@ export function getFindOperator(
 
 export function convertFilter(
   filter: FilterModel | ICombinedSimpleModel,
-): FindOperator<string | number | Date> | ICombinedWhereModel {
+): FindOperator<string | number | Date | null> | ICombinedWhereModel {
   if (isCombinedFilterModel(filter)) {
     if (
       filter.operator.toUpperCase() !== Operators.OR &&

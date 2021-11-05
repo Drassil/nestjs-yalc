@@ -861,6 +861,12 @@ describe('Ag-grid args decorator', () => {
         arg1: '',
         arg2: undefined,
       },
+      {
+        type: fixedSetFilter.filterType,
+        name: GeneralFilters.IS_NULL,
+        arg1: undefined,
+        arg2: undefined,
+      },
     ];
 
     it('Should work properly', () => {

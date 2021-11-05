@@ -1,5 +1,10 @@
 import { FieldErrorsEnum } from './fields-error.enum';
 
+export function errorTrhow(value: string | Date, message?: string) {
+  const err = message ? message : `${FieldErrorsEnum.INVALID_VALUE} ${value}`;
+  throw new Error(err);
+}
+
 export function convertIfStringToDate(date: Date | string): Date {
   if (typeof date === 'string') {
     date = new Date(date);
@@ -11,12 +16,11 @@ export function stringIsInEnumOrThrow<T>(
   toCheck: string,
   enumName: T,
   message?: string,
-): boolean {
+): true | void {
   if (stringIsInEnum(toCheck, enumName)) {
     return true;
   }
-  const err = message ? message : `${FieldErrorsEnum.INVALID_VALUE} ${toCheck}`;
-  throw new Error(err);
+  errorTrhow(toCheck, message);
 }
 
 export function stringIsInEnum<T>(toCheck: string, enumName: T): boolean {
@@ -41,12 +45,11 @@ export function validateDate(date: Date | string): boolean {
 export function validateDateOrThrow(
   date: Date | string,
   message?: string,
-): boolean {
+): true | void {
   if (validateDate(date)) {
     return true;
   }
-  const err = message ? message : `${FieldErrorsEnum.INVALID_VALUE} ${date}`;
-  throw new Error(err);
+  errorTrhow(date, message);
 }
 
 export function validateStringFormat(

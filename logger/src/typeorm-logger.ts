@@ -1,8 +1,13 @@
 import { LoggerService } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from 'typeorm';
+import { LoggerEvent } from './logger.event';
 
 export class TypeORMLogger implements Logger {
-  constructor(private logger: LoggerService) {}
+  constructor(
+    private logger: LoggerService,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   /**
    * Logs query and parameters used in it.
@@ -11,6 +16,7 @@ export class TypeORMLogger implements Logger {
     query: string,
     parameters?: any[] /*, queryRunner?: QueryRunner*/,
   ): any {
+    this.eventEmitter.emitAsync(LoggerEvent.QUERY_LOG, query);
     this.logger.debug?.(`query: ${query}, parameters: ${parameters}`);
   }
   /**

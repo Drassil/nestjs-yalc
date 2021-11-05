@@ -45,7 +45,7 @@ export default function AgGridGqlType<T>(type: Type<T>): any {
   return typeMap[`${name}`];
 }
 
-export type findOperatorTypes = string | number | Date | undefined;
+export type findOperatorTypes = string | number | Date | undefined | null;
 
 export interface IGqlSelectedFields<T> {
   fields: (keyof T)[];

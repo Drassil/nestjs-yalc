@@ -1,3 +1,3 @@
-export enum stringFormatEnum {
+export enum StringFormatEnum {
   ALL = '^[<>&\'"/]+$',
 }

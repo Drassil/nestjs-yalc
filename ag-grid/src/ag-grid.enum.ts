@@ -30,6 +30,8 @@ export enum GeneralFilters {
   // This is only used for dates
   IN_RANGE = 'inRange',
   IN_DATE = 'inDate',
+  IS_NULL = 'isNull',
+  NOT_IS_NULL = 'notIsNull',
 }
 
 registerEnumType(GeneralFilters, {

@@ -96,9 +96,11 @@ export class DbOpsService {
 
       const dbName = v.conn.driver.database;
 
-      this.loggerService.debug?.(`Executing migration for ${dbName}`);
-
       if (options && options.selMigrations) {
+        this.loggerService.debug?.(
+          `Executing selected migrations for ${dbName}`,
+        );
+
         const pendingMigrations =
           await migrationExecutor.getPendingMigrations();
 

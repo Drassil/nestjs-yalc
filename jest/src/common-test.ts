@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { ClassType, FactoryType } from '@nestjs-yalc/interfaces/common.type';
 import * as faker from 'faker';
 import { getTestFilenameWithoutExtension } from './helpers';

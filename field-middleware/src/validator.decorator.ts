@@ -1,5 +1,5 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { stringFormatEnum } from './string-format.enum';
+import { StringFormatEnum } from './string-format.enum';
 import { validateDate, validateStringFormat } from './validator.helper';
 import { IStringFormatMatchCheckOptions } from './validator.interface';
 
@@ -27,7 +27,7 @@ export function StringFormatMatchValidation(
   validationOptions?: ValidationOptions,
   stringMatchOptions: IStringFormatMatchCheckOptions = {
     toMatch: true,
-    pattern: stringFormatEnum.ALL,
+    pattern: StringFormatEnum.ALL,
   },
 ) {
   return function (object: any, propertyName: string) {

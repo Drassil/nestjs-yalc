@@ -2,8 +2,8 @@ import {
   PinoLogger,
   logger as pino,
   FLUSH_INTERVAL,
-} from './logger-pino.service';
-import { LOG_LEVEL_ALL } from './logger.enum';
+} from '../logger-pino.service';
+import { LOG_LEVEL_ALL } from '../logger.enum';
 
 describe('Pino logger service test', () => {
   let logger: PinoLogger;

@@ -1,5 +1,5 @@
 import { FindOperator } from 'typeorm';
-import { FilterType, Operators } from './ag-grid.enum';
+import { FilterType, GeneralFilters, Operators } from './ag-grid.enum';
 import {
   DateFilterModel,
   FilterInput,
@@ -134,11 +134,12 @@ export function isFindOperator<T = findOperatorTypes>(
   filter: any,
 ): filter is FindOperator<T> {
   const casted = filter as FindOperator<T>;
-
   return (
     casted &&
     casted.type !== undefined &&
-    (casted.value !== undefined || casted.child !== undefined)
+    (casted.value !== undefined ||
+      casted.child !== undefined ||
+      casted.type.toLowerCase() === GeneralFilters.IS_NULL.toLowerCase())
   );
 }
 
