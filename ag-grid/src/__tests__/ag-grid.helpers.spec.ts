@@ -1,5 +1,6 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
 import { FilterType, Operators } from '../ag-grid.enum';
 import {
@@ -22,10 +23,15 @@ import {
   traverseFiltersAndApplyFunction,
   isFilterExpressionInput,
   applyJoinArguments,
+  getFieldMapperSrcByDst,
+  getProviderToken,
+  getMappedTypeProperties,
 } from '../ag-grid.helpers';
 import { JoinArgOptions, JoinTypes } from '../ag-grid.input';
 import { IWhereCondition } from '../ag-grid.type';
 import * as ObjectDecorator from '../object.decorator';
+import * as AgGridHelpers from '../ag-grid.helpers';
+
 import {
   FilterOption,
   FilterOptionType,
@@ -70,6 +76,7 @@ const fixedWhereObj: IWhereCondition = {
         } as any,
       },
     },
+    {} as any,
   ],
   filters: {
     status: {
@@ -325,13 +332,13 @@ describe('Ag-grid helpers', () => {
   });
 
   it('should run isAskingForCount', async () => {
-    const info = {
+    const info: Partial<GraphQLResolveInfo> = {
       fieldNodes: [
         {
           selectionSet: {
             selections: [
               {
-                name: { value: 'pageData' },
+                name: { value: 'pageData', kind: 'Name' },
                 selectionSet: {
                   selections: [
                     {
@@ -348,10 +355,13 @@ describe('Ag-grid helpers', () => {
       ],
     };
 
-    let result = isAskingForCount(info);
+    let result = isAskingForCount(info as GraphQLResolveInfo);
     expect(result).toBeTruthy();
 
-    result = isAskingForCount({});
+    result = isAskingForCount({} as any);
+    expect(result).toBeFalsy();
+
+    result = isAskingForCount(undefined);
     expect(result).toBeFalsy();
   });
 
@@ -482,10 +492,8 @@ describe('Ag-grid helpers', () => {
     it('Should throw an error if service e dataloader are not defined when using custom ones', () => {
       let customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
         ...fixedAgGridDependencyFactoryOptions,
-        resolver: undefined,
         service: {
           providerClass: undefined,
-          entityModel: undefined,
         },
       };
 
@@ -497,7 +505,6 @@ describe('Ag-grid helpers', () => {
         ...fixedAgGridDependencyFactoryOptions,
         dataloader: {
           providerClass: undefined,
-          entityModel: undefined,
         },
       };
       dependecyObject = () =>
@@ -505,12 +512,30 @@ describe('Ag-grid helpers', () => {
       expect(dependecyObject).toThrowError();
     });
 
+    it('Should create a dependencyObject properly with no override', () => {
+      const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
+        ...fixedAgGridDependencyFactoryOptions,
+        service: {
+          entityModel: TestEntity,
+          providerClass: undefined,
+        },
+        dataloader: {
+          entityModel: TestEntity,
+          providerClass: undefined,
+        },
+      };
+      const dependecyObject =
+        AgGridDependencyFactory<TestEntity>(customOptions);
+
+      expect(dependecyObject).toBeDefined();
+    });
     it('Should create a dependecyObject with default values', () => {
       const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
         ...fixedAgGridDependencyFactoryOptions,
         resolver: undefined,
         service: undefined,
         dataloader: undefined,
+        repository: undefined,
       };
 
       const dependecyObject =
@@ -563,5 +588,42 @@ describe('Ag-grid helpers', () => {
     const findManyOptions = {};
     applyJoinArguments(findManyOptions as any, 'alias', joinOptions, {});
     expect(Object.getOwnPropertyNames(findManyOptions)).toContain('join');
+  });
+
+  it('Should get field mapper source from destination if src is equal to dst', () => {
+    const fieldMapper = {
+      src: {
+        dst: 'src',
+      },
+    };
+
+    expect(getFieldMapperSrcByDst(fieldMapper, 'src')).toEqual('src');
+  });
+
+  it('Should get provider token', () => {
+    const entityObj = {
+      provide: TestEntity,
+    };
+
+    expect(getProviderToken(entityObj as any)).toBe('TestEntity');
+
+    const entityObj2 = {
+      provide: 'TestEntity',
+    };
+    expect(getProviderToken(entityObj2 as any)).toBe('TestEntity');
+  });
+
+  it('Should get mapped type property with denyFilter false', () => {
+    jest.spyOn(AgGridHelpers, 'objectToFieldMapper').mockReturnValueOnce({
+      field: {
+        id: {
+          denyFilter: false,
+          dst: 'id',
+        },
+      },
+    });
+
+    const result = getMappedTypeProperties(TestEntity);
+    expect(result[0]).toBe('id');
   });
 });

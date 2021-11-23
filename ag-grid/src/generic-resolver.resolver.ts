@@ -157,7 +157,175 @@ export function generateDecorators(
     }),
   ];
 }
+export function defineFieldResolver<Entity extends Record<string, any> = any>(
+  resolverInfoList: IRelationInfo[],
+  resolver: ClassType<IGenericResolver>,
+) {
+  for (const resolverInfo of resolverInfoList) {
+    const relType =
+      resolverInfo.agField?.gqlType?.() ??
+      (typeof resolverInfo.relation.type === 'function'
+        ? resolverInfo.relation.type()
+        : resolverInfo.relation.type);
 
+    if (
+      resolverInfo.relation.relationType === 'one-to-many' ||
+      resolverInfo.relation.relationType === 'many-to-many'
+    ) {
+      Object.defineProperty(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+        {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: async function (
+            parent: Entity,
+            findOptions: AgGridFindManyOptions,
+          ): Promise<[Array<Entity | null>, number]> {
+            const parentRes = parent[resolverInfo.relation.propertyName];
+
+            if (parentRes) {
+              if (hasFilters(findOptions))
+                throw new AgGridError(
+                  'Cannot specify join arguments and resolver arguments at the same time',
+                );
+
+              return [parentRes, -1];
+            }
+
+            const dataLoader: GQLDataLoader<Entity> =
+              await this.moduleRef.resolve(
+                getDataloaderToken(relType),
+                this.contextId,
+              );
+
+            const joinCol =
+              resolverInfo.join?.referencedColumnName ??
+              dataLoader.getSearchKey();
+
+            return dataLoader.loadOneToMany(
+              [joinCol, parent[joinCol]],
+              findOptions,
+              true,
+            );
+          },
+        },
+      );
+
+      const descriptor = Object.getOwnPropertyDescriptor(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+      );
+
+      if (!descriptor)
+        throw new ReferenceError(
+          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
+        );
+
+      ResolveField(returnValue(AgGridGqlType<Entity>(relType)), {
+        nullable: resolverInfo.agField?.gqlOptions?.nullable,
+      })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
+      UseInterceptors(new AgGridInterceptor())(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+        descriptor,
+      );
+
+      Parent()(resolver.prototype, resolverInfo.relation.propertyName, 0);
+
+      AgGridArgs({
+        fieldType: relType,
+        entityType: relType,
+        defaultValue: resolverInfo.agField?.dataLoader?.defaultValue,
+      })(resolver.prototype, resolverInfo.relation.propertyName, 1);
+
+      // without the design:paramtypes metadata
+      // it won't work, the following instruction is transpiled and generated
+      // when the decorators are defined in their standard way.
+      Reflect.metadata('design:paramtypes', [Object, Object])(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+      );
+    } else {
+      /**
+       * ONE-TO-ONE Resolve Fields
+       */
+
+      Object.defineProperty(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+        {
+          configurable: true,
+          enumerable: true,
+          writable: true,
+          value: async function (
+            parent: Entity,
+            findOptions: AgGridFindManyOptions,
+          ): Promise<Entity | null> {
+            const parentRes = parent[resolverInfo.relation.propertyName];
+
+            if (parentRes) {
+              if (hasFilters(findOptions))
+                throw new AgGridError(
+                  'Cannot specify join arguments and resolver arguments at the same time',
+                );
+
+              return parentRes;
+            }
+
+            const dataLoader: GQLDataLoader<Entity> =
+              await this.moduleRef.resolve(
+                getDataloaderToken(relType),
+                this.contextId,
+              );
+
+            /* istanbul ignore next */
+            const joinCol =
+              resolverInfo.join?.referencedColumnName ??
+              dataLoader.getSearchKey();
+
+            return dataLoader.loadOne(
+              [joinCol, parent[joinCol]],
+              findOptions,
+              false,
+            );
+          },
+        },
+      );
+
+      const descriptor = Object.getOwnPropertyDescriptor(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+      );
+
+      if (!descriptor)
+        throw new ReferenceError(
+          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
+        );
+
+      ResolveField(returnValue(relType), {
+        nullable: resolverInfo.agField?.gqlOptions?.nullable,
+      })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
+
+      Parent()(resolver.prototype, resolverInfo.relation.propertyName, 0);
+
+      AgGridArgsSingle({ fieldType: relType, entityType: relType })(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+        1,
+      );
+
+      // without the design:paramtypes metadata
+      // it won't work, the following instruction is transpiled and generated
+      // when the decorators are defined in their standard way.
+      Reflect.metadata('design:paramtypes', [Object, Array])(
+        resolver.prototype,
+        resolverInfo.relation.propertyName,
+      );
+    }
+  }
+}
 export function defineGetSingleResource<Entity>(
   queryName: string,
   returnType: ClassType,
@@ -510,9 +678,13 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
       const field = fieldMetadataList[propertyName];
       if (!field.dataLoader) return;
 
-      const objIndex = resolverInfoList.findIndex(
-        (obj) => obj.join?.propertyName === propertyName,
-      );
+      const objIndex = resolverInfoList.findIndex((obj) => {
+        if (obj.join) {
+          return obj.join.propertyName === propertyName;
+        } else {
+          return;
+        }
+      });
 
       // if already exists override (dataloader options take priority)
       if (objIndex >= 0) {
@@ -628,186 +800,8 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
    * Generate Field Resolvers
    *
    */
-  for (const resolverInfo of resolverInfoList) {
-    const relType =
-      resolverInfo.agField?.gqlType?.() ??
-      (typeof resolverInfo.relation.type === 'function'
-        ? resolverInfo.relation.type()
-        : resolverInfo.relation.type);
 
-    if (
-      resolverInfo.relation.relationType === 'one-to-many' ||
-      resolverInfo.relation.relationType === 'many-to-many'
-    ) {
-      Object.defineProperty(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value: async function (
-            parent: Entity,
-            findOptions: AgGridFindManyOptions,
-          ): Promise<[Array<Entity | null>, number]> {
-            const parentRes = parent[resolverInfo.relation.propertyName];
-
-            if (parentRes) {
-              if (hasFilters(findOptions))
-                throw new AgGridError(
-                  'Cannot specify join arguments and resolver arguments at the same time',
-                );
-
-              return [parentRes, -1];
-            }
-
-            const dataLoader: GQLDataLoader<Entity> =
-              await this.moduleRef.resolve(
-                getDataloaderToken(relType),
-                this.contextId,
-              );
-
-            const joinCol =
-              resolverInfo?.join?.referencedColumnName ??
-              dataLoader.getSearchKey();
-
-            return dataLoader.loadOneToMany(
-              [joinCol, parent[joinCol]],
-              findOptions,
-              true,
-            );
-          },
-        },
-      );
-
-      const descriptor = Object.getOwnPropertyDescriptor(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-      );
-
-      if (!descriptor)
-        throw new ReferenceError(
-          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
-        );
-
-      ResolveField(returnValue(AgGridGqlType<Entity>(relType)), {
-        nullable: resolverInfo.agField?.gqlOptions?.nullable,
-      })(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        descriptor,
-      );
-      UseInterceptors(new AgGridInterceptor())(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        descriptor,
-      );
-
-      Parent()(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        0,
-      );
-
-      AgGridArgs({
-        fieldType: relType,
-        entityType: relType,
-        defaultValue: resolverInfo.agField?.dataLoader?.defaultValue,
-      })(GenericResolver.prototype, resolverInfo.relation.propertyName, 1);
-
-      // without the design:paramtypes metadata
-      // it won't work, the following instruction is transpiled and generated
-      // when the decorators are defined in their standard way.
-      Reflect.metadata('design:paramtypes', [Object, Object])(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-      );
-    } else {
-      /**
-       * ONE-TO-ONE Resolve Fields
-       */
-
-      Object.defineProperty(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        {
-          configurable: true,
-          enumerable: true,
-          writable: true,
-          value: async function (
-            parent: Entity,
-            findOptions: AgGridFindManyOptions,
-          ): Promise<Entity | null> {
-            const parentRes = parent[resolverInfo.relation.propertyName];
-
-            if (parentRes) {
-              if (hasFilters(findOptions))
-                throw new AgGridError(
-                  'Cannot specify join arguments and resolver arguments at the same time',
-                );
-
-              return parentRes;
-            }
-
-            const dataLoader: GQLDataLoader<Entity> =
-              await this.moduleRef.resolve(
-                getDataloaderToken(relType),
-                this.contextId,
-              );
-
-            const joinCol =
-              resolverInfo?.join?.referencedColumnName ??
-              dataLoader.getSearchKey();
-
-            return dataLoader.loadOne(
-              [joinCol, parent[joinCol]],
-              findOptions,
-              false,
-            );
-          },
-        },
-      );
-
-      const descriptor = Object.getOwnPropertyDescriptor(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-      );
-
-      if (!descriptor)
-        throw new ReferenceError(
-          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
-        );
-
-      ResolveField(returnValue(relType), {
-        nullable: resolverInfo.agField?.gqlOptions?.nullable,
-      })(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        descriptor,
-      );
-
-      Parent()(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        0,
-      );
-
-      AgGridArgsSingle({ fieldType: relType, entityType: relType })(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-        1,
-      );
-
-      // without the design:paramtypes metadata
-      // it won't work, the following instruction is transpiled and generated
-      // when the decorators are defined in their standard way.
-      Reflect.metadata('design:paramtypes', [Object, Array])(
-        GenericResolver.prototype,
-        resolverInfo.relation.propertyName,
-      );
-    }
-  }
-
+  defineFieldResolver(resolverInfoList, GenericResolver);
   /**
    *
    * Generate dynamic queries

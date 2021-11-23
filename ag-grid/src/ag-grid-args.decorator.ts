@@ -451,7 +451,7 @@ export function mapAgGridParams(
 
   if (params?.extraArgs) {
     const extraArgsKeys = Object.keys(params.extraArgs);
-    switch (params?.extraArgsStrategy) {
+    switch (params.extraArgsStrategy) {
       case ExtraArgsStrategy.AT_LEAST_ONE:
         if (
           args.length <= 0 ||
@@ -548,7 +548,9 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
 
     if (JoinOptionInput) {
       joinArg = Args('join', {
-        type: () => JoinOptionInput,
+        type:
+          /*istanbul ignore next */
+          () => JoinOptionInput,
         nullable: true,
       });
     }
@@ -645,7 +647,9 @@ export const AgGridArgsSingle = (params: IAgGridArgsSingleOptions) => {
 
     if (JoinOptionInput) {
       joinArg = Args('join', {
-        type: () => JoinOptionInput,
+        type:
+          /*istanbul ignore next */
+          () => JoinOptionInput,
         nullable: true,
       });
     }

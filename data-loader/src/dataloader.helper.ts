@@ -8,6 +8,7 @@ import {
   FactoryProvider,
   NotAcceptableException,
   NotFoundException,
+  Optional,
   Scope,
 } from '@nestjs/common';
 import {
@@ -16,6 +17,9 @@ import {
 } from '@nestjs-yalc/ag-grid/generic-service.service';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+// import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventAgGrid } from '@nestjs-yalc/ag-grid/event.enum';
+import { EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 
@@ -113,7 +117,9 @@ class _DataLoaderWithCount<
  */
 export class GQLDataLoader<Entity extends Record<string, any> = any> {
   private count = 0;
-  private batchFn;
+  private batchFn: (
+    findManyOptions: AgGridFindManyOptions<Entity>,
+  ) => Promise<FindAndCountResult<Entity>>;
   private searchKey: keyof Entity;
   private options;
   private dataLoaders: {
@@ -129,9 +135,21 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
       findManyOptions: AgGridFindManyOptions<Entity>,
     ) => Promise<FindAndCountResult<Entity>>,
     searchKey: keyof Entity,
+    @Optional() private readonly eventEmitter?: EventEmitter2,
     options?: _DataLoader.Options<string, Entity[], string>,
   ) {
-    this.batchFn = getFn;
+    this.batchFn = async (findManyOptions: AgGridFindManyOptions<Entity>) => {
+      this.eventEmitter?.emitAsync(
+        EventAgGrid.START_TRANSACTION,
+        findManyOptions.info?.fieldName,
+      );
+      const data = await getFn(findManyOptions);
+      this.eventEmitter?.emitAsync(
+        EventAgGrid.END_TRANSACTION,
+        findManyOptions.info?.fieldName,
+      );
+      return data;
+    };
     this.searchKey = searchKey;
     this.options = options;
     this.keyMap = new WeakMap();
@@ -252,13 +270,17 @@ export function DataLoaderFactory<Entity>(
 ): FactoryProvider {
   return {
     provide: getDataloaderToken(entity.name),
-    useFactory: (service: GenericService<Entity>) => {
+    useFactory: (
+      service: GenericService<Entity>,
+      eventEmitter: EventEmitter2,
+    ) => {
       return new GQLDataLoader<Entity>(
         getFn<Entity>(service),
         defaultSearchKey,
+        eventEmitter,
       );
     },
-    inject: [serviceToken ?? getServiceToken(entity)],
+    inject: [serviceToken ?? getServiceToken(entity), EventEmitter2],
     scope: Scope.REQUEST,
   };
 }

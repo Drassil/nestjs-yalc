@@ -91,14 +91,19 @@ export class DbOpsService {
 
       const migrations = await migrationExecutor.getAllMigrations();
 
-      // if there are no migrations, then do not execute anything!
-      if (!Array.isArray(migrations) || migrations.length <= 0) continue;
-
       const dbName = v.conn.driver.database;
+
+      // if there are no migrations, then do not execute anything!
+      if (!Array.isArray(migrations) || migrations.length <= 0) {
+        this.loggerService.debug?.(`No migrations available on ${dbName}`);
+        continue;
+      }
 
       if (options && options.selMigrations) {
         this.loggerService.debug?.(
-          `Executing selected migrations for ${dbName}`,
+          `Executing selected migrations ${JSON.stringify(
+            options.selMigrations,
+          )} for ${dbName}`,
         );
 
         const pendingMigrations =

@@ -26,7 +26,7 @@ describe('entityFieldsEnumFactory', () => {
     mockedGetMappedTypeProperties.mockReset();
   });
 
-  it('should return a define enum fields not cached', () => {
+  it('should return a defined enum fields not cached', () => {
     expect(fieldsEnum).toBeDefined();
     expect(mockedGetMappedTypeProperties).toHaveBeenCalledTimes(1);
     expect(fieldsEnum).toHaveProperty(fixedProperty);

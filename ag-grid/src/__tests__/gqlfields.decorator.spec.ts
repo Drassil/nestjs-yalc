@@ -152,6 +152,22 @@ describe('Graphql decorator test', () => {
     expect(mockGetInfo).toHaveBeenCalled();
   });
 
+  it('Check GqlInfoGenerator with default value', async () => {
+    const mockCreate = (mockedNestGraphql.GqlExecutionContext.create =
+      jest.fn());
+    const mockGetInfo = mockCreate.mockImplementation(() => ({
+      getInfo: jest.fn().mockReturnValue(infoObj),
+    }));
+    const TestGqlInfoGenerator = $.GqlInfoGenerator(
+      undefined,
+      mockedExecutionContext,
+    );
+
+    expect(TestGqlInfoGenerator).toBeDefined();
+    expect(mockCreate).toHaveBeenCalled();
+    expect(mockGetInfo).toHaveBeenCalled();
+  });
+
   it('Check GqlFieldsMapper Functionality with specified field name', async () => {
     const arr: IFieldMapper = {
       ['first']: { dst: 'specified', isRequired: true },
@@ -200,6 +216,25 @@ describe('Graphql decorator test', () => {
   it('Check with nested', async () => {
     const arr: IFieldMapper = { ['first']: { dst: 'specified' } };
     const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, edgesObj);
+
+    expect(GqlFieldsMapperTest).toEqual([]);
+  });
+
+  it('Check GqlAgGridFieldsMapper with undefined values', () => {
+    const arr: IFieldMapper = { ['first']: { dst: 'specified' } };
+    const custominfo = {
+      fieldNodes: [
+        {
+          selectionSet: undefined,
+        },
+      ],
+    };
+    let GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, custominfo as any);
+
+    expect(GqlFieldsMapperTest).toEqual([]);
+
+    custominfo.fieldNodes = undefined;
+    GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, custominfo as any);
 
     expect(GqlFieldsMapperTest).toEqual([]);
   });

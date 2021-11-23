@@ -4,14 +4,16 @@ import {
   FilterModel,
   ISimpleFilterModel,
   ITextFilterModel,
-  NumberFilterModel,
+  INumberFilterModel,
   ICombinedSimpleModel,
   FilterInput,
 } from '../ag-grid.interface';
+import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
 
 const simpleFilterModel: ISimpleFilterModel = {
   filterType: FilterType.TEXT,
   type: GeneralFilters.EQUALS,
+  field: 'test',
 };
 describe('Assets input dto test', () => {
   it('Check ISimpleFilterModel ', async () => {
@@ -21,6 +23,7 @@ describe('Assets input dto test', () => {
   it('Check DateFilterModel', async () => {
     const testData: DateFilterModel = {
       filterType: FilterType.DATE,
+      field: 'test',
       type: GeneralFilters.EQUALS,
     };
     expect(testData).toBeDefined();
@@ -28,6 +31,7 @@ describe('Assets input dto test', () => {
   it('Check ITextFilterModel', async () => {
     const testData: ITextFilterModel = {
       filterType: FilterType.TEXT,
+      field: 'test',
       type: GeneralFilters.EQUALS,
     };
     expect(testData).toBeDefined();
@@ -35,13 +39,15 @@ describe('Assets input dto test', () => {
   it('Check FilterModel', async () => {
     const testData: FilterModel = {
       filterType: FilterType.TEXT,
+      field: 'test',
       type: GeneralFilters.EQUALS,
     };
     expect(testData).toBeDefined();
   });
   it('Check NumberFilterModel', async () => {
-    const testData: NumberFilterModel = {
+    const testData: INumberFilterModel = {
       filterType: FilterType.NUMBER,
+      field: 'test',
       type: GeneralFilters.EQUALS,
     };
     expect(testData).toBeDefined();
@@ -57,7 +63,12 @@ describe('Assets input dto test', () => {
   });
   it('Check FilterInput', async () => {
     const testData: FilterInput = {
-      filterModel: simpleFilterModel,
+      expressions: [
+        {
+          text: fixedSimpleTextFilter,
+        },
+      ],
+      operator: Operators.AND,
     };
     expect(testData).toBeDefined();
   });

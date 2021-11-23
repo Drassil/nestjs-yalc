@@ -76,7 +76,7 @@ export const AgGridField = <T = any>({
     // graphql field metadata
     if (gqlOptions || gqlType) {
       addFieldMetadata(
-        gqlType ?? gqlOptions ?? {},
+        <ReturnTypeFunc>gqlType ?? <FieldOptions>gqlOptions,
         gqlOptions ?? {},
         target,
         propertyName,

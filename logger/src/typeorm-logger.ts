@@ -28,6 +28,7 @@ export class TypeORMLogger implements Logger {
     parameters?: any[],
     // queryRunner?: QueryRunner,
   ): any {
+    this.eventEmitter.emitAsync(LoggerEvent.QUERY_ERROR, query, error);
     this.logger.error?.(
       `error: ${error}, query: ${query}, parameters: ${parameters}`,
     );
@@ -41,6 +42,7 @@ export class TypeORMLogger implements Logger {
     parameters?: any[],
     // queryRunner?: QueryRunner,
   ): any {
+    this.eventEmitter.emitAsync(LoggerEvent.QUERY_SLOW, query, time);
     this.logger.warn?.(
       `SLOW QUERY!!!! time: ${time}, query: ${query}, parameters: ${parameters}`,
     );

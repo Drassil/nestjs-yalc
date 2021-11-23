@@ -31,7 +31,7 @@ export const genExtraArgs = (name: string): { [index: string]: IExtraArg } => {
     [name]: {
       filterType: FilterType.TEXT,
       filterCondition: GeneralFilters.EQUALS,
-      options: undefined,
+      options: {},
     },
   };
 };
@@ -211,7 +211,6 @@ export const fixedDataWithDefault: IAgGridArgsOptions = {
     sorting: [
       {
         colId: '',
-        sort: SortDirection.ASC,
       },
     ],
     startRow: 5,

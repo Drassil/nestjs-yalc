@@ -153,6 +153,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<[Entity[], number]> {
+    // console.log('==========START QUERY==============');
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
 
     const { skip = 0, take } = this.getActualLimits(findOptions);
@@ -187,6 +188,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<Entity[]> {
+    // console.log('==========START QUERY==============');
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
 
     return queryBuilder.getMany();
@@ -202,6 +204,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     withFail?: boolean,
     mode: ReplicationMode = ReplicationMode.SLAVE,
   ): Promise<Entity | undefined> {
+    // console.log('==========START QUERY==============');
     const queryBuilder = this.getFormattedAgGridQueryBuilder(findOptions);
     const returnFunction = withFail
       ? qbGetOneOrFail(findOptions)

@@ -17,6 +17,8 @@ jest.mock('aws-sdk', () => {
   type encryptType = typeof AWS.KMS.prototype.encrypt;
 
   const mockedKMS = createMock<AWS.KMS>();
+  const mockedSSM = createMock<AWS.SSM>();
+
   mockedKMS.encrypt.mockImplementationOnce(((param: any, callback: any) => {
     callback(null, {
       CiphertextBlob: 'should be able to decrypt simply locally',
@@ -33,8 +35,27 @@ jest.mock('aws-sdk', () => {
     callback(null, {});
   }) as decryptType);
 
+  // First call
+  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
+    callback(null, { Parameter: { Value: 'someString' } });
+  });
+
+  //second Call
+  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
+    callback('some error', {});
+  });
+
+  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
+    callback(null, { Parameter: null });
+  });
+
+  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
+    callback(null, { Parameter: { Value: 'someString' } });
+  });
+
   return {
     KMS: jest.fn(() => mockedKMS),
+    SSM: jest.fn(() => mockedSSM),
   };
 });
 
@@ -162,5 +183,29 @@ describe('Encryption helper test', () => {
     const result = await $.decryptString(encrypted);
     delete process.env.IS_AWS_ENV;
     expect(result).toEqual('someString');
+  });
+
+  it('Should be able to decrypt an SSM Secure variable', async () => {
+    const result = await $.decryptSsmVariable('toDecrypt');
+    expect(result).toEqual('someString');
+  });
+
+  it('Should return an empty string if there are some error during ssm decryption ', async () => {
+    const result = await $.decryptSsmVariable('toDecrypt');
+    expect(result).toBe('');
+  });
+
+  it('Should return an empty string if the variable has no ssm decrypted value', async () => {
+    const result = await $.decryptSsmVariable('toDecrypt');
+    expect(result).toBe('');
+  });
+
+  it('Should be set the environment variable with ssm decrypted variable', async () => {
+    process.env['TEST_ENV'] = '';
+    const envVariableToDecrypt = {
+      ['TEST_ENV']: 'TEST_ENV',
+    };
+    await $.setEnvironmentVariableFromSsm(envVariableToDecrypt);
+    expect(process.env['TEST_ENV']).toBe('someString');
   });
 });

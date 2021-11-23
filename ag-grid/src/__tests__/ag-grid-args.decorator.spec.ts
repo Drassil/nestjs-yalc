@@ -73,6 +73,11 @@ import {
   fixeNumberArgs,
   genExtraArgs,
 } from '../__mocks__/filter.mocks';
+import {
+  ArgumentsError,
+  MissingArgumentsError,
+} from '../missing-arguments.error';
+import { TestEntity } from '../__mocks__/entity.mock';
 
 const firstTextParameter = 'a';
 const firstNumberParameter = 1;
@@ -323,6 +328,12 @@ describe('Ag-grid args decorator', () => {
   });
 
   describe('Check mapAgGridParams', () => {
+    // Mocked function
+    const objectToFieldMapper = jest.spyOn(
+      AgGridHelpers,
+      'objectToFieldMapper',
+    );
+
     const testData: [string, IAgQueryParams][] = [
       ['text filter', fixedArgsQueryParams],
       ['number filter', fixeNumberArgs],
@@ -359,7 +370,7 @@ describe('Ag-grid args decorator', () => {
         },
       };
 
-      expect(resultFn(params)).toThrowError();
+      expect(resultFn(params)).toThrow(MissingArgumentsError);
 
       params.extraArgsStrategy = ExtraArgsStrategy.ONLY_ONE;
       params.extraArgs = {
@@ -367,7 +378,7 @@ describe('Ag-grid args decorator', () => {
         ...genExtraArgs('groupKeys'),
       };
 
-      expect(resultFn(params)).toThrowError();
+      expect(resultFn(params)).toThrow(ArgumentsError);
     });
 
     it('Should work properly with extraArgs property', () => {
@@ -390,17 +401,26 @@ describe('Ag-grid args decorator', () => {
       params.extraArgsStrategy = ExtraArgsStrategy.DEFAULT;
       expect(resultFn(params)()).toBeDefined();
     });
-  });
 
-  it('Check filters not functionality', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedArgsOptions,
-      mockedGqlExecutionContext,
-      fixedArgsNOTFilter,
-      mockedInfo,
-    );
+    it('Check mapAgGridParams functionality with fieldType defined', async () => {
+      objectToFieldMapper.mockReturnValue({
+        filterOption: {} as any,
+        field: {},
+      });
 
-    expect(testData).toBeDefined();
+      let testData = resultFn(fixedDataFilterToInclude)();
+      expect(testData).toBeDefined();
+
+      fixedDataFilterToInclude.fieldType = BaseEntity;
+      testData = resultFn(fixedDataFilterToInclude)();
+      expect(testData).toBeDefined();
+
+      fixedDataFilterToInclude.fieldType = undefined;
+      fixedDataFilterToInclude.fieldMap = undefined;
+      fixedDataFilterToInclude.entityType = TestEntity;
+      testData = resultFn(fixedDataFilterToInclude)();
+      expect(testData).toBeDefined();
+    });
   });
 
   it('Check filters with undefined data', async () => {
@@ -408,17 +428,6 @@ describe('Ag-grid args decorator', () => {
       undefined,
       mockedGqlExecutionContext,
       fixedArgsNOTFilter,
-      mockedInfo,
-    );
-
-    expect(testData).toBeDefined();
-  });
-
-  it('Check mapAgGridParams functionality with filterMapper', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
-      fixedDataFilterToInclude,
-      mockedGqlExecutionContext,
-      fixedArgsQueryParams,
       mockedInfo,
     );
 
@@ -454,7 +463,7 @@ describe('Ag-grid args decorator', () => {
     }
   });
 
-  it('Check mapAgGridParams functionality with no sorting', async () => {
+  it('Check default functionality with sorting ASC', () => {
     const testData = agGridArgsDecorator.mapAgGridParams(
       { ...fixedDataWithDefault, defaultValue: undefined },
       mockedGqlExecutionContext,
@@ -706,12 +715,37 @@ describe('Ag-grid args decorator', () => {
   });
 
   it('Should combine decorators with AgGridCombineDecorators', () => {
+    jest.spyOn(AgGridInput, 'agJoinArgFactory').mockReturnValueOnce({});
+
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
+    const argsOptions: IAgGridArgsOptions = {
+      ...fixedArgsOptions,
+      entityType: BaseEntity,
+    };
+    const decorator = agGridArgsDecorator.AgGridCombineDecorators(argsOptions);
+    decorator({}, 'key', 0);
+    expect(decorator).toEqual(expect.any(Function));
+  });
+
+  it('Should combine decorators with default values with AgGridCombineDecorators', () => {
+    const ArgsFunc = jest.spyOn(graphql, 'Args');
+    const returnFunc = jest.fn().mockReturnValue('somestring');
+    ArgsFunc.mockReturnValue(returnFunc);
+
+    const defaultArgsOptions: IAgGridArgsOptions = {
+      ...fixedArgsOptions,
+      extraArgs: {
+        ['default']: {
+          options: undefined,
+        } as any,
+      },
+      gql: undefined,
+    };
     const decorator =
-      agGridArgsDecorator.AgGridCombineDecorators(fixedArgsOptions);
+      agGridArgsDecorator.AgGridCombineDecorators(defaultArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
   });
 
@@ -739,6 +773,7 @@ describe('Ag-grid args decorator', () => {
     it('Should map to FindManyOptions', () => {
       const argsOptions: IAgGridArgsOptions = {
         ...fixedArgsOptions,
+        fieldType: BaseEntity,
         entityType: BaseEntity,
       };
       const result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(

@@ -84,3 +84,39 @@ export const encryptString = async (
     return localEncryption.encryptAes(toEncrypt, encryptionKey);
   }
 };
+
+export const decryptSsmVariable = async (
+  toDecrypt: string,
+): Promise<string> => {
+  const ssm = new aws.SSM();
+
+  return new Promise((resolve) => {
+    ssm.getParameter(
+      {
+        Name: toDecrypt,
+        WithDecryption: true,
+      },
+      (err, data) => {
+        if (err || !data.Parameter?.Value) {
+          resolve('');
+        } else {
+          resolve(data.Parameter.Value);
+        }
+      },
+    );
+  });
+};
+
+/**
+ * This function set the process.env variables passed as paramenter with the corrisponding ssm variable decrypted
+ * @param envVariableToDecrypt mapping variable between process.env and ssm variables name
+ */
+export const setEnvironmentVariableFromSsm = async (envVariableToDecrypt: {
+  [key: string]: string;
+}) => {
+  for (const variable of Object.keys(envVariableToDecrypt)) {
+    process.env[variable] = await decryptSsmVariable(
+      envVariableToDecrypt[variable],
+    );
+  }
+};

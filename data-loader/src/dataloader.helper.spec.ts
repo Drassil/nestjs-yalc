@@ -9,6 +9,7 @@ import {
 import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
 
 import { GenericService } from '@nestjs-yalc/ag-grid/generic-service.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {
   class EntityTest {
@@ -22,12 +23,14 @@ describe('GQLDataLoader class', () => {
 
   const mockLoadFn = jest.fn();
   const mockedFindManyOptions = createMock<AgGridFindManyOptions>();
+  const mockedEventEmitter = createMock<EventEmitter2>();
   let dataLoader: GQLDataLoader<EntityTest>;
 
   beforeEach(() => {
     dataLoader = new GQLDataLoader(
       () => mockLoadFn(mockedFindManyOptions, false),
       'databaseKey',
+      mockedEventEmitter,
     );
 
     jest.clearAllMocks();
@@ -51,6 +54,17 @@ describe('GQLDataLoader class', () => {
     await expect(dataLoader.loadOne('asset_1', {})).resolves.toBe(obj);
   });
 
+  it('Should retrive data without emit events', async () => {
+    const obj = new EntityTest('asset_1');
+    mockLoadFn.mockResolvedValue([[obj]]);
+
+    const dataLoaderNoEvent = new GQLDataLoader(
+      () => mockLoadFn(mockedFindManyOptions, false),
+      'databaseKey',
+      undefined,
+    );
+    await expect(dataLoaderNoEvent.loadOne('asset_1', {})).resolves.toBe(obj);
+  });
   it('should loadOne with the same dataloader', async () => {
     const obj = new EntityTest('asset_1');
     mockLoadFn.mockResolvedValue([[obj]]);

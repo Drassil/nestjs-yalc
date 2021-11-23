@@ -416,7 +416,7 @@ export function AgGridDependencyFactory<Entity>({
 
 export function getProviderToken(entity: ClassType | Provider | string) {
   if (entity && typeof entity === 'object' && entity.provide) {
-    typeof entity.provide === 'function'
+    return typeof entity.provide === 'function'
       ? entity.provide.name
       : entity.provide.toString();
   }

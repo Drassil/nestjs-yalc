@@ -1,3 +1,5 @@
+/* istanbul ignore file */
+
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
 import { ArgsOptions, ReturnTypeFuncValue } from '@nestjs/graphql';

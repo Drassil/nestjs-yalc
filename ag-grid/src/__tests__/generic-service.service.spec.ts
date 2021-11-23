@@ -67,7 +67,7 @@ describe('GenericService', () => {
     spiedGenerciService.mockRestore();
   });
 
-  it('test aiondoajsdajsda ', () => {
+  it('Check GenericServiceFactory provide object to work properly ', () => {
     const spiedGenerciService = jest
       .spyOn(GenericServiceModule, 'GenericService')
       .mockImplementation(jest.fn());
@@ -82,12 +82,26 @@ describe('GenericService', () => {
     spiedGenerciService.mockRestore();
   });
 
-  it('test getServiceToken', () => {
+  it('Should GenericServiceFactory works properly with default values ', () => {
+    const spiedGenerciService = jest
+      .spyOn(GenericServiceModule, 'GenericService')
+      .mockImplementation(jest.fn());
+
+    const result: FactoryProvider = GenericServiceFactory<BaseEntity>(
+      'BaseEntity' as any,
+      'fakeConnection',
+    );
+
+    expect(result).toBeDefined();
+    spiedGenerciService.mockRestore();
+  });
+
+  it('Check getServiceToken', () => {
     const serviceToken = GenericServiceModule.getServiceToken(BaseEntity);
     expect(serviceToken).toEqual('BaseEntityGenericService');
   });
 
-  it('test getEntity', async () => {
+  it('Check getEntity', async () => {
     const spiedGetEntity = jest.spyOn(service, 'getEntity');
     await service.getEntity('', undefined, undefined, undefined, {
       failOnNull: false,
@@ -96,14 +110,14 @@ describe('GenericService', () => {
     spiedGetEntity.mockClear();
   });
 
-  it('test getEntity', async () => {
+  it('Check getEntity', async () => {
     const spiedGetEntity = jest.spyOn(service, 'getEntity');
     await service.getEntityOrFail('');
     expect(baseEntityRepository.findOneOrFail).toHaveBeenCalledTimes(1);
     spiedGetEntity.mockClear();
   });
 
-  it('test getEntity with relations', async () => {
+  it('Check getEntity with relations', async () => {
     const spiedGetEntity = jest.spyOn(service, 'getEntity');
     expect(spiedGetEntity).not.toHaveBeenCalled();
     await service.getEntity({}, [], ['RelatedEntity']);
@@ -115,7 +129,7 @@ describe('GenericService', () => {
     spiedGetEntity.mockClear();
   });
 
-  it('test getEntity with specific Database', async () => {
+  it('Check getEntity with specific Database', async () => {
     const testRepository = createMock<Repository<BaseEntity>>();
     const mockedConnection = createMock<Connection>();
     mockedConnection.getRepository.mockReturnValue(testRepository);
@@ -144,7 +158,7 @@ describe('GenericService', () => {
     expect(entity).toBe(mockedEntity);
   });
 
-  it('test getEntityList', async () => {
+  it('Check getEntityList', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     const spiedGetEntityList = jest.spyOn(service, 'getEntityList');
     baseEntityRepository.find.mockResolvedValue(mockedList);
@@ -154,7 +168,7 @@ describe('GenericService', () => {
     spiedGetEntityList.mockClear();
   });
 
-  it('test getEntityList with count', async () => {
+  it('Check getEntityList with count', async () => {
     const mockedCountedList: [BaseEntity[], number] = [[new BaseEntity()], 1];
     const spiedGetEntityList = jest.spyOn(service, 'getEntityList');
     baseEntityRepository.findAndCount.mockResolvedValue(mockedCountedList);
@@ -164,7 +178,7 @@ describe('GenericService', () => {
     spiedGetEntityList.mockClear();
   });
 
-  it('test getEntityList with false count', async () => {
+  it('Check getEntityList with false count', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     const spiedGetEntityList = jest.spyOn(service, 'getEntityList');
     baseEntityRepository.find.mockResolvedValue(mockedList);
@@ -174,7 +188,7 @@ describe('GenericService', () => {
     spiedGetEntityList.mockClear();
   });
 
-  it('test getEntityList with relations', async () => {
+  it('Check getEntityList with relations', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     const spiedGetEntityList = jest.spyOn(service, 'getEntityList');
     baseEntityRepository.find.mockResolvedValue(mockedList);
@@ -189,7 +203,7 @@ describe('GenericService', () => {
     spiedGetEntityList.mockClear();
   });
 
-  it('test getEntityList with specific Database', async () => {
+  it('Check getEntityList with specific Database', async () => {
     const testRepository = createMock<AgGridRepository<BaseEntity>>();
     const mockedConnection = createMock<Connection>();
     mockedConnection.getRepository.mockReturnValue(testRepository);

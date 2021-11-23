@@ -10,18 +10,20 @@ import {
 } from '../object.decorator';
 import { fixedIncludefilterOption } from '../__mocks__/filter.mocks';
 import * as ObjectDecorator from '../object.decorator';
+
+import * as NestGraphql from '@nestjs/graphql';
+import { FieldOptions, ReturnTypeFunc } from '@nestjs/graphql';
+import { BaseEntity } from 'typeorm';
+
 const fixedAgGridFieldMetadata: IAgGridFieldMetadata = {
   gqlOptions: {},
   gqlType: () => String,
 };
 
-// @AgGridObject({ filters: fixedIncludefilterOption })
-// class BaseDecoratedClass {
-//   @AgGridField({})
-//   baseDecoratedProperty: 'string';
-// }
-
 describe('ObjectDecorator', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
   it('Should decorate properly a property with AgGridField', () => {
     class TestObject {
       @AgGridField(fixedAgGridFieldMetadata)
@@ -93,5 +95,46 @@ describe('ObjectDecorator', () => {
     expect(
       hasAgGridFieldMetadata(TestObject, 'decoratedProperty'),
     ).toBeTruthy();
+  });
+
+  it('Should AgGridField work properly with default values', () => {
+    jest
+      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .mockReturnValue({});
+
+    const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
+    mockedNestGraphql.addFieldMetadata = jest.fn();
+
+    let gqlOptions: FieldOptions | undefined = undefined;
+    let gqlType: ReturnTypeFunc | undefined = () => BaseEntity;
+
+    let agGridFieldDecorator = AgGridField({
+      gqlType,
+      gqlOptions,
+    });
+
+    agGridFieldDecorator({}, 'propertyKey');
+
+    expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
+      gqlType,
+      {},
+      {},
+      'propertyKey',
+    );
+    gqlOptions = { name: 'name' };
+    gqlType = undefined;
+
+    agGridFieldDecorator = AgGridField({
+      gqlType,
+      gqlOptions,
+    });
+
+    agGridFieldDecorator({}, 'propertyKey');
+    expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
+      gqlOptions,
+      gqlOptions,
+      {},
+      'propertyKey',
+    );
   });
 });
