@@ -145,6 +145,10 @@ describe('Ag-grid helpers', () => {
     mockedQueryBuilder = createMock<SelectQueryBuilder<BaseEntity>>();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('Check column conversion', async () => {
     let testColumnConversion: string | number;
     for (const test of columnConversionTests) {

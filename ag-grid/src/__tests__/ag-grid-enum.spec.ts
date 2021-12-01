@@ -23,13 +23,13 @@ describe('entityFieldsEnumFactory', () => {
   });
 
   afterEach(() => {
-    mockedGetMappedTypeProperties.mockReset();
+    jest.resetAllMocks();
   });
 
   it('should return a defined enum fields not cached', () => {
     expect(fieldsEnum).toBeDefined();
     expect(mockedGetMappedTypeProperties).toHaveBeenCalledTimes(1);
-    expect(fieldsEnum).toHaveProperty(fixedProperty);
+    expect(fieldsEnum[fixedProperty]).toBeDefined();
   });
 
   it('should return a define enum from cache', () => {
