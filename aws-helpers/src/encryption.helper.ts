@@ -61,9 +61,15 @@ export const asyncEncrypt = async (toEncrypt: string): Promise<string> => {
   return encryptionResult.toString('base64');
 };
 
+/**
+ * Method used to decrypt string with AWS. In case of local environment it performs a localEncryption with a staticKey as default
+ * @param toDecrypt
+ * @param encryptionKey
+ * @returns
+ */
 export const decryptString = async (
   toDecrypt: any,
-  encryptionKey = '',
+  encryptionKey = staticKey,
 ): Promise<string> => {
   if (process.env.IS_AWS_ENV) {
     const decryptionResult: string = await asyncDecrypt(toDecrypt);
@@ -73,9 +79,15 @@ export const decryptString = async (
   }
 };
 
+/**
+ * Method used to encryptString with AWS. In case of local environment it performs a localEncryption with a staticKey as default
+ * @param toDecrypt
+ * @param encryptionKey
+ * @returns
+ */
 export const encryptString = async (
   toEncrypt: any,
-  encryptionKey = '',
+  encryptionKey = staticKey,
 ): Promise<string> => {
   if (process.env.IS_AWS_ENV) {
     const encryptionResult: string = await asyncEncrypt(toEncrypt);

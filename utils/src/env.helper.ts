@@ -17,3 +17,19 @@ export function envIsTrue(value?: string) {
   const val = value.toLowerCase();
   return val === 'true' || val === '1' || val === 'on';
 }
+
+/**
+ * Check that the current env is in production by
+ * checking the explicit case first, and the implicit case after (if requested)
+ * @param implicitCheck enable implicit check by default
+ * @returns boolean
+ */
+export function isProduction(implicitCheck = true) {
+  return (
+    process.env.NODE_ENV === 'production' ||
+    (implicitCheck &&
+      ['test', 'pipeline', 'development'].every(
+        (v) => process.env.NODE_ENV !== v,
+      ))
+  );
+}

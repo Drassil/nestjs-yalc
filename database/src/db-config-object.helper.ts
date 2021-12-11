@@ -95,9 +95,8 @@ function _getDefaultDbConnectionConfig(
   return {
     ...dbConfigParams,
     type: 'mysql',
-    extra: {
-      decimalNumbers: true,
-    },
+    supportBigNumbers: true,
+    bigNumberStrings: false,
     synchronize: envIsTrue(TYPEORM_SYNCHRONIZE || 'false'),
     logging: envIsTrue(TYPEORM_LOGGING || 'false'),
   };

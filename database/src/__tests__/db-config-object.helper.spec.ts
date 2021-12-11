@@ -107,7 +107,6 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
 
     const {
       database,
-      extra,
       host,
       logging,
       password,
@@ -115,15 +114,14 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
       synchronize,
       type,
       username,
+      supportBigNumbers,
+      bigNumberStrings,
     } = buildDbConfigObject({
       dbName: 'TEST_REPLICATION_DATABASE_NAME',
       entities: [],
     })();
 
     expect(database).toBe('TEST_REPLICATION_DATABASE_NAME');
-    expect(extra).toEqual({
-      decimalNumbers: true,
-    });
     expect(host).toBe('HOST_TEST');
     expect(logging).toBe(false);
     expect(password).toBe('PWD_TEST');
@@ -131,6 +129,8 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
     expect(synchronize).toBe(false);
     expect(type).toBe('mysql');
     expect(username).toBe('USER_TEST');
+    expect(supportBigNumbers).toBeTruthy();
+    expect(bigNumberStrings).toBeFalsy();
   });
 
   it('should return a valid configuration object for replication', () => {
