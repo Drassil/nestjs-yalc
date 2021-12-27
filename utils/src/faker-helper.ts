@@ -1,4 +1,4 @@
-import * as faker from 'faker';
+import * as faker from "faker";
 
 // TODO: Probably we can use the internal faker of typeorm-seeding to create uniqueness, like we do here
 // (mentioned in https://github.com/w3tecch/typeorm-seeding/issues/98#issuecomment-849585576)
@@ -18,7 +18,7 @@ export class FakerHelper {
       gender,
       firstName,
       lastName,
-      email: this.generateNewEmail(firstName, lastName, 'gmail.test'),
+      email: this.generateNewEmail(firstName, lastName, "gmail.test"),
     };
   }
 
@@ -45,7 +45,7 @@ export class FakerHelper {
   randomBirthDate = () => {
     const birthDate = faker.date.past(82);
     birthDate.setFullYear(birthDate.getFullYear() - 18);
-    const [mm, dd, yyyy] = birthDate.toLocaleString().split(',')[0].split('/');
+    const [mm, dd, yyyy] = birthDate.toLocaleString().split(",")[0].split("/");
     return `${yyyy}-${mm}-${dd}`;
   };
 

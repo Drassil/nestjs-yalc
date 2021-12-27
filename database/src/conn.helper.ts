@@ -1,5 +1,5 @@
-export const DBCONF_PREFIX = 'dbConf_';
-export const CONN_SUFFIX = 'Connection';
+export const DBCONF_PREFIX = "dbConf_";
+export const CONN_SUFFIX = "Connection";
 
 export function getConfNameByConnection(connName: string) {
   return `${DBCONF_PREFIX}${connName}`;

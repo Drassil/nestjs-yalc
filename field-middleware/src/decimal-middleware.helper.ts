@@ -1,4 +1,4 @@
-import { FieldMiddleware, MiddlewareContext, NextFn } from '@nestjs/graphql';
+import { FieldMiddleware, MiddlewareContext, NextFn } from "@nestjs/graphql";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 /**
@@ -6,7 +6,7 @@ import { FieldMiddleware, MiddlewareContext, NextFn } from '@nestjs/graphql';
  */
 export const decimalMiddleware: FieldMiddleware = async (
   _ctx: MiddlewareContext,
-  next: NextFn,
+  next: NextFn
 ) => {
   return await next();
 };

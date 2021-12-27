@@ -1,10 +1,10 @@
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper';
-import { EntitySchema } from 'typeorm';
-import { Seeder } from 'typeorm-seeding';
-import { IDbConfObject } from './conf.interface';
-import { getConnectionName } from './conn.helper';
-import { MysqlConnectionCredentialsOptions } from 'typeorm/driver/mysql/MysqlConnectionCredentialsOptions';
-import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
+import { envIsTrue } from "@nestjs-yalc/utils/env.helper";
+import { EntitySchema } from "typeorm";
+import { Seeder } from "typeorm-seeding";
+import { IDbConfObject } from "./conf.interface";
+import { getConnectionName } from "./conn.helper";
+import { MysqlConnectionCredentialsOptions } from "typeorm/driver/mysql/MysqlConnectionCredentialsOptions";
+import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
 
 /**
  * TypeORM doesn't provide a type for entities, TypeOrmEntityType has been created to improve
@@ -36,17 +36,17 @@ export function buildDbConfigObject({
   }
   if (!connNameTemp) {
     throw new Error(
-      'Cannot create a connection without a name, provide at least a dbName or connectionName',
+      "Cannot create a connection without a name, provide at least a dbName or connectionName"
     );
   }
   const connName = getConnectionName(connNameTemp);
 
   const dbConfObj: IDbConfObject = () => {
-    const noSelDb = envIsTrue(process.env.TYPEORM_NO_SEL_DB || 'false');
+    const noSelDb = envIsTrue(process.env.TYPEORM_NO_SEL_DB || "false");
 
     const canLoad =
       envIsTrue(process.env.TYPEORM_LOAD_MIGRATIONS) ||
-      process.env.NODE_ENV !== 'production';
+      process.env.NODE_ENV !== "production";
 
     return {
       ..._getDefaultDbConnectionConfig(dbName),
@@ -82,23 +82,23 @@ interface MysqlReplicationConnectionCredentialsOptions {
   replication: {
     master: MysqlConnectionCredentialsOptions;
     slaves: MysqlConnectionCredentialsOptions[];
-    selector?: 'RR' | 'RANDOM' | 'ORDER';
+    selector?: "RR" | "RANDOM" | "ORDER";
   };
 }
 
 function _getDefaultDbConnectionConfig(
-  dbName?: string,
+  dbName?: string
 ): MysqlConnectionOptions {
   const { TYPEORM_SYNCHRONIZE, TYPEORM_LOGGING } = process.env;
   const dbConfigParams = _makeDbConfigParams(dbName);
 
   return {
     ...dbConfigParams,
-    type: 'mysql',
+    type: "mysql",
     supportBigNumbers: true,
     bigNumberStrings: false,
-    synchronize: envIsTrue(TYPEORM_SYNCHRONIZE || 'false'),
-    logging: envIsTrue(TYPEORM_LOGGING || 'false'),
+    synchronize: envIsTrue(TYPEORM_SYNCHRONIZE || "false"),
+    logging: envIsTrue(TYPEORM_LOGGING || "false"),
   };
 }
 
@@ -107,7 +107,7 @@ function _makeDbConfigParams(dbName?: string): DbConfigParams {
   if (MYSQL_TOTAL_REPLICATION_NODES) {
     return _makeReplicatedDbConfigParams(
       parseInt(MYSQL_TOTAL_REPLICATION_NODES, 10),
-      dbName,
+      dbName
     );
   }
 
@@ -115,7 +115,7 @@ function _makeDbConfigParams(dbName?: string): DbConfigParams {
 }
 
 function _makeSingleDbConfigParams(
-  dbName?: string,
+  dbName?: string
 ): MysqlConnectionCredentialsOptions {
   const {
     MYSQL_HOST,
@@ -126,9 +126,9 @@ function _makeSingleDbConfigParams(
   } = process.env;
 
   const host =
-    global.__JEST_DISABLE_DB !== true ? MYSQL_HOST : 'jest-db-disabled';
+    global.__JEST_DISABLE_DB !== true ? MYSQL_HOST : "jest-db-disabled";
   const port = _getDbPort(MYSQL_PORT);
-  const username = MYSQL_USER || 'root';
+  const username = MYSQL_USER || "root";
   const password = MYSQL_PASSWORD ?? MYSQL_ROOT_PASSWORD;
 
   let result: MysqlConnectionCredentialsOptions = {
@@ -150,7 +150,7 @@ function _makeSingleDbConfigParams(
 
 function _makeReplicatedDbConfigParams(
   totalReplicaNodes: number,
-  dbName?: string,
+  dbName?: string
 ): MysqlReplicationConnectionCredentialsOptions {
   const replicas: MysqlConnectionCredentialsOptions[] =
     _getSingleDbConfigParams(totalReplicaNodes, dbName);
@@ -159,14 +159,14 @@ function _makeReplicatedDbConfigParams(
     replication: {
       master: _makeSingleDbConfigParams(dbName),
       slaves: replicas,
-      selector: 'RR',
+      selector: "RR",
     },
   };
 }
 
 function _getSingleDbConfigParams(
   totalReplicaNodes: number,
-  dbName?: string,
+  dbName?: string
 ): MysqlConnectionCredentialsOptions[] {
   const replicas: MysqlConnectionCredentialsOptions[] = [];
 

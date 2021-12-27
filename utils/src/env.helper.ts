@@ -4,10 +4,10 @@
  */
 export const envToArray = <T>(key: string): T[] => {
   // for testing purpose we need to specify only the case of empty string here
-  if (process.env[key] === '') return [];
+  if (process.env[key] === "") return [];
 
   return (
-    <T[]>(<unknown>process.env[key]?.split(',').map((v) => v.trim())) ?? []
+    <T[]>(<unknown>process.env[key]?.split(",").map((v) => v.trim())) ?? []
   );
 };
 
@@ -15,7 +15,7 @@ export function envIsTrue(value?: string) {
   if (!value) return false;
 
   const val = value.toLowerCase();
-  return val === 'true' || val === '1' || val === 'on';
+  return val === "true" || val === "1" || val === "on";
 }
 
 /**
@@ -26,10 +26,10 @@ export function envIsTrue(value?: string) {
  */
 export function isProduction(implicitCheck = true) {
   return (
-    process.env.NODE_ENV === 'production' ||
+    process.env.NODE_ENV === "production" ||
     (implicitCheck &&
-      ['test', 'pipeline', 'development'].every(
-        (v) => process.env.NODE_ENV !== v,
+      ["test", "pipeline", "development"].every(
+        (v) => process.env.NODE_ENV !== v
       ))
   );
 }

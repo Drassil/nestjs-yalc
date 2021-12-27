@@ -6,7 +6,7 @@
  */
 export const belongsToEnum = <T>(
   enumObj: T,
-  value: string | number,
+  value: string | number
 ): boolean => {
   return Object.values(enumObj).includes(value);
 };

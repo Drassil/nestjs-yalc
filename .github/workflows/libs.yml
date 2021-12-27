@@ -1,0 +1,102 @@
+name: libs pipeline
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+
+env:
+  PROJECT_ID: libs
+  NODE_VERSION: 14
+  # other
+  GITHUB_TOKEN: ${{ secrets.READ_PACKAGE_TOKEN }}
+  NODE_ENV: "pipeline"
+  JWT_SECRET_PVT: "dummydummy"
+  JWT_SECRET_PUB: "dummydummy"
+jobs:
+  #===========================
+  #
+  #  PREPARE PIPELINE
+  #
+  #============================
+  prepare-pipeline:
+    name: Prepare pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Cache global npm
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-${{ env.PROJECT_ID }}-global-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Cache local node_modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-${{ env.PROJECT_ID }}-modules
+        with:
+          path: "node_modules"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Run install
+        run: npm install
+      - name: Check npm version
+        run: npm --version
+
+  #===========================
+  #
+  #  RUN PARALLEL JOBS
+  #
+  #============================
+  linter:
+    name: Linter checks
+    needs: prepare-pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-${{ env.PROJECT_ID }}-modules
+        with:
+          path: "node_modules"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Lint check
+        run: npm run lint:no-fix;
+
+  test-unit-common:
+    name: Common libs unit tests
+    needs: prepare-pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Restore node_modules cache
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-${{ env.PROJECT_ID }}-modules
+        with:
+          path: "node_modules"
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Test coverage
+        run: npm run test:cov

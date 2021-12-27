@@ -1,12 +1,12 @@
-import { ConsoleLogger } from './logger-console.service';
-import { PinoLogger } from './logger-pino.service';
-import { Logger as NestLogger, LoggerService, LogLevel } from '@nestjs/common';
-import { LoggerTypeEnum } from './logger.enum';
+import { ConsoleLogger } from "./logger-console.service";
+import { PinoLogger } from "./logger-pino.service";
+import { Logger as NestLogger, LoggerService, LogLevel } from "@nestjs/common";
+import { LoggerTypeEnum } from "./logger.enum";
 
 export const AppLoggerFactory = (
   context: string,
   loggerLevels: LogLevel[],
-  loggerType?: string,
+  loggerType?: string
 ): LoggerService => {
   let logger: LoggerService;
   switch (loggerType) {

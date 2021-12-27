@@ -3,10 +3,10 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-} from '@nestjs/common';
-import { map } from 'rxjs/operators';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
-import { GqlExecutionContext } from '@nestjs/graphql';
+} from "@nestjs/common";
+import { map } from "rxjs/operators";
+import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface";
+import { GqlExecutionContext } from "@nestjs/graphql";
 
 export function agGridInterceptorWorker<T>(startRow: number, endRow: number) {
   return ([page, count]: [T, number]) => {

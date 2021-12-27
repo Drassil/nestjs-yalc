@@ -1,25 +1,25 @@
-import * as _DataLoader from 'dataloader';
-import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
-import { In } from 'typeorm';
-import { IWhereCondition } from '@nestjs-yalc/ag-grid/ag-grid.type';
-import { Operators } from '@nestjs-yalc/ag-grid/ag-grid.enum';
+import * as _DataLoader from "dataloader";
+import { FindAndCountResult } from "@nestjs-yalc/database/query-builder.helper";
+import { AgGridFindManyOptions } from "@nestjs-yalc/ag-grid/ag-grid.interface";
+import { In } from "typeorm";
+import { IWhereCondition } from "@nestjs-yalc/ag-grid/ag-grid.type";
+import { Operators } from "@nestjs-yalc/ag-grid/ag-grid.enum";
 import {
   FactoryProvider,
   NotAcceptableException,
   NotFoundException,
   Optional,
   Scope,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/ag-grid/generic-service.service';
-import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+} from "@nestjs-yalc/ag-grid/generic-service.service";
+import { ClassType } from "@nestjs-yalc/types/globals";
+import { getProviderToken } from "@nestjs-yalc/ag-grid/ag-grid.helpers";
 // import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventAgGrid } from '@nestjs-yalc/ag-grid/event.enum';
-import { EventEmitter2 } from 'eventemitter2';
+import { EventAgGrid } from "@nestjs-yalc/ag-grid/event.enum";
+import { EventEmitter2 } from "eventemitter2";
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 
@@ -27,17 +27,17 @@ export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
  * Only used internally to add extra data to the Dataloader result
  */
 class _DataLoaderWithCount<
-  Entity extends Record<string, any>,
+  Entity extends Record<string, any>
 > extends _DataLoader<string, Entity[], string> {
   private count: number;
 
   constructor(
     batchFn: (
-      findManyOptions: AgGridFindManyOptions<Entity>,
+      findManyOptions: AgGridFindManyOptions<Entity>
     ) => Promise<FindAndCountResult<Entity>>,
     searchKey: keyof Entity,
     findOptions: AgGridFindManyOptions<Entity>,
-    options?: _DataLoader.Options<string, Entity[], string>,
+    options?: _DataLoader.Options<string, Entity[], string>
   ) {
     super(async (keys: Readonly<string[]>): Promise<Entity[][]> => {
       // we force the filter based on dataloader keys
@@ -95,7 +95,7 @@ class _DataLoaderWithCount<
       // following the order of the requested keys
       const entityMap: { [key: string]: Entity[] } = {};
       entities.forEach((result) => {
-        if (typeof entityMap[result[searchKey]] === 'undefined') {
+        if (typeof entityMap[result[searchKey]] === "undefined") {
           entityMap[result[searchKey]] = [result];
         } else {
           entityMap[result[searchKey]].push(result);
@@ -118,7 +118,7 @@ class _DataLoaderWithCount<
 export class GQLDataLoader<Entity extends Record<string, any> = any> {
   private count = 0;
   private batchFn: (
-    findManyOptions: AgGridFindManyOptions<Entity>,
+    findManyOptions: AgGridFindManyOptions<Entity>
   ) => Promise<FindAndCountResult<Entity>>;
   private searchKey: keyof Entity;
   private options;
@@ -132,21 +132,21 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
 
   constructor(
     getFn: (
-      findManyOptions: AgGridFindManyOptions<Entity>,
+      findManyOptions: AgGridFindManyOptions<Entity>
     ) => Promise<FindAndCountResult<Entity>>,
     searchKey: keyof Entity,
     @Optional() private readonly eventEmitter?: EventEmitter2,
-    options?: _DataLoader.Options<string, Entity[], string>,
+    options?: _DataLoader.Options<string, Entity[], string>
   ) {
     this.batchFn = async (findManyOptions: AgGridFindManyOptions<Entity>) => {
       this.eventEmitter?.emitAsync(
         EventAgGrid.START_TRANSACTION,
-        findManyOptions.info?.fieldName,
+        findManyOptions.info?.fieldName
       );
       const data = await getFn(findManyOptions);
       this.eventEmitter?.emitAsync(
         EventAgGrid.END_TRANSACTION,
-        findManyOptions.info?.fieldName,
+        findManyOptions.info?.fieldName
       );
       return data;
     };
@@ -161,16 +161,16 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
 
   private getDataloader(
     findOptions: AgGridFindManyOptions<Entity>,
-    searchKey: keyof Entity,
+    searchKey: keyof Entity
   ): _DataLoaderWithCount<Entity> {
     let DLKey = this.keyMap.get(findOptions);
 
     if (!DLKey) {
       // concat different information to create a proper dataloader key
-      DLKey = `${findOptions.select?.sort?.().join(',')}|${JSON.stringify(
-        findOptions.where ?? { filters: {} },
+      DLKey = `${findOptions.select?.sort?.().join(",")}|${JSON.stringify(
+        findOptions.where ?? { filters: {} }
       )}|${JSON.stringify(findOptions.subQueryFilters)}|${JSON.stringify(
-        findOptions.order ?? {},
+        findOptions.order ?? {}
       )}|${searchKey}`;
 
       this.keyMap.set(findOptions, DLKey);
@@ -184,7 +184,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
       this.batchFn,
       searchKey,
       findOptions,
-      this.options,
+      this.options
     );
 
     this.dataLoaders[DLKey] = dataLoader;
@@ -199,17 +199,17 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   async loadOne(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    throwOnNotFound: boolean,
+    throwOnNotFound: boolean
   ): Promise<Entity | null>;
   async loadOne(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    throwOnNotFound?: false,
+    throwOnNotFound?: false
   ): Promise<Entity | null>;
   async loadOne(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    throwOnNotFound = false,
+    throwOnNotFound = false
   ): Promise<Entity | null> {
     const result = await this.loadOneToMany(key, findOptions, false);
 
@@ -221,7 +221,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
 
     if (result.length > 1) {
       throw new NotAcceptableException(
-        `Resource with key ${key} has more than one association`,
+        `Resource with key ${key} has more than one association`
       );
     }
 
@@ -231,17 +231,17 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    withCount: false,
+    withCount: false
   ): Promise<Entity[]>;
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    withCount?: true,
+    withCount?: true
   ): Promise<FindAndCountResult<Entity>>;
   async loadOneToMany(
     key: SearchKeyType<Entity>,
     findOptions: AgGridFindManyOptions<Entity>,
-    withCount = true,
+    withCount = true
   ): Promise<FindAndCountResult<Entity> | Entity[]> {
     const keyValue = Array.isArray(key) ? key[1] : key;
     const keyName = Array.isArray(key) ? key[0] : this.searchKey;
@@ -266,18 +266,18 @@ export const getFn =
 export function DataLoaderFactory<Entity>(
   defaultSearchKey: keyof Entity,
   entity: ClassType,
-  serviceToken?: string,
+  serviceToken?: string
 ): FactoryProvider {
   return {
     provide: getDataloaderToken(entity.name),
     useFactory: (
       service: GenericService<Entity>,
-      eventEmitter: EventEmitter2,
+      eventEmitter: EventEmitter2
     ) => {
       return new GQLDataLoader<Entity>(
         getFn<Entity>(service),
         defaultSearchKey,
-        eventEmitter,
+        eventEmitter
       );
     },
     inject: [serviceToken ?? getServiceToken(entity), EventEmitter2],

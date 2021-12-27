@@ -1,23 +1,23 @@
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from "@nestjs-yalc/types";
 import {
   Field,
   HideField,
   InputType,
   IntersectionType,
   registerEnumType,
-} from '@nestjs/graphql';
+} from "@nestjs/graphql";
 import {
   agQueryParamsNoPaginationFactory,
   IAgQueryParams,
-} from './ag-grid.args';
+} from "./ag-grid.args";
 import {
   entityFieldsEnumFactory,
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from './ag-grid.enum';
-import { getEntityRelations } from './ag-grid.helpers';
+} from "./ag-grid.enum";
+import { getEntityRelations } from "./ag-grid.helpers";
 import {
   DateFilterModel,
   FilterInput,
@@ -25,7 +25,7 @@ import {
   INumberFilterModel,
   ISetFilterModel,
   ITextFilterModel,
-} from './ag-grid.interface';
+} from "./ag-grid.interface";
 
 export interface ISortModel<T = any> {
   colId: keyof T | string;
@@ -49,7 +49,7 @@ export class SortModel<T = any> implements ISortModel<T> {
   @Field(
     /* istanbul ignore next */
     () => SortDirection,
-    { nullable: true, defaultValue: 'ASC' },
+    { nullable: true, defaultValue: "ASC" }
   )
   sort!: SortDirection;
 }
@@ -64,13 +64,13 @@ export function sortModelFactory<Entity>(entityModel: ClassType<Entity>) {
   class SortModel implements ISortModelStrict<typeof fieldsEnum> {
     @Field(
       /* istanbul ignore next */
-      () => fieldsEnum,
+      () => fieldsEnum
     )
     colId!: keyof typeof fieldsEnum;
     @Field(
       /* istanbul ignore next */
       () => SortDirection,
-      { nullable: true, defaultValue: 'ASC' },
+      { nullable: true, defaultValue: "ASC" }
     )
     sort!: SortDirection;
   }
@@ -88,7 +88,7 @@ export class RowGroup {
 
 const filterExpressionInputCache = new WeakMap();
 export function filterExpressionInputFactory<Entity>(
-  entityModel: ClassType<Entity>,
+  entityModel: ClassType<Entity>
 ) {
   let cached;
   if ((cached = filterExpressionInputCache.get(entityModel))) return cached;
@@ -102,7 +102,7 @@ export function filterExpressionInputFactory<Entity>(
     type: GeneralFilters;
     @Field(
       /* istanbul ignore next */
-      () => FieldEnum,
+      () => FieldEnum
     )
     field: string;
     filter: string;
@@ -115,7 +115,7 @@ export function filterExpressionInputFactory<Entity>(
     type: GeneralFilters;
     @Field(
       /* istanbul ignore next */
-      () => FieldEnum,
+      () => FieldEnum
     )
     field: string;
     filter: number;
@@ -128,7 +128,7 @@ export function filterExpressionInputFactory<Entity>(
     type: GeneralFilters;
     @Field(
       /* istanbul ignore next */
-      () => FieldEnum,
+      () => FieldEnum
     )
     field: string;
     filter: number;
@@ -141,7 +141,7 @@ export function filterExpressionInputFactory<Entity>(
     values: string[];
     @Field(
       /* istanbul ignore next */
-      () => FieldEnum,
+      () => FieldEnum
     )
     field: string;
   }
@@ -155,25 +155,25 @@ export function filterExpressionInputFactory<Entity>(
     @Field(
       /* istanbul ignore next */
       () => FilterText,
-      { nullable: true },
+      { nullable: true }
     )
     [FilterType.TEXT]: FilterText;
     @Field(
       /* istanbul ignore next */
       () => FilterNumber,
-      { nullable: true },
+      { nullable: true }
     )
     [FilterType.NUMBER]: FilterNumber;
     @Field(
       /* istanbul ignore next */
       () => FilterDate,
-      { nullable: true },
+      { nullable: true }
     )
     [FilterType.DATE]: FilterDate;
     @Field(
       /* istanbul ignore next */
       () => FilterSet,
-      { nullable: true },
+      { nullable: true }
     )
     [FilterType.SET]: FilterSet;
   }
@@ -183,17 +183,17 @@ export function filterExpressionInputFactory<Entity>(
     @Field(
       /* istanbul ignore next */
       () => Operators,
-      { defaultValue: Operators.AND, nullable: true },
+      { defaultValue: Operators.AND, nullable: true }
     )
     operator?: Operators;
     @Field(
       /* istanbul ignore next */
-      () => [FilterExpressionProperty],
+      () => [FilterExpressionProperty]
     )
     expressions?: FilterExpressionProperty[];
     @Field(
       /* istanbul ignore next */
-      () => [FilterExpression],
+      () => [FilterExpression]
     )
     childExpressions?: FilterInput[];
   }
@@ -216,7 +216,7 @@ export interface JoinArgOptions extends IAgQueryParams {
 const JoinOptionInputCache = new WeakMap();
 export function agJoinArgFactory<Entity>(
   entityModel: ClassType<Entity>,
-  defaultValues?: IAgQueryParams,
+  defaultValues?: IAgQueryParams
 ) {
   // return memoized result if any
   const cached = JoinOptionInputCache.get(entityModel);
@@ -230,7 +230,7 @@ export function agJoinArgFactory<Entity>(
   class JoinInput {
     @Field(
       /* istanbul ignore next */
-      () => JoinTypes,
+      () => JoinTypes
     )
     joinType?: JoinTypes;
   }
@@ -246,19 +246,19 @@ export function agJoinArgFactory<Entity>(
 
   resolverInfoList.forEach((r) => {
     const type = r.relation.type;
-    if (typeof type !== 'string') {
+    if (typeof type !== "string") {
       const typeClass = type();
       @InputType(`${entityModel.name}${r.relation.propertyName}JoinInputType`)
       class JoinFullInput extends IntersectionType(
         JoinInput,
-        agQueryParamsNoPaginationFactory(defaultValues, typeClass),
+        agQueryParamsNoPaginationFactory(defaultValues, typeClass)
       ) {}
 
       JoinOptionInput.prototype[r.relation.propertyName] = JoinFullInput;
       Field(
         /* istanbul ignore next */
         () => JoinFullInput,
-        { nullable: true },
+        { nullable: true }
       )(JoinOptionInput.prototype, r.relation.propertyName);
     }
   });

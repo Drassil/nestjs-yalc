@@ -1,21 +1,21 @@
-import { Scalar, CustomScalar } from '@nestjs/graphql';
-import { Kind, ValueNode } from 'graphql';
+import { Scalar, CustomScalar } from "@nestjs/graphql";
+import { Kind, ValueNode } from "graphql";
 import {
   isCombinedFilterModel,
   isFilterModel,
   isMulticolumnJoinOptions,
-} from './ag-grid-type-checker.utils';
-import { CustomWhereKeys } from './ag-grid.enum';
-import { AgGridBadFilterTypeError } from './ag-grid.error';
+} from "./ag-grid-type-checker.utils";
+import { CustomWhereKeys } from "./ag-grid.enum";
+import { AgGridBadFilterTypeError } from "./ag-grid.error";
 import {
   FilterInput,
   IFilterInputOld,
   IMultiColumnJoinOptions,
-} from './ag-grid.interface';
+} from "./ag-grid.interface";
 
-@Scalar('FilterInput')
+@Scalar("FilterInput")
 export class FilterScalar implements CustomScalar<string, FilterInput> {
-  description = 'AG-Grid Filter scalar type';
+  description = "AG-Grid Filter scalar type";
 
   resultMemoize = new Map();
   resultMemoizeInverse = new WeakMap();
@@ -28,7 +28,7 @@ export class FilterScalar implements CustomScalar<string, FilterInput> {
     const parsedValue = JSON.parse(value);
 
     const normalizeInput = (
-      input: IFilterInputOld | IMultiColumnJoinOptions,
+      input: IFilterInputOld | IMultiColumnJoinOptions
     ): FilterInput => {
       const _normalizedInput: FilterInput = {
         expressions: [],
@@ -75,7 +75,7 @@ export class FilterScalar implements CustomScalar<string, FilterInput> {
   }
 
   serialize(value: FilterInput | string): string {
-    return typeof value === 'string'
+    return typeof value === "string"
       ? value
       : this.resultMemoizeInverse.get(value);
   }

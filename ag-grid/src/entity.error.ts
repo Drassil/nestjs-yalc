@@ -1,9 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException } from "@nestjs/common";
 
 export enum EntityErrorsEnum {
-  CREATION_FAILED = 'Resource has not been created',
-  UPDATE_FAILED = 'Resource has not been updated',
-  DELETE_FAILED = 'Resource has not been deleted',
+  CREATION_FAILED = "Resource has not been created",
+  UPDATE_FAILED = "Resource has not been updated",
+  DELETE_FAILED = "Resource has not been deleted",
 }
 
 export class EntityError extends BadRequestException {

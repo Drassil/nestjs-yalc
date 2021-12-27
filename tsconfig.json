@@ -1,0 +1,58 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "target": "es2017",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "rootDir": ".",
+    "baseUrl": "./",
+    "paths": {
+      "@nestjs-yalc/database": ["database/src"],
+      "@nestjs-yalc/database/*": ["database/src/*"],
+      "@nestjs-yalc/ag-grid": ["ag-grid/src"],
+      "@nestjs-yalc/ag-grid/*": ["ag-grid/src/*"],
+      "@nestjs-yalc/aws-helpers": ["aws-helpers/src"],
+      "@nestjs-yalc/aws-helpers/*": ["aws-helpers/src/*"],
+      "@nestjs-yalc/data-loader": ["data-loader/src"],
+      "@nestjs-yalc/data-loader/*": ["data-loader/src/*"],
+      "@nestjs-yalc/field-middleware": ["field-middleware/src"],
+      "@nestjs-yalc/field-middleware/*": ["field-middleware/src/*"],
+      "@nestjs-yalc/graphql": ["graphql/src"],
+      "@nestjs-yalc/graphql/*": ["graphql/src/*"],
+      "@nestjs-yalc/interfaces": ["interfaces/src"],
+      "@nestjs-yalc/interfaces/*": ["interfaces/src/*"],
+      "@nestjs-yalc/logger": ["logger/src"],
+      "@nestjs-yalc/logger/*": ["logger/src/*"],
+      "@nestjs-yalc/utils": ["utils/src"],
+      "@nestjs-yalc/utils/*": ["utils/src/*"],
+      "@nestjs-yalc/jest": ["jest/src"],
+      "@nestjs-yalc/jest/*": ["jest/src/*"],
+      "@nestjs-yalc/types": ["types/src"],
+      "@nestjs-yalc/types/*": ["types/src/*"]
+    }
+  },
+  "include": ["**/src/**/*.ts"],
+  "exclude": [
+    "**/node_modules",
+    "**/*spec.ts",
+    "**/__tests__",
+    "**/__mocks__",
+    "**/.webpack"
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "files": true
+  }
+}

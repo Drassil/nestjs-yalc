@@ -7,43 +7,43 @@ import {
   ResolveField,
   Resolver,
   ReturnTypeFunc,
-} from '@nestjs/graphql';
+} from "@nestjs/graphql";
 import {
   AgGridArgs,
   AgGridArgsSingle,
-} from '@nestjs-yalc/ag-grid/ag-grid-args.decorator';
+} from "@nestjs-yalc/ag-grid/ag-grid-args.decorator";
 
-import { applyDecorators, Inject, UseInterceptors } from '@nestjs/common';
-import { AgGridInterceptor } from '@nestjs-yalc/ag-grid/ag-grid.interceptor';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+import { applyDecorators, Inject, UseInterceptors } from "@nestjs/common";
+import { AgGridInterceptor } from "@nestjs-yalc/ag-grid/ag-grid.interceptor";
+import returnValue from "@nestjs-yalc/utils/returnValue";
 import {
   IExtraArg,
   AgGridFindManyOptions,
-} from '@nestjs-yalc/ag-grid/ag-grid.interface';
+} from "@nestjs-yalc/ag-grid/ag-grid.interface";
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/ag-grid/generic-service.service';
-import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
-import AgGridGqlType from './ag-grid.type';
+} from "@nestjs-yalc/ag-grid/generic-service.service";
+import { IDecoratorType, IFieldMapper } from "@nestjs-yalc/interfaces";
+import AgGridGqlType from "./ag-grid.type";
 import {
   getDataloaderToken,
   GQLDataLoader,
-} from '@nestjs-yalc/data-loader/dataloader.helper';
-import { ContextId, ContextIdFactory, ModuleRef } from '@nestjs/core';
-import { Mutation } from '@nestjs/graphql';
-import { ClassType } from '@nestjs-yalc/types';
+} from "@nestjs-yalc/data-loader/dataloader.helper";
+import { ContextId, ContextIdFactory, ModuleRef } from "@nestjs/core";
+import { Mutation } from "@nestjs/graphql";
+import { ClassType } from "@nestjs-yalc/types";
 import {
   filterTypeToNativeType,
   getEntityRelations,
   IRelationInfo,
-} from './ag-grid.helpers';
-import { getAgGridFieldMetadataList } from './object.decorator';
-import { AgGridError } from './ag-grid.error';
-import { ExtraArgsStrategy } from './ag-grid.enum';
-import { IAgQueryParams } from './ag-grid.args';
-import { InputArgs } from '@nestjs-yalc/graphql/decorators/gqlmapper.decorator';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
+} from "./ag-grid.helpers";
+import { getAgGridFieldMetadataList } from "./object.decorator";
+import { AgGridError } from "./ag-grid.error";
+import { ExtraArgsStrategy } from "./ag-grid.enum";
+import { IAgQueryParams } from "./ag-grid.args";
+import { InputArgs } from "@nestjs-yalc/graphql/decorators/gqlmapper.decorator";
+import { isClass } from "@nestjs-yalc/utils/class.helper";
 export interface IGenericResolver {
   [index: string]: any; //index signature
 }
@@ -84,13 +84,13 @@ export interface ICustomSingleQueryOptions
 }
 
 export function isCustomSingleQueryOptions(
-  option: ICustomQueryOptions | ICustomSingleQueryOptions,
+  option: ICustomQueryOptions | ICustomSingleQueryOptions
 ): option is ICustomSingleQueryOptions {
   return (<ICustomSingleQueryOptions>option).isSingleResource === true;
 }
 
 export function isCustomGridQueryOptions(
-  option: ICustomQueryOptions | IGenericResolverQueryOptions,
+  option: ICustomQueryOptions | IGenericResolverQueryOptions
 ): option is ICustomQueryOptions {
   return !!(<ICustomQueryOptions>option).extraArgs;
 }
@@ -145,7 +145,7 @@ export function generateDecorators(
   methodFn: typeof Query | typeof Mutation,
   defaultName: string,
   typeFunc: ReturnTypeFunc,
-  options?: IGenericResolverMethodOptions,
+  options?: IGenericResolverMethodOptions
 ) {
   if (options?.disabled) return [];
 
@@ -159,18 +159,18 @@ export function generateDecorators(
 }
 export function defineFieldResolver<Entity extends Record<string, any> = any>(
   resolverInfoList: IRelationInfo[],
-  resolver: ClassType<IGenericResolver>,
+  resolver: ClassType<IGenericResolver>
 ) {
   for (const resolverInfo of resolverInfoList) {
     const relType =
       resolverInfo.agField?.gqlType?.() ??
-      (typeof resolverInfo.relation.type === 'function'
+      (typeof resolverInfo.relation.type === "function"
         ? resolverInfo.relation.type()
         : resolverInfo.relation.type);
 
     if (
-      resolverInfo.relation.relationType === 'one-to-many' ||
-      resolverInfo.relation.relationType === 'many-to-many'
+      resolverInfo.relation.relationType === "one-to-many" ||
+      resolverInfo.relation.relationType === "many-to-many"
     ) {
       Object.defineProperty(
         resolver.prototype,
@@ -181,14 +181,14 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           writable: true,
           value: async function (
             parent: Entity,
-            findOptions: AgGridFindManyOptions,
+            findOptions: AgGridFindManyOptions
           ): Promise<[Array<Entity | null>, number]> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
             if (parentRes) {
               if (hasFilters(findOptions))
                 throw new AgGridError(
-                  'Cannot specify join arguments and resolver arguments at the same time',
+                  "Cannot specify join arguments and resolver arguments at the same time"
                 );
 
               return [parentRes, -1];
@@ -197,7 +197,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
             const dataLoader: GQLDataLoader<Entity> =
               await this.moduleRef.resolve(
                 getDataloaderToken(relType),
-                this.contextId,
+                this.contextId
               );
 
             const joinCol =
@@ -207,20 +207,20 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
             return dataLoader.loadOneToMany(
               [joinCol, parent[joinCol]],
               findOptions,
-              true,
+              true
             );
           },
-        },
+        }
       );
 
       const descriptor = Object.getOwnPropertyDescriptor(
         resolver.prototype,
-        resolverInfo.relation.propertyName,
+        resolverInfo.relation.propertyName
       );
 
       if (!descriptor)
         throw new ReferenceError(
-          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
+          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`
         );
 
       ResolveField(returnValue(AgGridGqlType<Entity>(relType)), {
@@ -229,7 +229,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       UseInterceptors(new AgGridInterceptor())(
         resolver.prototype,
         resolverInfo.relation.propertyName,
-        descriptor,
+        descriptor
       );
 
       Parent()(resolver.prototype, resolverInfo.relation.propertyName, 0);
@@ -243,9 +243,9 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       // without the design:paramtypes metadata
       // it won't work, the following instruction is transpiled and generated
       // when the decorators are defined in their standard way.
-      Reflect.metadata('design:paramtypes', [Object, Object])(
+      Reflect.metadata("design:paramtypes", [Object, Object])(
         resolver.prototype,
-        resolverInfo.relation.propertyName,
+        resolverInfo.relation.propertyName
       );
     } else {
       /**
@@ -261,14 +261,14 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           writable: true,
           value: async function (
             parent: Entity,
-            findOptions: AgGridFindManyOptions,
+            findOptions: AgGridFindManyOptions
           ): Promise<Entity | null> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
             if (parentRes) {
               if (hasFilters(findOptions))
                 throw new AgGridError(
-                  'Cannot specify join arguments and resolver arguments at the same time',
+                  "Cannot specify join arguments and resolver arguments at the same time"
                 );
 
               return parentRes;
@@ -277,7 +277,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
             const dataLoader: GQLDataLoader<Entity> =
               await this.moduleRef.resolve(
                 getDataloaderToken(relType),
-                this.contextId,
+                this.contextId
               );
 
             /* istanbul ignore next */
@@ -288,20 +288,20 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
             return dataLoader.loadOne(
               [joinCol, parent[joinCol]],
               findOptions,
-              false,
+              false
             );
           },
-        },
+        }
       );
 
       const descriptor = Object.getOwnPropertyDescriptor(
         resolver.prototype,
-        resolverInfo.relation.propertyName,
+        resolverInfo.relation.propertyName
       );
 
       if (!descriptor)
         throw new ReferenceError(
-          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
+          `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`
         );
 
       ResolveField(returnValue(relType), {
@@ -313,15 +313,15 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       AgGridArgsSingle({ fieldType: relType, entityType: relType })(
         resolver.prototype,
         resolverInfo.relation.propertyName,
-        1,
+        1
       );
 
       // without the design:paramtypes metadata
       // it won't work, the following instruction is transpiled and generated
       // when the decorators are defined in their standard way.
-      Reflect.metadata('design:paramtypes', [Object, Array])(
+      Reflect.metadata("design:paramtypes", [Object, Array])(
         resolver.prototype,
-        resolverInfo.relation.propertyName,
+        resolverInfo.relation.propertyName
       );
     }
   }
@@ -330,33 +330,33 @@ export function defineGetSingleResource<Entity>(
   queryName: string,
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
-  methodOptions: IGenericResolverQueryOptions,
+  methodOptions: IGenericResolverQueryOptions
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
     writable: true,
     value: async function (
       id: string,
-      findOptions: AgGridFindManyOptions<Entity>,
+      findOptions: AgGridFindManyOptions<Entity>
     ): Promise<Entity | null> {
       const dataLoader: GQLDataLoader<Entity> = this.dataLoader;
 
       return dataLoader.loadOne(
         [dataLoader.getSearchKey(), id],
         findOptions,
-        methodOptions.throwOnNotFound ?? false,
+        methodOptions.throwOnNotFound ?? false
       );
     },
   });
 
   const descriptor = Object.getOwnPropertyDescriptor(
     resolver.prototype,
-    queryName,
+    queryName
   );
 
   if (!descriptor)
     throw new ReferenceError(
-      `${resolver.name}.${queryName} must have a descriptor`,
+      `${resolver.name}.${queryName} must have a descriptor`
     );
 
   applyDecorators(
@@ -364,17 +364,17 @@ export function defineGetSingleResource<Entity>(
       Query,
       queryName,
       methodOptions.returnType ?? returnValue(returnType),
-      methodOptions,
-    ),
+      methodOptions
+    )
   )(resolver.prototype, queryName, descriptor);
 
   const fieldType = methodOptions.returnType?.() ?? returnType;
   const entityType =
-    !isClass(fieldType) && typeof fieldType === 'function'
+    !isClass(fieldType) && typeof fieldType === "function"
       ? fieldType()
       : fieldType;
 
-  Args(methodOptions.idName ?? 'ID', {
+  Args(methodOptions.idName ?? "ID", {
     nullable: false,
     type: returnValue(String),
   })(resolver.prototype, queryName, 0);
@@ -383,9 +383,9 @@ export function defineGetSingleResource<Entity>(
     entityType,
   })(resolver.prototype, queryName, 1);
 
-  Reflect.metadata('design:paramtypes', [Object, Array])(
+  Reflect.metadata("design:paramtypes", [Object, Array])(
     resolver.prototype,
-    queryName,
+    queryName
   );
 }
 
@@ -393,13 +393,13 @@ export function defineGetGridResource<Entity>(
   queryName: string,
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
-  methodOptions: IGenericResolverQueryOptions | ICustomQueryOptions,
+  methodOptions: IGenericResolverQueryOptions | ICustomQueryOptions
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
     writable: true,
     value: async function (
-      findOptions: AgGridFindManyOptions,
+      findOptions: AgGridFindManyOptions
     ): Promise<[Entity[], number]> {
       return this.service.getEntityListAgGrid(findOptions, true);
     },
@@ -407,12 +407,12 @@ export function defineGetGridResource<Entity>(
 
   const descriptor = Object.getOwnPropertyDescriptor(
     resolver.prototype,
-    queryName,
+    queryName
   );
 
   if (!descriptor)
     throw new ReferenceError(
-      `${resolver.name}.${queryName} must have a descriptor`,
+      `${resolver.name}.${queryName} must have a descriptor`
     );
 
   applyDecorators(
@@ -421,19 +421,19 @@ export function defineGetGridResource<Entity>(
       queryName,
       methodOptions.returnType ??
         returnValue(AgGridGqlType<Entity>(returnType)),
-      methodOptions,
-    ),
+      methodOptions
+    )
   )(resolver.prototype, queryName, descriptor);
 
   UseInterceptors(new AgGridInterceptor())(
     resolver.prototype,
     queryName,
-    descriptor,
+    descriptor
   );
 
   const fieldType = methodOptions.returnType?.() ?? returnType;
   const entityType =
-    !isClass(fieldType) && typeof fieldType === 'function'
+    !isClass(fieldType) && typeof fieldType === "function"
       ? fieldType()
       : fieldType;
 
@@ -449,7 +449,7 @@ export function defineGetGridResource<Entity>(
 
     if (methodOptions.extraArgs) {
       extraArgTypes = Object.values(methodOptions.extraArgs).map((a) =>
-        filterTypeToNativeType(a.filterType),
+        filterTypeToNativeType(a.filterType)
       );
     }
   } else {
@@ -460,8 +460,8 @@ export function defineGetGridResource<Entity>(
   }
 
   Reflect.metadata(
-    'design:paramtypes',
-    extraArgTypes.length ? [...extraArgTypes, Object] : [Object],
+    "design:paramtypes",
+    extraArgTypes.length ? [...extraArgTypes, Object] : [Object]
   )(resolver.prototype, queryName);
 }
 
@@ -470,7 +470,7 @@ export function defineCreateMutation<Entity>(
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
   options: IGenericResolverOptions<Entity>,
-  methodOptions: IGenericResolverQueryOptions,
+  methodOptions: IGenericResolverQueryOptions
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
@@ -482,12 +482,12 @@ export function defineCreateMutation<Entity>(
 
   const descriptor = Object.getOwnPropertyDescriptor(
     resolver.prototype,
-    queryName,
+    queryName
   );
 
   if (!descriptor)
     throw new ReferenceError(
-      `${resolver.name}.${queryName} must have a descriptor`,
+      `${resolver.name}.${queryName} must have a descriptor`
     );
 
   applyDecorators(
@@ -495,8 +495,8 @@ export function defineCreateMutation<Entity>(
       Mutation,
       queryName,
       methodOptions.returnType ?? returnValue(returnType),
-      methodOptions,
-    ),
+      methodOptions
+    )
   )(resolver.prototype, queryName, descriptor);
 
   InputArgs({
@@ -506,12 +506,12 @@ export function defineCreateMutation<Entity>(
         () => options.input?.create ?? returnType,
     },
     fieldType: options.input?.create ?? returnType,
-    _name: 'input',
+    _name: "input",
   })(resolver.prototype, queryName, 0);
 
-  Reflect.metadata('design:paramtypes', [Object])(
+  Reflect.metadata("design:paramtypes", [Object])(
     resolver.prototype,
-    queryName,
+    queryName
   );
 }
 
@@ -520,14 +520,14 @@ export function defineUpdateMutation<Entity>(
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
   options: IGenericResolverOptions<Entity>,
-  methodOptions: IGenericResolverQueryOptions,
+  methodOptions: IGenericResolverQueryOptions
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
     writable: true,
     value: async function (
       conditions: Entity,
-      input: Entity,
+      input: Entity
     ): Promise<Entity | null> {
       return this.service.updateEntity(conditions, input);
     },
@@ -535,12 +535,12 @@ export function defineUpdateMutation<Entity>(
 
   const descriptor = Object.getOwnPropertyDescriptor(
     resolver.prototype,
-    queryName,
+    queryName
   );
 
   if (!descriptor)
     throw new ReferenceError(
-      `${resolver.name}.${queryName} must have a descriptor`,
+      `${resolver.name}.${queryName} must have a descriptor`
     );
 
   applyDecorators(
@@ -548,8 +548,8 @@ export function defineUpdateMutation<Entity>(
       Mutation,
       `${options.prefix}update${options.entityModel.name}`,
       methodOptions.returnType ?? returnValue(returnType),
-      methodOptions,
-    ),
+      methodOptions
+    )
   )(resolver.prototype, queryName, descriptor);
 
   InputArgs({
@@ -559,7 +559,7 @@ export function defineUpdateMutation<Entity>(
         /* istanbul ignore next */
         () => options.input?.conditions ?? returnType,
     },
-    _name: 'conditions',
+    _name: "conditions",
   })(resolver.prototype, queryName, 0);
 
   InputArgs({
@@ -569,12 +569,12 @@ export function defineUpdateMutation<Entity>(
         /* istanbul ignore next */
         () => options.input?.update ?? returnType,
     },
-    _name: 'input',
+    _name: "input",
   })(resolver.prototype, queryName, 1);
 
-  Reflect.metadata('design:paramtypes', [Object, Object])(
+  Reflect.metadata("design:paramtypes", [Object, Object])(
     resolver.prototype,
-    queryName,
+    queryName
   );
 }
 
@@ -583,7 +583,7 @@ export function defineDeleteMutation<Entity>(
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
   options: IGenericResolverOptions<Entity>,
-  methodOptions: IGenericResolverQueryOptions,
+  methodOptions: IGenericResolverQueryOptions
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
@@ -595,12 +595,12 @@ export function defineDeleteMutation<Entity>(
 
   const descriptor = Object.getOwnPropertyDescriptor(
     resolver.prototype,
-    queryName,
+    queryName
   );
 
   if (!descriptor)
     throw new ReferenceError(
-      `${resolver.name}.${queryName} must have a descriptor`,
+      `${resolver.name}.${queryName} must have a descriptor`
     );
 
   applyDecorators(
@@ -608,8 +608,8 @@ export function defineDeleteMutation<Entity>(
       Mutation,
       queryName,
       returnValue(Boolean),
-      methodOptions,
-    ),
+      methodOptions
+    )
   )(resolver.prototype, queryName, descriptor);
 
   InputArgs({
@@ -619,22 +619,22 @@ export function defineDeleteMutation<Entity>(
         /* istanbul ignore next */
         () => options.input?.conditions ?? returnType,
     },
-    _name: 'conditions',
+    _name: "conditions",
   })(resolver.prototype, queryName, 0);
 
-  Reflect.metadata('design:paramtypes', [Object])(
+  Reflect.metadata("design:paramtypes", [Object])(
     resolver.prototype,
-    queryName,
+    queryName
   );
 }
 
 export function resolverFactory<Entity extends Record<string, any> = any>(
-  options: IGenericResolverOptions<Entity>,
+  options: IGenericResolverOptions<Entity>
 ): {
   new (
     service: GenericService<Entity>,
     dataloader: GQLDataLoader<Entity>,
-    moduleRef: ModuleRef,
+    moduleRef: ModuleRef
   ): IGenericResolver;
 } {
   const returnType = options.dto ?? options.entityModel;
@@ -647,15 +647,15 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
 
     constructor(
       @Inject(
-        options.service?.serviceToken ?? getServiceToken(options.entityModel),
+        options.service?.serviceToken ?? getServiceToken(options.entityModel)
       )
       protected service: GenericService<Entity>,
       @Inject(
         options.service?.dataLoaderToken ??
-          getDataloaderToken(options.entityModel),
+          getDataloaderToken(options.entityModel)
       )
       protected dataLoader: GQLDataLoader<Entity>,
-      protected moduleRef: ModuleRef,
+      protected moduleRef: ModuleRef
     ) {
       this.contextId = ContextIdFactory.create();
       this.moduleRef;
@@ -669,7 +669,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
    */
   const resolverInfoList: IRelationInfo[] = getEntityRelations(
     options.entityModel,
-    options.dto,
+    options.dto
   );
 
   const fieldMetadataList = getAgGridFieldMetadataList(options.entityModel);
@@ -749,7 +749,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     returnType,
     Mutations,
     options,
-    createOptions,
+    createOptions
   );
 
   defineUpdateMutation(
@@ -757,7 +757,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     returnType,
     Mutations,
     options,
-    updateOptions,
+    updateOptions
   );
 
   defineDeleteMutation(
@@ -765,7 +765,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     returnType,
     Mutations,
     options,
-    deleteOptions,
+    deleteOptions
   );
 
   const getResourceOptions = options.queries?.getResource ?? {};
@@ -785,14 +785,14 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     `${options.prefix}get${options.entityModel.name}`,
     returnType,
     GenericResolver,
-    getResourceOptions,
+    getResourceOptions
   );
 
   defineGetGridResource(
     `${options.prefix}get${options.entityModel.name}Grid`,
     returnType,
     GenericResolver,
-    getResourceGridOptions,
+    getResourceGridOptions
   );
 
   /**
@@ -818,14 +818,14 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
           queryName,
           returnType,
           GenericResolver,
-          queryOptions,
+          queryOptions
         );
       } else {
         defineGetGridResource(
           queryName,
           returnType,
           GenericResolver,
-          queryOptions,
+          queryOptions
         );
       }
     }
