@@ -1,6 +1,6 @@
 export enum DateCheckTypeEnum {
-  MAX = "max",
-  MIN = "min",
+  MAX = 'max',
+  MIN = 'min',
 }
 
 export interface IDate {

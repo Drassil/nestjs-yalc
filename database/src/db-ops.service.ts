@@ -1,18 +1,18 @@
 /* istanbul ignore file */
 
-import { Injectable, LoggerService, Provider } from "@nestjs/common";
+import { Injectable, LoggerService, Provider } from '@nestjs/common';
 import {
   CannotExecuteNotConnectedError,
   Connection,
   ConnectionOptions,
   MigrationExecutor,
-} from "typeorm";
-import { getDBNameByConnection } from "./conn.helper";
-import * as Engine from "typeorm-model-generator/dist/src/Engine";
-import { getDefaultConnectionOptions } from "typeorm-model-generator/dist/src/IConnectionOptions";
-import { getDefaultGenerationOptions } from "typeorm-model-generator/dist/src/IGenerationOptions";
-import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
-import IConnectionOptions from "typeorm-model-generator/dist/src/IConnectionOptions";
+} from 'typeorm';
+import { getDBNameByConnection } from './conn.helper';
+import * as Engine from 'typeorm-model-generator/dist/src/Engine';
+import { getDefaultConnectionOptions } from 'typeorm-model-generator/dist/src/IConnectionOptions';
+import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
+import IConnectionOptions from 'typeorm-model-generator/dist/src/IConnectionOptions';
 
 export type MigrationSelection = { [database: string]: string[] };
 
@@ -34,7 +34,7 @@ export class DbOpsService {
   constructor(
     _options: any,
     private loggerService: LoggerService,
-    private dbConnections: { conn: Connection; dbName: string }[]
+    private dbConnections: { conn: Connection; dbName: string }[],
   ) {}
 
   public async closeAllConnections() {
@@ -46,13 +46,13 @@ export class DbOpsService {
   public async create() {
     for (const v of this.dbConnections) {
       const queryRunner = v.conn.createQueryRunner();
-      this.loggerService.log("Creating " + v.dbName);
+      this.loggerService.log('Creating ' + v.dbName);
       await queryRunner.createDatabase(v.dbName, true);
     }
   }
 
   public async sync(throwOnError = false, dropTables = false) {
-    this.loggerService.debug?.("Synchronizing db...");
+    this.loggerService.debug?.('Synchronizing db...');
     for (const v of this.dbConnections) {
       this.loggerService.debug?.(`Synchronizing ${v.dbName}...`);
       try {
@@ -66,7 +66,7 @@ export class DbOpsService {
       }
     }
 
-    this.loggerService.debug?.("Synchronze completed!");
+    this.loggerService.debug?.('Synchronze completed!');
   }
 
   public async drop() {
@@ -78,7 +78,7 @@ export class DbOpsService {
   }
 
   public async migrate(options?: MigrationOptions) {
-    this.loggerService.debug?.("Migrating db...");
+    this.loggerService.debug?.('Migrating db...');
 
     for (const v of this.dbConnections) {
       if (!v.conn.isConnected)
@@ -87,7 +87,7 @@ export class DbOpsService {
       const queryRunner = v.conn.createQueryRunner();
 
       const migrationExecutor = new MigrationExecutor(v.conn, queryRunner);
-      migrationExecutor.transaction = "all";
+      migrationExecutor.transaction = 'all';
 
       const migrations = await migrationExecutor.getAllMigrations();
 
@@ -102,8 +102,8 @@ export class DbOpsService {
       if (options && options.selMigrations) {
         this.loggerService.debug?.(
           `Executing selected migrations ${JSON.stringify(
-            options.selMigrations
-          )} for ${dbName}`
+            options.selMigrations,
+          )} for ${dbName}`,
         );
 
         const pendingMigrations =
@@ -120,7 +120,7 @@ export class DbOpsService {
               selectedMigrations.includes(migration.name))
           ) {
             this.loggerService.debug?.(
-              `Executing migration ${migration.name} for ${dbName}`
+              `Executing migration ${migration.name} for ${dbName}`,
             );
             await migrationExecutor.executeMigration(migration);
           }
@@ -131,13 +131,13 @@ export class DbOpsService {
       }
     }
 
-    this.loggerService.debug?.("Migration completed!");
+    this.loggerService.debug?.('Migration completed!');
   }
 
   public async generate(dbName: string, tables: string[], genPath?: string) {
-    this.loggerService.debug?.("Exporting db to TypeORM entities...");
+    this.loggerService.debug?.('Exporting db to TypeORM entities...');
 
-    const driver = Engine.createDriver("mysql");
+    const driver = Engine.createDriver('mysql');
 
     const mysqlConnectionOptions: MysqlConnectionOptions[] = [];
     this.dbConnections.forEach(({ conn: { options } }) => {
@@ -149,7 +149,7 @@ export class DbOpsService {
     if (!mysqlConnectionOptions.length) {
       this.loggerService.error(
         `There is no MySQL database connection configured for ${dbName}. ` +
-          "Please refer to the documentation for Database Connection Setup"
+          'Please refer to the documentation for Database Connection Setup',
       );
       return;
     }
@@ -157,10 +157,10 @@ export class DbOpsService {
     for (const options of mysqlConnectionOptions) {
       const connOptions: IConnectionOptions = {
         ...getDefaultConnectionOptions(),
-        host: options.host ?? "127.0.0.1",
+        host: options.host ?? '127.0.0.1',
         port: options.port ?? 3306,
-        password: options.password ?? "",
-        user: options.username ?? "",
+        password: options.password ?? '',
+        user: options.username ?? '',
         databaseNames: options.database ? [options.database] : [],
         databaseType: options.type,
         onlyTables: tables,
@@ -179,18 +179,18 @@ export class DbOpsService {
       await Engine.createModelFromDatabase(
         driver,
         connOptions,
-        generationOptions
+        generationOptions,
       );
     }
 
-    this.loggerService.debug?.("Export complete!");
+    this.loggerService.debug?.('Export complete!');
   }
 }
 
 export function isMysqlConnectionOption(
-  options: ConnectionOptions | MysqlConnectionOptions
+  options: ConnectionOptions | MysqlConnectionOptions,
 ): options is MysqlConnectionOptions {
-  return (options as ConnectionOptions).type === "mysql";
+  return (options as ConnectionOptions).type === 'mysql';
 }
 
 export const dbConnectionMap = (c: Connection) => ({
@@ -200,7 +200,7 @@ export const dbConnectionMap = (c: Connection) => ({
 
 export const DbObpsServiceFactory = (
   loggerService: string,
-  connectionTokens: any[]
+  connectionTokens: any[],
 ): Provider => ({
   provide: DbOpsService,
   useFactory: async (
@@ -210,7 +210,7 @@ export const DbObpsServiceFactory = (
     return new DbOpsService(
       {},
       loggerService,
-      dbConnections.map(dbConnectionMap)
+      dbConnections.map(dbConnectionMap),
     );
   },
   inject: [loggerService, ...connectionTokens],

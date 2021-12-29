@@ -1,16 +1,16 @@
-import { ArgsType, Field } from "@nestjs/graphql";
-import { FilterInput } from "./ag-grid.interface";
+import { ArgsType, Field } from '@nestjs/graphql';
+import { FilterInput } from './ag-grid.interface';
 import {
   filterExpressionInputFactory,
   ISortModelStrict,
   JoinArgOptions,
   SortModel,
   sortModelFactory,
-} from "./ag-grid.input";
-import { FilterScalar } from "./filter.scalar";
-import returnValue from "@nestjs-yalc/utils/returnValue";
-import { ClassType } from "@nestjs-yalc/types";
-import { RowDefaultValues } from "./ag-grid.enum";
+} from './ag-grid.input';
+import { FilterScalar } from './filter.scalar';
+import returnValue from '@nestjs-yalc/utils/returnValue';
+import { ClassType } from '@nestjs-yalc/types';
+import { RowDefaultValues } from './ag-grid.enum';
 
 export interface IAgQueryParams<T = any> {
   [index: string]: any; // dynamic parameters
@@ -24,7 +24,7 @@ export interface IAgQueryParams<T = any> {
 export const typeMap = new WeakMap();
 export function agQueryParamsFactory(
   defaultValues?: IAgQueryParams,
-  entityModel?: ClassType
+  entityModel?: ClassType,
 ): { new (): IAgQueryParams } {
   const SortType = entityModel ? [sortModelFactory(entityModel)] : [SortModel];
   const FilterType = entityModel
@@ -53,7 +53,7 @@ export function agQueryParamsFactory(
 
 export function agQueryParamsNoPaginationFactory(
   defaultValues?: IAgQueryParams,
-  entityModel?: ClassType
+  entityModel?: ClassType,
 ): { new (): IAgQueryParams } {
   const SortType = entityModel ? [sortModelFactory(entityModel)] : [SortModel];
   const FilterType = entityModel

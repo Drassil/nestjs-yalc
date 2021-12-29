@@ -1,5 +1,5 @@
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { Args, GqlExecutionContext } from "@nestjs/graphql";
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Args, GqlExecutionContext } from '@nestjs/graphql';
 import {
   Not,
   Equal,
@@ -12,14 +12,14 @@ import {
   Between,
   In,
   IsNull,
-} from "typeorm";
-import { GqlAgGridFieldsMapper } from "@nestjs-yalc/ag-grid/gqlfields.decorator";
-import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface";
+} from 'typeorm';
+import { GqlAgGridFieldsMapper } from '@nestjs-yalc/ag-grid/gqlfields.decorator';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import {
   IAgQueryParams,
   agQueryParamsFactory,
   agQueryParamsNoPaginationFactory,
-} from "./ag-grid.args";
+} from './ag-grid.args';
 import {
   GeneralFilters,
   FilterType,
@@ -27,7 +27,7 @@ import {
   Operators,
   ExtraArgsStrategy,
   RowDefaultValues,
-} from "./ag-grid.enum";
+} from './ag-grid.enum';
 import {
   AgGridFindManyOptions,
   DateFilterModel,
@@ -39,13 +39,13 @@ import {
   ISetFilterModel,
   IAgGridArgsOptions,
   IAgGridArgsSingleOptions,
-} from "./ag-grid.interface";
+} from './ag-grid.interface';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
-} from "./ag-grid.type";
+} from './ag-grid.type';
 import {
   applyJoinArguments,
   columnConversion,
@@ -53,24 +53,24 @@ import {
   isAskingForCount,
   isSymbolic,
   objectToFieldMapper,
-} from "./ag-grid.helpers";
+} from './ag-grid.helpers';
 import {
   AgGridError,
   AgGridFilterNotSupportedError,
   AgGridFilterProhibited,
   AgGridInvalidArgumentError,
   AgGridInvalidOperatorError,
-} from "./ag-grid.error";
-import { DateHelper } from "@nestjs-yalc/utils/date.helper";
-import { EntityFieldsNames } from "typeorm/common/EntityFieldsNames";
-import { agJoinArgFactory } from "./ag-grid.input";
-import returnValue from "@nestjs-yalc/utils/returnValue";
-import { GraphQLResolveInfo } from "graphql";
-import { FilterOption, FilterOptionType } from "./object.decorator";
+} from './ag-grid.error';
+import { DateHelper } from '@nestjs-yalc/utils/date.helper';
+import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
+import { agJoinArgFactory } from './ag-grid.input';
+import returnValue from '@nestjs-yalc/utils/returnValue';
+import { GraphQLResolveInfo } from 'graphql';
+import { FilterOption, FilterOptionType } from './object.decorator';
 import {
   ArgumentsError,
   MissingArgumentsError,
-} from "@nestjs-yalc/ag-grid/missing-arguments.error";
+} from '@nestjs-yalc/ag-grid/missing-arguments.error';
 import {
   isCombinedFilterModel,
   isDateFilterModel,
@@ -78,7 +78,7 @@ import {
   isNumberFilterModel,
   isSetFilterModel,
   isTextFilterModel,
-} from "./ag-grid-type-checker.utils";
+} from './ag-grid-type-checker.utils';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {
@@ -102,7 +102,7 @@ export function getTextFilter(filter: string, firstParameter: string) {
 export function getNumberFilter(
   filter: string,
   firstParameter: number,
-  secondParameter?: number
+  secondParameter?: number,
 ): FindOperator<number> {
   switch (filter.toLowerCase()) {
     case GeneralFilters.EQUALS.toLowerCase():
@@ -127,7 +127,7 @@ export function getNumberFilter(
 export function getDateFilter(
   filter: string,
   firstParameter: string,
-  secondParameter?: string
+  secondParameter?: string,
 ) {
   switch (filter.toLowerCase()) {
     case GeneralFilters.EQUALS.toLowerCase():
@@ -146,11 +146,11 @@ export function getDateFilter(
         23,
         59,
         59,
-        999
+        999,
       );
       return Between(
         DateHelper.dateToSQLDateTime(new Date(dateFrom)),
-        DateHelper.dateToSQLDateTime(new Date(dateTo))
+        DateHelper.dateToSQLDateTime(new Date(dateTo)),
       );
     default:
       throw new AgGridFilterNotSupportedError(`filter: ${filter} type: DATE`);
@@ -159,7 +159,7 @@ export function getDateFilter(
 
 export function filterSwitch(
   filter: FilterModel,
-  filterName?: string
+  filterName?: string,
 ): FindOperator<number | string | Date | null> {
   let arg1: findOperatorTypes = undefined;
   let arg2: findOperatorTypes = undefined;
@@ -192,7 +192,7 @@ export function getFindOperator(
   filterType: FilterType,
   filterName: string,
   arg1: any,
-  arg2?: any
+  arg2?: any,
 ): FindOperator<number | string | Date | null> {
   if (filterName.toLowerCase() === GeneralFilters.IS_NULL.toLowerCase()) {
     return IsNull();
@@ -208,13 +208,13 @@ export function getFindOperator(
       return In(arg1);
     default:
       throw new AgGridFilterNotSupportedError(
-        `filter: ${filterName} type: ${filterType}`
+        `filter: ${filterName} type: ${filterType}`,
       );
   }
 }
 
 export function convertFilter(
-  filter: FilterModel | ICombinedSimpleModel
+  filter: FilterModel | ICombinedSimpleModel,
 ): FindOperator<string | number | Date | null> | ICombinedWhereModel {
   if (isCombinedFilterModel(filter)) {
     if (
@@ -235,7 +235,7 @@ export function convertFilter(
   let filterToApply;
   if (
     !isSetFilterModel(filter) &&
-    filter.type.startsWith("not") &&
+    filter.type.startsWith('not') &&
     filter.type !== GeneralFilters.NOT
   ) {
     filterToApply = Not(filterSwitch(filter, filter.type.substring(3)));
@@ -250,7 +250,7 @@ export function resolveFilter(
     | ICombinedSimpleModel
     | ISimpleFilterModel
     | DateFilterModel
-    | ISetFilterModel
+    | ISetFilterModel,
 ): IWhereConditionType {
   let filterToApply: FindOperator<findOperatorTypes> | ICombinedWhereModel;
   if (
@@ -270,13 +270,13 @@ export function createWhere(
   filtersObject: FilterInput,
   fieldMapper: IFieldMapper | undefined,
   alias?: string,
-  where: IWhereCondition = { filters: {} }
+  where: IWhereCondition = { filters: {} },
 ): IWhereCondition {
   if (!filtersObject) {
     return where;
   }
 
-  const prefix = alias ? `${alias}.` : "";
+  const prefix = alias ? `${alias}.` : '';
 
   const filtersObjectCleared: FilterModel[] = [];
 
@@ -290,7 +290,7 @@ export function createWhere(
        */
       if (exprTypes.length > 1) {
         throw new AgGridError(
-          `Field can't use more than one expression type on same expression: ${exprTypes}`
+          `Field can't use more than one expression type on same expression: ${exprTypes}`,
         );
       }
 
@@ -299,7 +299,7 @@ export function createWhere(
       const expr = field[exprType];
 
       if (!expr)
-        throw new Error("Expression not found! It should never happen");
+        throw new Error('Expression not found! It should never happen');
 
       const dbFieldName = columnConversion(fieldMapper, expr.field);
 
@@ -335,7 +335,7 @@ export function createWhere(
 
   if (filtersObject.childExpressions) {
     filtersObject.childExpressions.forEach((expr) =>
-      childExpressions.push(createWhere(expr, fieldMapper))
+      childExpressions.push(createWhere(expr, fieldMapper)),
     );
   }
 
@@ -346,7 +346,7 @@ export function createWhere(
 
 export function removeSymbolicSelection(
   select: string[],
-  data: IFieldMapper | undefined
+  data: IFieldMapper | undefined,
 ): string[] {
   for (let i = 0; i < select.length; i++) {
     if (isSymbolic(data, select[i])) {
@@ -359,11 +359,11 @@ export function removeSymbolicSelection(
 
 export function checkFilterScope(
   where: IWhereCondition,
-  filterOption: FilterOption
+  filterOption: FilterOption,
 ) {
   for (const key of Object.keys(where.filters)) {
     if (
-      !key.includes(".") &&
+      !key.includes('.') &&
       filterOption.fields &&
       (filterOption.type === FilterOptionType.INCLUDE
         ? !filterOption.fields.includes(key)
@@ -382,7 +382,7 @@ export function mapAgGridParams(
   params: IAgGridArgsOptions | undefined,
   ctx: GqlExecutionContext,
   args: IAgQueryParams,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ): AgGridFindManyOptions {
   let filterOption: FilterOption | undefined;
   let fieldMapper: IFieldMapper = {};
@@ -414,7 +414,7 @@ export function mapAgGridParams(
 
   // MAP sorting -> order
   const order: {
-    [P in EntityFieldsNames]?: "ASC" | "DESC" | 1 | -1;
+    [P in EntityFieldsNames]?: 'ASC' | 'DESC' | 1 | -1;
   } = {};
 
   const sorting = args.sorting ?? defaultSorting;
@@ -422,10 +422,10 @@ export function mapAgGridParams(
     sorting.forEach((sortParams) => {
       const colName = columnConversion(
         fieldMapper,
-        sortParams.colId.toString()
+        sortParams.colId.toString(),
       );
       const val = sortParams.sort?.toUpperCase();
-      const sortDir: "ASC" | "DESC" = <SortDirection>val ?? "ASC";
+      const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
       order[colName] = sortDir;
     });
   }
@@ -439,7 +439,7 @@ export function mapAgGridParams(
       return requestRow;
     } else {
       throw new AgGridError(
-        `Invalid max number of row selected: cannot exeed max ${maxRow}`
+        `Invalid max number of row selected: cannot exeed max ${maxRow}`,
       );
     }
   };
@@ -455,17 +455,17 @@ export function mapAgGridParams(
       case ExtraArgsStrategy.AT_LEAST_ONE:
         if (
           args.length <= 0 ||
-          extraArgsKeys.every((argName) => typeof args[argName] === "undefined")
+          extraArgsKeys.every((argName) => typeof args[argName] === 'undefined')
         )
           throw new MissingArgumentsError();
         break;
       case ExtraArgsStrategy.ONLY_ONE:
         if (
           extraArgsKeys.filter(
-            (argName) => typeof args[argName] !== "undefined"
+            (argName) => typeof args[argName] !== 'undefined',
           ).length > 1
         )
-          throw new ArgumentsError("You must define only one extra arguments");
+          throw new ArgumentsError('You must define only one extra arguments');
         break;
       case ExtraArgsStrategy.DEFAULT:
       default:
@@ -501,7 +501,7 @@ export function mapAgGridParams(
       findManyOptions,
       params.entityType.name,
       args.join,
-      fieldMapper
+      fieldMapper,
     );
   }
 
@@ -510,7 +510,7 @@ export function mapAgGridParams(
 
 export const AgGridArgsFactory = <T>(
   data: IAgGridArgsOptions | undefined,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ): AgGridFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
@@ -518,7 +518,7 @@ export const AgGridArgsFactory = <T>(
     data,
     gqlCtx,
     gqlCtx.getArgs(),
-    gqlCtx.getInfo()
+    gqlCtx.getInfo(),
   );
 
   return params;
@@ -534,7 +534,7 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
   if (params.extraArgs) {
     for (const argName of Object.keys(params.extraArgs)) {
       argDecorators.push(
-        Args(argName, params.extraArgs[argName].options ?? {})
+        Args(argName, params.extraArgs[argName].options ?? {}),
       );
     }
   }
@@ -543,11 +543,11 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
   if (params.entityType) {
     const JoinOptionInput = agJoinArgFactory(
       params.entityType,
-      params.defaultValue
+      params.defaultValue,
     );
 
     if (JoinOptionInput) {
-      joinArg = Args("join", {
+      joinArg = Args('join', {
         type:
           /*istanbul ignore next */
           () => JoinOptionInput,
@@ -570,7 +570,7 @@ export const AgGridArgs = (params: IAgGridArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
-      agQueryParamsFactory(params.defaultValue, params.entityType)
+      agQueryParamsFactory(params.defaultValue, params.entityType),
     );
   }
 
@@ -586,7 +586,7 @@ export const AgGridArgsNoPagination = (params: IAgGridArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
-      agQueryParamsNoPaginationFactory(params.defaultValue, params.entityType)
+      agQueryParamsNoPaginationFactory(params.defaultValue, params.entityType),
     );
   }
 
@@ -598,7 +598,7 @@ export const AgGridArgsNoPagination = (params: IAgGridArgsOptions) => {
 export function AgGridArgsSingleDecoratorMapper<T>(
   params: IAgGridArgsOptions | undefined,
   args: IAgQueryParams,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ): AgGridFindManyOptions<T> {
   const findManyOptions: AgGridFindManyOptions = {};
 
@@ -614,7 +614,7 @@ export function AgGridArgsSingleDecoratorMapper<T>(
           findManyOptions,
           params.entityType.name,
           args.join,
-          fieldMapper.field
+          fieldMapper.field,
         );
       }
     }
@@ -625,19 +625,19 @@ export function AgGridArgsSingleDecoratorMapper<T>(
 
 export const AgGridArgsSingleDecoratorFactory = <T>(
   data: IAgGridArgsOptions | undefined,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ): AgGridFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
   return AgGridArgsSingleDecoratorMapper<T>(
     data,
     gqlCtx.getArgs(),
-    gqlCtx.getInfo()
+    gqlCtx.getInfo(),
   );
 };
 
 export const AgGridArgsSingleDecorator = createParamDecorator(
-  AgGridArgsSingleDecoratorFactory
+  AgGridArgsSingleDecoratorFactory,
 );
 
 export const AgGridArgsSingle = (params: IAgGridArgsSingleOptions) => {
@@ -646,7 +646,7 @@ export const AgGridArgsSingle = (params: IAgGridArgsSingleOptions) => {
     const JoinOptionInput = agJoinArgFactory(params.entityType);
 
     if (JoinOptionInput) {
-      joinArg = Args("join", {
+      joinArg = Args('join', {
         type:
           /*istanbul ignore next */
           () => JoinOptionInput,

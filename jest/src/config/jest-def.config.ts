@@ -1,24 +1,23 @@
 /* istanbul ignore file */
 
-import * as path from "path";
-import { pathsToModuleNameMapper } from "ts-jest/utils";
-import { compilerOptions } from "../../../tsconfig.json";
-import { defaults } from "jest-config";
+import * as path from 'path';
+import { pathsToModuleNameMapper } from 'ts-jest/utils';
+import { defaults } from 'jest-config';
 
 export const coveragePathIgnorePatterns = [
-  "/env/dist/",
-  "/node_modules/",
-  "/database/seeds/",
-  "/database/migrations/",
-  "/test/feature/",
+  '/env/dist/',
+  '/node_modules/',
+  '/database/seeds/',
+  '/database/migrations/',
+  '/test/feature/',
 ];
 
-export const globals = (tsConfPath = "") => {
+export const globals = (tsConfPath = '') => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const tsConfig = require(path.resolve(tsConfPath));
   return {
     __JEST_DISABLE_DB: true,
-    "ts-jest": {
+    'ts-jest': {
       tsconfig: {
         ...tsConfig.compilerOptions,
         emitDecoratorMetadata: false,
@@ -80,43 +79,48 @@ export const coverageThreshold = (projects: any[] = []) => {
   return coverage;
 };
 
-export const globalsE2E = (tsConfPath = "") => ({
-  "ts-jest": {
+export const globalsE2E = (tsConfPath = '') => ({
+  'ts-jest': {
     astTransformers: {
-      before: [path.join(__dirname, "gql-plugin.js")],
+      before: [path.join(__dirname, 'gql-plugin.js')],
     },
     diagnostics: false,
     tsconfig: path.resolve(tsConfPath),
   },
 });
 
-const defaultConf = (dirname: string) => ({
-  rootDir: dirname,
-  modulePathIgnorePatterns: [
-    "<rootDir>/var/",
-    "<rootDir>/env/",
-    "<rootDir>/docs/",
-    "<rootDir>/node_modules/",
-  ],
-  preset: "ts-jest",
-  coverageProvider: "v8",
-  testEnvironment: "node",
-  moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"], // add typescript to the default options
-  testRegex: ".*\\.spec\\.ts$",
-  transform: {
-    "^.+\\.(t|j)s$": "ts-jest",
-  },
-  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-    prefix: dirname,
-  }),
-  errorOnDeprecated: true,
-});
+const defaultConf = (dirname: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const compilerOptions = require(`${dirname}tsconfig.json`).compilerOptions;
+
+  return {
+    rootDir: dirname,
+    modulePathIgnorePatterns: [
+      '<rootDir>/var/',
+      '<rootDir>/env/',
+      '<rootDir>/docs/',
+      '<rootDir>/node_modules/',
+    ],
+    preset: 'ts-jest',
+    coverageProvider: 'v8',
+    testEnvironment: 'node',
+    moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
+    testRegex: '.*\\.spec\\.ts$',
+    transform: {
+      '^.+\\.(t|j)s$': 'ts-jest',
+    },
+    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+      prefix: dirname,
+    }),
+    errorOnDeprecated: true,
+  };
+};
 
 export const createE2EConfig = (alias: string, dirname: string) => ({
   ...defaultConf(dirname),
   name: `e2e/${alias}`,
   displayName: `e2e/${alias}`,
-  testRegex: "main.ts",
+  testRegex: 'main.ts',
   setupFilesAfterEnv: [`${dirname}/jest.e2e-setup.ts`],
   roots: [`${dirname}`],
   globals: globalsE2E(path.resolve(`${dirname}/../tsconfig.json`)),

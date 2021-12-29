@@ -1,10 +1,10 @@
-import { UUIDValidationError } from "./uuid-validation.error";
-import { Scalar, CustomScalar } from "@nestjs/graphql";
-import { Kind, ValueNode } from "graphql";
+import { UUIDValidationError } from './uuid-validation.error';
+import { Scalar, CustomScalar } from '@nestjs/graphql';
+import { Kind, ValueNode } from 'graphql';
 
-@Scalar("UUID")
+@Scalar('UUID')
 export class UUIDScalar implements CustomScalar<string, string> {
-  description = "UUID Scalar Type";
+  description = 'UUID Scalar Type';
 
   parseValue(value: string): string {
     if (!validateUUID(value))
@@ -43,13 +43,13 @@ export function validateUUID(uuid: string) {
     return false;
   }
   for (const i of dashPosition) {
-    if (uuidCopy[i] !== "-") {
+    if (uuidCopy[i] !== '-') {
       return false;
     }
     delete uuidCopy[i];
   }
   for (const char of uuidCopy) {
-    if (char === "-") {
+    if (char === '-') {
       return false;
     }
   }

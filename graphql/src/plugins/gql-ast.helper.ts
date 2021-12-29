@@ -1,4 +1,4 @@
-import { FieldNode, SelectionNode } from "graphql";
+import { FieldNode, SelectionNode } from 'graphql';
 
 export class GqlASTHelper {
   static filterFieldNodes(selections: SelectionNode[]): FieldNode[] {
@@ -6,6 +6,6 @@ export class GqlASTHelper {
   }
 
   static isFieldNode(selectionNode: SelectionNode): selectionNode is FieldNode {
-    return selectionNode.kind === "Field";
+    return selectionNode.kind === 'Field';
   }
 }

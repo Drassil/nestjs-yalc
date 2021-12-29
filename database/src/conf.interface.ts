@@ -1,5 +1,5 @@
-import { Seeder } from "typeorm-seeding";
-import { MysqlConnectionOptions } from "typeorm/driver/mysql/MysqlConnectionOptions";
+import { Seeder } from 'typeorm-seeding';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 
 export interface IDbConfType extends MysqlConnectionOptions {
   factories?: string[];

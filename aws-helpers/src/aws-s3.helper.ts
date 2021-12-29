@@ -1,4 +1,4 @@
-import * as aws from "aws-sdk";
+import * as aws from 'aws-sdk';
 
 const URL_EXPIRATION_TIME = 60;
 export const getFileFromS3 = async (filePath: string): Promise<string> => {
@@ -7,7 +7,7 @@ export const getFileFromS3 = async (filePath: string): Promise<string> => {
   });
   return new Promise((resolve, reject) => {
     s3.getSignedUrl(
-      "getObject",
+      'getObject',
       {
         Key: filePath,
         Bucket: process.env.S3_BUCKET,
@@ -18,7 +18,7 @@ export const getFileFromS3 = async (filePath: string): Promise<string> => {
           reject(err);
         }
         resolve(url);
-      }
+      },
     );
   });
 };

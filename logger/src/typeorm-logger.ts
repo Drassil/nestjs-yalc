@@ -1,12 +1,12 @@
-import { LoggerService } from "@nestjs/common";
-import { EventEmitter2 } from "@nestjs/event-emitter";
-import { Logger } from "typeorm";
-import { LoggerEvent } from "./logger.event";
+import { LoggerService } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Logger } from 'typeorm';
+import { LoggerEvent } from './logger.event';
 
 export class TypeORMLogger implements Logger {
   constructor(
     private logger: LoggerService,
-    private eventEmitter: EventEmitter2
+    private eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -14,7 +14,7 @@ export class TypeORMLogger implements Logger {
    */
   logQuery(
     query: string,
-    parameters?: any[] /*, queryRunner?: QueryRunner*/
+    parameters?: any[] /*, queryRunner?: QueryRunner*/,
   ): any {
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_LOG, query);
     this.logger.debug?.(`query: ${query}, parameters: ${parameters}`);
@@ -25,12 +25,12 @@ export class TypeORMLogger implements Logger {
   logQueryError(
     error: string | Error,
     query: string,
-    parameters?: any[]
+    parameters?: any[],
     // queryRunner?: QueryRunner,
   ): any {
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_ERROR, query, error);
     this.logger.error?.(
-      `error: ${error}, query: ${query}, parameters: ${parameters}`
+      `error: ${error}, query: ${query}, parameters: ${parameters}`,
     );
   }
   /**
@@ -39,12 +39,12 @@ export class TypeORMLogger implements Logger {
   logQuerySlow(
     time: number,
     query: string,
-    parameters?: any[]
+    parameters?: any[],
     // queryRunner?: QueryRunner,
   ): any {
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_SLOW, query, time);
     this.logger.warn?.(
-      `SLOW QUERY!!!! time: ${time}, query: ${query}, parameters: ${parameters}`
+      `SLOW QUERY!!!! time: ${time}, query: ${query}, parameters: ${parameters}`,
     );
   }
   /**
@@ -64,18 +64,18 @@ export class TypeORMLogger implements Logger {
    * Log has its own level and message.
    */
   log(
-    level: "log" | "info" | "warn",
-    message: any
+    level: 'log' | 'info' | 'warn',
+    message: any,
     // queryRunner?: QueryRunner,
   ): any {
     switch (level) {
-      case "log":
+      case 'log':
         this.logger.log?.(message);
         break;
-      case "info":
+      case 'info':
         this.logger.verbose?.(message);
         break;
-      case "warn":
+      case 'warn':
         this.logger.warn?.(message);
         break;
     }

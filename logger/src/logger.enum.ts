@@ -1,9 +1,9 @@
 export enum LogLevelEnum {
-  LOG = "log",
-  ERROR = "error",
-  WARN = "warn",
-  DEBUG = "debug",
-  VERBOSE = "verbose",
+  LOG = 'log',
+  ERROR = 'error',
+  WARN = 'warn',
+  DEBUG = 'debug',
+  VERBOSE = 'verbose',
 }
 
 export const LOG_LEVEL_ALL = [
@@ -15,7 +15,7 @@ export const LOG_LEVEL_ALL = [
 ];
 
 export enum LoggerTypeEnum {
-  CONSOLE = "console",
-  PINO = "pino",
-  NEST = "nest-logger",
+  CONSOLE = 'console',
+  PINO = 'pino',
+  NEST = 'nest-logger',
 }

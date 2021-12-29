@@ -1,59 +1,59 @@
-import { DataLoaderFactory } from "@nestjs-yalc/data-loader/dataloader.helper";
-import { QueryBuilderHelper } from "@nestjs-yalc/database/query-builder.helper";
+import { DataLoaderFactory } from '@nestjs-yalc/data-loader/dataloader.helper';
+import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
 import {
   IFieldMapper,
   isFieldMapper,
-} from "@nestjs-yalc/interfaces/maps.interface";
-import { ClassType } from "@nestjs-yalc/types";
-import { FactoryProvider, Provider } from "@nestjs/common";
-import { ReturnTypeFuncValue } from "@nestjs/graphql";
-import { GraphQLResolveInfo } from "graphql";
-import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from "typeorm";
-import { JoinColumnMetadataArgs } from "typeorm/metadata-args/JoinColumnMetadataArgs";
-import { RelationMetadataArgs } from "typeorm/metadata-args/RelationMetadataArgs";
-import { createWhere, getFindOperator } from "./ag-grid-args.decorator";
+} from '@nestjs-yalc/interfaces/maps.interface';
+import { ClassType } from '@nestjs-yalc/types';
+import { FactoryProvider, Provider } from '@nestjs/common';
+import { ReturnTypeFuncValue } from '@nestjs/graphql';
+import { GraphQLResolveInfo } from 'graphql';
+import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
+import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs';
+import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs';
+import { createWhere, getFindOperator } from './ag-grid-args.decorator';
 import {
   isCombinedWhereModel,
   isFindOperator,
-} from "./ag-grid-type-checker.utils";
-import { FilterType, Operators } from "./ag-grid.enum";
+} from './ag-grid-type-checker.utils';
+import { FilterType, Operators } from './ag-grid.enum';
 import {
   AgGridConditionNotSupportedError,
   AgGridNotPossibleError,
   AgGridStringWhereError,
-} from "./ag-grid.error";
-import { JoinArgOptions, JoinTypes } from "./ag-grid.input";
+} from './ag-grid.error';
+import { JoinArgOptions, JoinTypes } from './ag-grid.input';
 import {
   IExtraArg,
   AgGridFindManyOptions,
   FilterInput,
-} from "./ag-grid.interface";
+} from './ag-grid.interface';
 import {
   AgGridRepository,
   AgGridRepositoryFactory,
-} from "./ag-grid.repository";
+} from './ag-grid.repository';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
   IWhereFilters,
-} from "./ag-grid.type";
+} from './ag-grid.type';
 import {
   IGenericResolverOptions,
   resolverFactory,
-} from "./generic-resolver.resolver";
-import { GenericServiceFactory } from "./generic-service.service";
+} from './generic-resolver.resolver';
+import { GenericServiceFactory } from './generic-service.service';
 import {
   getAgGridFieldMetadataList,
   getAgGridObjectMetadata,
   IAgGridFieldMetadata,
   IFieldAndFilterMapper,
-} from "./object.decorator";
+} from './object.decorator';
 
 export const columnConversion = (
   data: IFieldMapper | undefined,
-  key: string
+  key: string,
 ): string => {
   if (data) {
     const dst = data[key]?.dst ?? key;
@@ -65,7 +65,7 @@ export const columnConversion = (
 
 export const getFieldMapperSrcByDst = (
   data: IFieldMapper | undefined,
-  dst: string
+  dst: string,
 ): string => {
   if (data) {
     for (const src of Object.keys(data)) {
@@ -78,7 +78,7 @@ export const getFieldMapperSrcByDst = (
 
 export const isSymbolic = (
   data: IFieldMapper | undefined,
-  key: string
+  key: string,
 ): boolean => {
   if (data && data[key]) {
     return data[key].isSymbolic ? true : false;
@@ -90,11 +90,11 @@ export const isSymbolic = (
 export const forceFilters = (
   where: IWhereCondition | string | undefined,
   properties: IFilterArg[],
-  fieldMap: IFieldMapper | undefined
+  fieldMap: IFieldMapper | undefined,
 ): IWhereCondition => {
   // typeORM where property can be a string as type but we do not allow to use
   // string with this filter. Should never happen though
-  if (typeof where === "string") {
+  if (typeof where === 'string') {
     throw new AgGridStringWhereError();
   }
 
@@ -104,7 +104,7 @@ export const forceFilters = (
         where,
         columnConversion(fieldMap, property.key),
         property.value,
-        property.descriptors
+        property.descriptors,
       );
     }
   }
@@ -120,13 +120,13 @@ export const forceFilterWorker = (
   where: IWhereCondition | undefined,
   target: string,
   value: findOperatorTypes,
-  descriptors?: IExtraArg
+  descriptors?: IExtraArg,
 ): IWhereCondition => {
   const filter = descriptors
     ? getFindOperator(
         descriptors.filterType,
         descriptors.filterCondition,
-        value
+        value,
       )
     : Equal(value);
 
@@ -147,9 +147,9 @@ export function whereObjectToSqlString<Entity>(
   fieldMap?: {
     parent: IFieldMapper;
     joined: IFieldMapper | { [key: string]: IFieldMapper };
-  }
+  },
 ) {
-  let sql = "";
+  let sql = '';
 
   const operator = (where.operator ?? Operators.AND).toUpperCase(); // first level is always AND
 
@@ -158,7 +158,7 @@ export function whereObjectToSqlString<Entity>(
       const generatedSql = whereObjectToSqlString(
         queryBuilder,
         childExpression,
-        alias
+        alias,
       );
 
       if (!generatedSql) return;
@@ -185,12 +185,12 @@ export function whereObjectToSqlString<Entity>(
           queryBuilder,
           operation.filter_1,
           QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
-          operation.filter_1.value
+          operation.filter_1.value,
         )} ${operation.operator.toUpperCase()} ${QueryBuilderHelper.computeFindOperatorExpression(
           queryBuilder,
           operation.filter_2,
           QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
-          operation.filter_2.value
+          operation.filter_2.value,
         )}) ${operator} `;
       } else {
         /**
@@ -204,13 +204,13 @@ export function whereObjectToSqlString<Entity>(
         queryBuilder,
         operation,
         QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
-        operation.value
+        operation.value,
       )} ${operator} `;
-    } else if (typeof operation === "string") {
+    } else if (typeof operation === 'string') {
       sql += `${QueryBuilderHelper.addAlias(
         key.toString(),
         alias,
-        fieldMap
+        fieldMap,
       )} ${operation} ${operator}`;
     } else {
       throw new AgGridConditionNotSupportedError(JSON.stringify(operation));
@@ -218,7 +218,7 @@ export function whereObjectToSqlString<Entity>(
   }
   //At the end of the cycle we will have an operator and an excess space, and we remove them
   sql = sql.substring(0, sql.lastIndexOf(operator));
-  sql = sql.substring(0, sql.lastIndexOf(" "));
+  sql = sql.substring(0, sql.lastIndexOf(' '));
   return sql;
 }
 
@@ -227,10 +227,10 @@ export const isAskingForCount = (info: GraphQLResolveInfo): boolean => {
     return (
       info.fieldNodes?.[0].selectionSet?.selections.some((item: any) => {
         return (
-          item.name.value === "pageData" &&
+          item.name.value === 'pageData' &&
           item.selectionSet &&
           item.selectionSet.selections.some(
-            (subItem: any) => subItem.name.value === "count"
+            (subItem: any) => subItem.name.value === 'count',
           )
         );
       }) ?? false
@@ -243,9 +243,13 @@ export const isAskingForCount = (info: GraphQLResolveInfo): boolean => {
 
 const objectToFieldMapperCache = new WeakMap();
 export const objectToFieldMapper = (
-  object: IFieldMapper | IFieldAndFilterMapper | ReturnTypeFuncValue | ClassType
+  object:
+    | IFieldMapper
+    | IFieldAndFilterMapper
+    | ReturnTypeFuncValue
+    | ClassType,
 ): IFieldAndFilterMapper => {
-  if (typeof object !== "symbol") {
+  if (typeof object !== 'symbol') {
     const cached = objectToFieldMapperCache.get(object);
     if (cached) {
       return cached;
@@ -280,19 +284,19 @@ export const objectToFieldMapper = (
   } else if (Object.keys(object).length !== 0) {
     throw new TypeError(
       `This object is not compatible with IFieldMapper ${JSON.stringify(
-        object
-      )}`
+        object,
+      )}`,
     );
   }
 
-  if (typeof object !== "symbol")
+  if (typeof object !== 'symbol')
     objectToFieldMapperCache.set(object, fieldMapper);
 
   return fieldMapper;
 };
 
 export function isIFieldAndFilterMapper(
-  val: IFieldMapper | IFieldAndFilterMapper
+  val: IFieldMapper | IFieldAndFilterMapper,
 ): val is IFieldAndFilterMapper {
   return val?.field !== undefined;
 }
@@ -319,7 +323,7 @@ interface IDataLoaderOptions<Entity> {
 export interface IAgGridDependencyFactoryOptions<Entity> {
   entityModel: ClassType<Entity>;
   resolver?:
-    | Omit<IGenericResolverOptions<Entity>, "entityModel">
+    | Omit<IGenericResolverOptions<Entity>, 'entityModel'>
     | IProviderOverride
     | false;
   service?: IGeneridServiceOptions<Entity> | IProviderOverride;
@@ -328,7 +332,7 @@ export interface IAgGridDependencyFactoryOptions<Entity> {
 }
 
 export function isProviderOverride(
-  resolver: any
+  resolver: any,
 ): resolver is IProviderOverride {
   const casted = resolver as IProviderOverride;
   return !!casted.providerClass;
@@ -361,8 +365,8 @@ export function AgGridDependencyFactory<Entity>({
       providers.push(
         GenericServiceFactory<Entity>(
           service.entityModel ?? entityModel,
-          service.dbConnection
-        )
+          service.dbConnection,
+        ),
       );
     }
   }
@@ -379,8 +383,8 @@ export function AgGridDependencyFactory<Entity>({
         DataLoaderFactory<Entity>(
           dataloader.databaseKey,
           dataloader.entityModel ?? entityModel,
-          serviceToken
-        )
+          serviceToken,
+        ),
       );
     }
   }
@@ -393,14 +397,14 @@ export function AgGridDependencyFactory<Entity>({
       };
     } else if (serviceToken || dataLoaderToken) {
       throw new Error(
-        "Both service and dataloader providers must be defined when using custom ones"
+        'Both service and dataloader providers must be defined when using custom ones',
       );
     }
 
     providers.push(
       resolver && isProviderOverride(resolver)
         ? resolver.providerClass
-        : resolverFactory<Entity>(resolverOptions)
+        : resolverFactory<Entity>(resolverOptions),
     );
   }
 
@@ -411,13 +415,13 @@ export function AgGridDependencyFactory<Entity>({
 }
 
 export function getProviderToken(entity: ClassType | Provider | string) {
-  if (entity && typeof entity === "object" && entity.provide) {
-    return typeof entity.provide === "function"
+  if (entity && typeof entity === 'object' && entity.provide) {
+    return typeof entity.provide === 'function'
       ? entity.provide.name
       : entity.provide.toString();
   }
 
-  return typeof entity === "function" ? entity.name : entity.toString();
+  return typeof entity === 'function' ? entity.name : entity.toString();
 }
 
 export function filterTypeToNativeType(type: FilterType) {
@@ -433,7 +437,7 @@ export function filterTypeToNativeType(type: FilterType) {
   }
 
   throw new TypeError(
-    `Filter type not supported for native conversion: ${type}`
+    `Filter type not supported for native conversion: ${type}`,
   );
 }
 
@@ -445,18 +449,18 @@ export interface IRelationInfo {
 
 export function getEntityRelations<Entity, DTO = Entity>(
   entityModel: ClassType<Entity>,
-  dto?: ClassType<DTO>
+  dto?: ClassType<DTO>,
 ): IRelationInfo[] {
   const relations = getMetadataArgsStorage().relations.filter(
     (v) =>
-      typeof v.target !== "string" &&
-      (entityModel.prototype instanceof v.target || entityModel === v.target)
+      typeof v.target !== 'string' &&
+      (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
   const joinColumns = getMetadataArgsStorage().joinColumns.filter(
     (v) =>
-      typeof v.target !== "string" &&
-      (entityModel.prototype instanceof v.target || entityModel === v.target)
+      typeof v.target !== 'string' &&
+      (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
   const agGridMetadata = getAgGridFieldMetadataList(dto ?? entityModel);
@@ -464,7 +468,7 @@ export function getEntityRelations<Entity, DTO = Entity>(
   return relations.map((r: RelationMetadataArgs) => ({
     relation: r,
     join: joinColumns.find(
-      (j: JoinColumnMetadataArgs) => j.propertyName === r.propertyName
+      (j: JoinColumnMetadataArgs) => j.propertyName === r.propertyName,
     ),
     agField: agGridMetadata
       ? Object.values(agGridMetadata).find((v) => v.dst === r.propertyName)
@@ -475,8 +479,8 @@ export function getEntityRelations<Entity, DTO = Entity>(
 export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
   const columns = getMetadataArgsStorage().columns.filter(
     (v) =>
-      typeof v.target !== "string" &&
-      (entityModel.prototype instanceof v.target || entityModel === v.target)
+      typeof v.target !== 'string' &&
+      (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
   // to get ag-grid fields
@@ -504,7 +508,7 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
 }
 
 export function getMappedTypeProperties<Entity>(
-  entityModel: ClassType<Entity>
+  entityModel: ClassType<Entity>,
 ) {
   const fieldMapper = objectToFieldMapper(entityModel);
 
@@ -520,7 +524,7 @@ export function applyJoinArguments(
   findManyOptions: AgGridFindManyOptions,
   alias: string,
   join: { [index: string]: JoinArgOptions },
-  fieldMapper: IFieldMapper
+  fieldMapper: IFieldMapper,
 ): void {
   const _joinObject: {
     alias: string;
@@ -549,7 +553,7 @@ export function applyJoinArguments(
         j.filters,
         fieldMapper,
         table,
-        findManyOptions.where
+        findManyOptions.where,
       );
     }
   });
@@ -558,7 +562,7 @@ export function applyJoinArguments(
 }
 
 export function isFilterExpressionInput(
-  filterInput: any
+  filterInput: any,
 ): filterInput is FilterInput {
   const casted = filterInput as FilterInput;
   return !!casted.expressions;
@@ -566,7 +570,7 @@ export function isFilterExpressionInput(
 
 export function traverseFiltersAndApplyFunction(
   where: IWhereCondition,
-  callback: { (value: IWhereFilters, key: string): void }
+  callback: { (value: IWhereFilters, key: string): void },
 ): void {
   const filters: IWhereFilters = where.filters;
 
@@ -576,7 +580,7 @@ export function traverseFiltersAndApplyFunction(
 
   if (Array.isArray(where.childExpressions)) {
     where.childExpressions.map((expr) =>
-      traverseFiltersAndApplyFunction(expr, callback)
+      traverseFiltersAndApplyFunction(expr, callback),
     );
   }
 }

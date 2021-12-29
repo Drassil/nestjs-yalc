@@ -1,13 +1,13 @@
-import { IFieldMapper } from "@nestjs-yalc/interfaces";
-import { ClassType } from "@nestjs-yalc/types/globals";
+import { IFieldMapper } from '@nestjs-yalc/interfaces';
+import { ClassType } from '@nestjs-yalc/types/globals';
 import {
   addFieldMetadata,
   FieldOptions,
   ReturnTypeFunc,
-} from "@nestjs/graphql";
-import "reflect-metadata";
-import { RelationType } from "typeorm/metadata/types/RelationTypes";
-import { IAgQueryParams } from "./ag-grid.args";
+} from '@nestjs/graphql';
+import 'reflect-metadata';
+import { RelationType } from 'typeorm/metadata/types/RelationTypes';
+import { IAgQueryParams } from './ag-grid.args';
 
 export interface IAgGridFieldOptions {
   dst?: string;
@@ -46,8 +46,8 @@ export interface IAgGridFieldMetadata<T = any> extends IAgGridFieldOptions {
   };
 }
 
-export const AGGRID_OBJECT_METADATA_KEY = Symbol("AGGRID_OBJECT_METADATA_KEY");
-export const AGGRID_FIELD_METADATA_KEY = Symbol("AGGRID_FIELD_METADATA_KEY");
+export const AGGRID_OBJECT_METADATA_KEY = Symbol('AGGRID_OBJECT_METADATA_KEY');
+export const AGGRID_FIELD_METADATA_KEY = Symbol('AGGRID_FIELD_METADATA_KEY');
 
 export const AgGridField = <T = any>({
   gqlType,
@@ -70,7 +70,7 @@ export const AgGridField = <T = any>({
     Reflect.defineMetadata(
       AGGRID_FIELD_METADATA_KEY,
       metadata,
-      classConstructor
+      classConstructor,
     );
 
     // graphql field metadata
@@ -79,27 +79,27 @@ export const AgGridField = <T = any>({
         <ReturnTypeFunc>gqlType ?? <FieldOptions>gqlOptions,
         gqlOptions ?? {},
         target,
-        propertyName
+        propertyName,
       );
     }
   };
 };
 
 export const getAgGridFieldMetadataList = (
-  target: Record<string, unknown> | ClassType
+  target: Record<string, unknown> | ClassType,
 ): { [key: string]: IAgGridFieldMetadata } | undefined => {
   return Reflect.getMetadata(AGGRID_FIELD_METADATA_KEY, target);
 };
 
 export const hasAgGridFieldMetadataList = (
-  target: Record<string, unknown> | ClassType
+  target: Record<string, unknown> | ClassType,
 ): boolean => {
   return Reflect.hasMetadata(AGGRID_FIELD_METADATA_KEY, target);
 };
 
 export const getAgGridFieldMetadata = (
   target: Record<string, unknown> | ClassType,
-  propertyName: string | symbol
+  propertyName: string | symbol,
 ): IAgGridFieldMetadata | undefined => {
   const metadata = getAgGridFieldMetadataList(target);
 
@@ -112,7 +112,7 @@ export const getAgGridFieldMetadata = (
 
 export const hasAgGridFieldMetadata = (
   target: Record<string, unknown> | ClassType,
-  propertyName: string
+  propertyName: string,
 ): boolean => {
   const metadata = Reflect.getMetadata(AGGRID_FIELD_METADATA_KEY, target);
 
@@ -135,19 +135,19 @@ export const AgGridObject = (options?: AgGridObjectOptions): ClassDecorator => {
     Reflect.defineMetadata(
       AGGRID_OBJECT_METADATA_KEY,
       metadata,
-      target.constructor
+      target.constructor,
     );
   };
 };
 
 export const getAgGridObjectMetadata = (
-  target: Record<string, unknown> | ClassType
+  target: Record<string, unknown> | ClassType,
 ): FilterOption => {
   return Reflect.getMetadata(AGGRID_OBJECT_METADATA_KEY, target.constructor);
 };
 
 export const hasAgGridObjectMetadata = (
-  target: Record<string, unknown> | ClassType
+  target: Record<string, unknown> | ClassType,
 ): boolean => {
   return Reflect.hasMetadata(AGGRID_OBJECT_METADATA_KEY, target.constructor);
 };
@@ -158,9 +158,9 @@ export const hasAgGridObjectMetadata = (
  */
 export enum FilterOptionType {
   /** include fields specified inside the array of fields and exclude all the others */
-  INCLUDE = "include",
+  INCLUDE = 'include',
   /** exclude fields specified inside the array of fields and include all the others */
-  EXCLUDE = "exclude",
+  EXCLUDE = 'exclude',
 }
 
 export type FilterOption = {

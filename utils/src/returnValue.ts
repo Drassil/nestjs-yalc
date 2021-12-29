@@ -1,4 +1,4 @@
-import { ObjectType } from "typeorm";
+import { ObjectType } from 'typeorm';
 
 export const returnValue = <T>(value: any): { (): ObjectType<T> } => {
   return () => value;
@@ -8,7 +8,7 @@ export const returnValue = <T>(value: any): { (): ObjectType<T> } => {
  * Helper function for typeorm decorators
  */
 export const returnProperty = <T>(
-  property: keyof T
+  property: keyof T,
 ): { (relationEntity: T): T[keyof T] } => {
   return (relationEntity: T) => relationEntity[property];
 };

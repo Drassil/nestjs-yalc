@@ -1,5 +1,5 @@
-import { belongsToEnum } from "@nestjs-yalc/utils/enum.helper";
-import { ValueTransformer } from "typeorm";
+import { belongsToEnum } from '@nestjs-yalc/utils/enum.helper';
+import { ValueTransformer } from 'typeorm';
 
 /**
  * Function for transforming the unfitting enum data to null after reading it from the database

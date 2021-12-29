@@ -1,18 +1,18 @@
 import {
   QueryBuilderHelper,
   ReplicationMode,
-} from "@nestjs-yalc/database/query-builder.helper";
-import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface";
-import { ClassType } from "@nestjs-yalc/types";
-import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type";
+} from '@nestjs-yalc/database/query-builder.helper';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { ClassType } from '@nestjs-yalc/types';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import {
   EntityRepository,
   FindOptionsUtils,
   Repository,
   SelectQueryBuilder,
-} from "typeorm";
-import { whereObjectToSqlString } from "./ag-grid.helpers";
-import { AgGridFindManyOptions } from "./ag-grid.interface";
+} from 'typeorm';
+import { whereObjectToSqlString } from './ag-grid.helpers';
+import { AgGridFindManyOptions } from './ag-grid.interface';
 
 export class AgGridRepository<Entity> extends Repository<Entity> {
   protected entity: EntityClassOrSchema;
@@ -41,7 +41,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
-    qb?: SelectQueryBuilder<Entity>
+    qb?: SelectQueryBuilder<Entity>,
   ): SelectQueryBuilder<Entity> {
     //We will use functions to apply sorting and filters
     const {
@@ -61,7 +61,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     queryBuilder =
       FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
         queryBuilder,
-        strippedFindOptions
+        strippedFindOptions,
       );
 
     if (extra && extra.rawLimit === true) {
@@ -81,7 +81,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
         queryBuilder,
         where,
         queryBuilder.alias,
-        fieldMap
+        fieldMap,
       );
 
       //Let's convert the filterObject into an sql string
@@ -92,7 +92,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     const sortingColumns = QueryBuilderHelper.applyOrderToJoinedQueryBuilder(
       findOptions,
       queryBuilder.alias,
-      fieldMap
+      fieldMap,
     );
     sortingColumns.forEach((v: any) => {
       queryBuilder.addOrderBy(v.key, v.operator);
@@ -105,7 +105,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
-    }
+    },
   ) {
     const queryBuilder = this.createQueryBuilder();
 
@@ -114,8 +114,8 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
       const subQuery = this.getFormattedAgGridQueryBuilder(
         findOptions.subQueryFilters,
-        fieldMap
-      ).select("*");
+        fieldMap,
+      ).select('*');
 
       joinQueryBuilder.from(`(${subQuery.getQuery()})`, queryBuilder.alias);
 
@@ -131,14 +131,14 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       return this.getFormattedAgGridQueryBuilder(
         findOptions,
         fieldMap,
-        joinQueryBuilder
+        joinQueryBuilder,
       );
     }
 
     return this.getFormattedAgGridQueryBuilder(
       findOptions,
       fieldMap,
-      queryBuilder
+      queryBuilder,
     );
   }
 
@@ -151,7 +151,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
-    }
+    },
   ): Promise<[Entity[], number]> {
     // console.log('==========START QUERY==============');
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
@@ -186,7 +186,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
-    }
+    },
   ): Promise<Entity[]> {
     // console.log('==========START QUERY==============');
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
@@ -197,12 +197,12 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
   async getOneAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
     withFail?: boolean,
-    mode?: ReplicationMode
+    mode?: ReplicationMode,
   ): Promise<Entity>;
   async getOneAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
     withFail?: boolean,
-    mode: ReplicationMode = ReplicationMode.SLAVE
+    mode: ReplicationMode = ReplicationMode.SLAVE,
   ): Promise<Entity | undefined> {
     // console.log('==========START QUERY==============');
     const queryBuilder = this.getFormattedAgGridQueryBuilder(findOptions);
@@ -213,7 +213,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     return QueryBuilderHelper.applyOperationToQueryBuilder(
       queryBuilder,
       mode,
-      returnFunction
+      returnFunction,
     );
   }
 }
@@ -230,7 +230,7 @@ export function qbGetOneOrFail<Entity>(conditions: any) {
 const repositoryMap = new WeakMap();
 
 export function AgGridRepositoryFactory<Entity>(
-  entity: ClassType<Entity>
+  entity: ClassType<Entity>,
 ): ClassType<AgGridRepository<Entity>> {
   let cached;
   if ((cached = repositoryMap.get(entity))) return cached;
@@ -239,7 +239,7 @@ export function AgGridRepositoryFactory<Entity>(
     ({ [name]: class extends AgGridRepository<Entity> {} }[name]);
 
   const repo: ClassType<AgGridRepository<Entity>> = dynamicClass(
-    `${entity.name}Repository`
+    `${entity.name}Repository`,
   );
 
   EntityRepository(entity)(repo);

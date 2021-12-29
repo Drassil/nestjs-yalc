@@ -1,10 +1,10 @@
-import { registerDecorator, ValidationOptions } from "class-validator";
-import { StringFormatEnum } from "./string-format.enum";
-import { validateDate, validateStringFormat } from "./validator.helper";
-import { IStringFormatMatchCheckOptions } from "./validator.interface";
+import { registerDecorator, ValidationOptions } from 'class-validator';
+import { StringFormatEnum } from './string-format.enum';
+import { validateDate, validateStringFormat } from './validator.helper';
+import { IStringFormatMatchCheckOptions } from './validator.interface';
 
 export const stringFormatMatchValidatorFactory = (
-  stringMatchOptions: IStringFormatMatchCheckOptions
+  stringMatchOptions: IStringFormatMatchCheckOptions,
 ) => {
   return {
     validate(string: string) {
@@ -28,11 +28,11 @@ export function StringFormatMatchValidation(
   stringMatchOptions: IStringFormatMatchCheckOptions = {
     toMatch: true,
     pattern: StringFormatEnum.ALL,
-  }
+  },
 ) {
   return function (object: any, propertyName: string) {
     registerDecorator({
-      name: "stringFormatMatchValidation",
+      name: 'stringFormatMatchValidation',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [],
@@ -45,7 +45,7 @@ export function StringFormatMatchValidation(
 export function DateValidation(validationOptions: ValidationOptions = {}) {
   return function (object: any, propertyName: string) {
     registerDecorator({
-      name: "dateValidation",
+      name: 'dateValidation',
       target: object.constructor,
       propertyName: propertyName,
       constraints: [],

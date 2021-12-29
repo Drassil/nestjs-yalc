@@ -1,6 +1,6 @@
-import { LogLevel } from "@nestjs/common";
-import { default as pino } from "pino";
-import { LoggerAbstractService } from "./logger-abstract.service";
+import { LogLevel } from '@nestjs/common';
+import { default as pino } from 'pino';
+import { LoggerAbstractService } from './logger-abstract.service';
 
 const dest = pino.destination({ sync: false });
 export const logger = pino(
@@ -19,7 +19,7 @@ export const logger = pino(
       },
     },
   },
-  dest
+  dest,
 );
 
 export const FLUSH_INTERVAL = 10000;
@@ -35,7 +35,7 @@ export class PinoLogger extends LoggerAbstractService {
       verbose: (message) => logger.trace({}, `[${context}] ${message}`),
     });
 
-    logger.level = "trace"; // enable all. Levels are handled by the Service.
+    logger.level = 'trace'; // enable all. Levels are handled by the Service.
 
     // asynchronously flush every 10 seconds to keep the buffer empty
     // in periods of low activity
@@ -47,15 +47,15 @@ export class PinoLogger extends LoggerAbstractService {
     // guarantees final tick writes
     const handler = pino.final(logger, (err, finalLogger, evt) => {
       finalLogger.info(`${evt} caught`);
-      if (err) finalLogger.error(err, "error caused exit");
+      if (err) finalLogger.error(err, 'error caused exit');
       process.exit(err ? 1 : 0);
     });
     // catch all the ways node might exit
-    process.on("beforeExit", () => handler(null, "beforeExit"));
-    process.on("exit", () => handler(null, "exit"));
-    process.on("uncaughtException", (err) => handler(err, "uncaughtException"));
-    process.on("SIGINT", () => handler(null, "SIGINT"));
-    process.on("SIGQUIT", () => handler(null, "SIGQUIT"));
-    process.on("SIGTERM", () => handler(null, "SIGTERM"));
+    process.on('beforeExit', () => handler(null, 'beforeExit'));
+    process.on('exit', () => handler(null, 'exit'));
+    process.on('uncaughtException', (err) => handler(err, 'uncaughtException'));
+    process.on('SIGINT', () => handler(null, 'SIGINT'));
+    process.on('SIGQUIT', () => handler(null, 'SIGQUIT'));
+    process.on('SIGTERM', () => handler(null, 'SIGTERM'));
   }
 }

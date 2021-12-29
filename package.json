@@ -1,5 +1,5 @@
 {
-  "name": "nestjs-yalc",
+  "name": "@nestjs-yalc/framework",
   "version": "1.0.2",
   "description": "NestJS - Yet Another Library Collection",
   "scripts": {
@@ -14,7 +14,17 @@
   "author": "",
   "license": "AGPL-3.0-or-later",
   "workspaces": [
-    "aws-helpers"
+    "ag-grid",
+    "aws-helpers",
+    "data-loader",
+    "database",
+    "field-middleware",
+    "graphql",
+    "interfaces",
+    "jest",
+    "logger",
+    "types",
+    "utils"
   ],
   "dependencies": {
     "@apollo/federation": "^0.33.3",

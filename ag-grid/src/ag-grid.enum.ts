@@ -1,77 +1,77 @@
-import { ClassType } from "@nestjs-yalc/types";
-import { registerEnumType } from "@nestjs/graphql";
-import { getMappedTypeProperties } from "./ag-grid.helpers";
+import { ClassType } from '@nestjs-yalc/types';
+import { registerEnumType } from '@nestjs/graphql';
+import { getMappedTypeProperties } from './ag-grid.helpers';
 
 export enum GeneralFilters {
-  NOT = "not",
-  CONTAINS = "contains",
-  NOT_CONTAINS = "notContains",
-  EQUALS = "equals",
-  EQUAL = "equal",
-  NOT_EQUAL = "notEqual",
-  LIKE = "like",
-  NOT_LIKE = "notLike",
-  BETWEEN = "between",
-  NOT_BETWEEN = "notBetween",
-  IN = "in",
-  NOT_IN = "notIn",
-  STARTS_WITH = "startsWith",
-  NOT_STARTS_WITH = "notStartsWith",
-  ENDS_WITH = "endsWith",
-  NOT_ENDS_WITH = "notEndsWith",
-  LESS_THAN = "lessThan",
-  NOT_LESS_THAN = "notLessThan",
-  LESS_THAN_OR_EQUAL = "lessThanOrEqual",
-  NOT_LESS_THAN_OR_EQUAL = "notLessThanOrEqual",
-  MORE_THAN = "greaterThan",
-  NOT_MORE_THAN = "notGreaterThan",
-  MORE_THAN_OR_EQUAL = "greaterThanOrEqual",
-  NOT_MORE_THAN_OR_EQUAL = "notGreaterThanOrEqual",
+  NOT = 'not',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'notContains',
+  EQUALS = 'equals',
+  EQUAL = 'equal',
+  NOT_EQUAL = 'notEqual',
+  LIKE = 'like',
+  NOT_LIKE = 'notLike',
+  BETWEEN = 'between',
+  NOT_BETWEEN = 'notBetween',
+  IN = 'in',
+  NOT_IN = 'notIn',
+  STARTS_WITH = 'startsWith',
+  NOT_STARTS_WITH = 'notStartsWith',
+  ENDS_WITH = 'endsWith',
+  NOT_ENDS_WITH = 'notEndsWith',
+  LESS_THAN = 'lessThan',
+  NOT_LESS_THAN = 'notLessThan',
+  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
+  NOT_LESS_THAN_OR_EQUAL = 'notLessThanOrEqual',
+  MORE_THAN = 'greaterThan',
+  NOT_MORE_THAN = 'notGreaterThan',
+  MORE_THAN_OR_EQUAL = 'greaterThanOrEqual',
+  NOT_MORE_THAN_OR_EQUAL = 'notGreaterThanOrEqual',
   // This is only used for dates
-  IN_RANGE = "inRange",
-  IN_DATE = "inDate",
-  IS_NULL = "isNull",
-  NOT_IS_NULL = "notIsNull",
+  IN_RANGE = 'inRange',
+  IN_DATE = 'inDate',
+  IS_NULL = 'isNull',
+  NOT_IS_NULL = 'notIsNull',
 }
 
 registerEnumType(GeneralFilters, {
-  name: "GeneralFiltersEnum",
+  name: 'GeneralFiltersEnum',
 });
 
 export enum FilterType {
-  TEXT = "text",
-  MULTI = "multi",
-  NUMBER = "number",
-  DATE = "date",
-  SET = "set",
+  TEXT = 'text',
+  MULTI = 'multi',
+  NUMBER = 'number',
+  DATE = 'date',
+  SET = 'set',
 }
 
 registerEnumType(FilterType, {
-  name: "FilterTypeEnum",
+  name: 'FilterTypeEnum',
 });
 
 export enum Operators {
-  AND = "AND",
-  OR = "OR",
+  AND = 'AND',
+  OR = 'OR',
 }
 
 registerEnumType(Operators, {
-  name: "FilterOperatorsEnum",
+  name: 'FilterOperatorsEnum',
 });
 
 export enum SortDirection {
-  DESC = "DESC",
-  ASC = "ASC",
+  DESC = 'DESC',
+  ASC = 'ASC',
 }
 
 registerEnumType(SortDirection, {
-  name: "SortDirection",
+  name: 'SortDirection',
 });
 
 export enum CustomWhereKeys {
-  MULTICOLUMNJOINOPTIONS = "multiColumnJoinOptions",
-  MULTICOLUMNJOINOPERATOR = "multiColumnJoinOperator",
-  OPERATOR = "operator",
+  MULTICOLUMNJOINOPTIONS = 'multiColumnJoinOptions',
+  MULTICOLUMNJOINOPERATOR = 'multiColumnJoinOperator',
+  OPERATOR = 'operator',
 }
 
 export enum ExtraArgsStrategy {
@@ -98,7 +98,7 @@ export enum RowDefaultValues {
 
 const fieldsEnumCache = new WeakMap();
 export function entityFieldsEnumFactory<Entity>(
-  entityModel: ClassType<Entity>
+  entityModel: ClassType<Entity>,
 ): { [index: string]: string } {
   let cached;
   if ((cached = fieldsEnumCache.get(entityModel))) return cached;

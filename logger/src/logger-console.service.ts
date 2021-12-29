@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import { LogLevel } from "@nestjs/common";
-import { LoggerAbstractService } from "./logger-abstract.service";
+import { LogLevel } from '@nestjs/common';
+import { LoggerAbstractService } from './logger-abstract.service';
 
 export class ConsoleLogger extends LoggerAbstractService {
   constructor(context: string, logLevels: LogLevel[] | undefined) {

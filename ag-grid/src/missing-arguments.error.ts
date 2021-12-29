@@ -1,5 +1,5 @@
-import { BadRequestException } from "@nestjs/common";
-import { AgGridErrors } from "./strings.enum";
+import { BadRequestException } from '@nestjs/common';
+import { AgGridErrors } from './strings.enum';
 
 export class ArgumentsError extends BadRequestException {
   constructor(message: string) {

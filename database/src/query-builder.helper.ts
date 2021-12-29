@@ -5,14 +5,14 @@ import {
   QueryBuilder,
   QueryRunner,
   SelectQueryBuilder,
-} from "typeorm";
-import { PostgresDriver } from "typeorm/driver/postgres/PostgresDriver";
-import { CockroachDriver } from "typeorm/driver/cockroachdb/CockroachDriver";
-import { SortDirection } from "@nestjs-yalc/ag-grid/ag-grid.enum";
+} from 'typeorm';
+import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver';
+import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver';
+import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
 import {
   IFieldMapper,
   isFieldMapper,
-} from "@nestjs-yalc/interfaces/maps.interface";
+} from '@nestjs-yalc/interfaces/maps.interface';
 
 export type FindAndCountResult<Entity> = [Entity[], number];
 type GetOneResult<Entity> = Entity | undefined;
@@ -31,8 +31,8 @@ export type QueryBuilderOperationResult<Entity> =
 
 // we can't export const enum with isolatedModules https://ncjamieson.com/dont-export-const-enums/
 export enum ReplicationMode {
-  MASTER = "master",
-  SLAVE = "slave",
+  MASTER = 'master',
+  SLAVE = 'slave',
 }
 
 export class QueryBuilderHelper {
@@ -45,12 +45,12 @@ export class QueryBuilderHelper {
    */
   public static async getGroupedManyAndCount<Entity>(
     queryBuilder: SelectQueryBuilder<any>,
-    groupColumns: string[]
+    groupColumns: string[],
   ): Promise<FindAndCountResult<Entity>> {
     return Promise.all([
       new Promise<Entity[]>((resolve, reject) => {
         const dataQb = queryBuilder.clone();
-        dataQb.groupBy(groupColumns.join(", "));
+        dataQb.groupBy(groupColumns.join(', '));
         dataQb
           .getMany()
           .then((values) => resolve(values))
@@ -59,13 +59,13 @@ export class QueryBuilderHelper {
       new Promise<number>((resolve, reject) => {
         const countQb = queryBuilder.clone();
         const escapedGroupColumns: string[] = groupColumns.map((column) =>
-          countQb.escape(column)
+          countQb.escape(column),
         );
         countQb.skip(0);
         countQb.select(
-          `COUNT(DISTINCT (${escapedGroupColumns.join(", ")})) as count`
+          `COUNT(DISTINCT (${escapedGroupColumns.join(', ')})) as count`,
         );
-        countQb.orderBy("NULL");
+        countQb.orderBy('NULL');
         countQb
           .getRawOne()
           .then((value) => resolve(value.count ? Number(value.count) : 0))
@@ -96,8 +96,8 @@ export class QueryBuilderHelper {
     queryBuilder: SelectQueryBuilder<Entity>,
     mode: ReplicationMode,
     operationFn: (
-      queryBuilder: SelectQueryBuilder<Entity>
-    ) => Promise<QueryBuilderOperationResult<Entity>>
+      queryBuilder: SelectQueryBuilder<Entity>,
+    ) => Promise<QueryBuilderOperationResult<Entity>>,
   ): Promise<QueryBuilderOperationResult<Entity>> {
     let queryRunner: QueryRunner | undefined = undefined;
     const { connection } = queryBuilder;
@@ -124,13 +124,13 @@ export class QueryBuilderHelper {
     queryBuilder: QueryBuilder<Entity> | undefined,
     operator: FindOperator<any>,
     aliasPath: string,
-    parameters: any
+    parameters: any,
   ): string {
     parameters = Array.isArray(parameters) ? parameters : [parameters];
 
     //Recursive call of computeFindOperatorExpression add the ' or " to the string, we would avoid that
     parameters = parameters.map((v: any) => {
-      return typeof v === "string"
+      return typeof v === 'string'
         ? v[0] === v[v.length - 1] && (v[0] === "'" || v[0] === '"')
           ? v
           : `'${v}'`
@@ -139,9 +139,9 @@ export class QueryBuilderHelper {
 
     parameters = parameters.map((v: any) => {
       if (
-        typeof v === "string" ||
-        typeof v === "number" ||
-        typeof v === "boolean"
+        typeof v === 'string' ||
+        typeof v === 'number' ||
+        typeof v === 'boolean'
       ) {
         return v;
       } else {
@@ -151,31 +151,31 @@ export class QueryBuilderHelper {
     });
 
     switch (operator.type) {
-      case "not":
+      case 'not':
         if (operator.child) {
           return `NOT(${this.computeFindOperatorExpression(
             queryBuilder,
             operator.child,
             aliasPath,
-            parameters
+            parameters,
           )})`;
         } else {
           return `${aliasPath} != ${parameters[0]}`;
         }
-      case "lessThan":
+      case 'lessThan':
         return `${aliasPath} < ${parameters[0]}`;
-      case "lessThanOrEqual":
+      case 'lessThanOrEqual':
         return `${aliasPath} <= ${parameters[0]}`;
-      case "moreThan":
+      case 'moreThan':
         return `${aliasPath} > ${parameters[0]}`;
-      case "moreThanOrEqual":
+      case 'moreThanOrEqual':
         return `${aliasPath} >= ${parameters[0]}`;
-      case "equal":
+      case 'equal':
         return `${aliasPath} = ${parameters[0]}`;
-      case "ilike":
+      case 'ilike':
         if (queryBuilder === undefined) {
           throw new Error(
-            `To use the 'ilike' filter the query builder should be defined`
+            `To use the 'ilike' filter the query builder should be defined`,
           );
         }
         const { driver } = queryBuilder.connection;
@@ -187,20 +187,20 @@ export class QueryBuilderHelper {
         }
 
         return `UPPER(${aliasPath}) LIKE UPPER(${parameters[0]})`;
-      case "like":
+      case 'like':
         return `${aliasPath} LIKE ${parameters[0]}`;
-      case "between":
+      case 'between':
         return `${aliasPath} BETWEEN ${parameters[0]} AND ${parameters[1]}`;
-      case "in":
+      case 'in':
         if (parameters.length === 0) {
-          return "0=1";
+          return '0=1';
         }
-        return `${aliasPath} IN (${parameters.join(", ")})`;
-      case "any":
+        return `${aliasPath} IN (${parameters.join(', ')})`;
+      case 'any':
         return `${aliasPath} = ANY(${parameters[0]})`;
-      case "isNull":
+      case 'isNull':
         return `${aliasPath} IS NULL`;
-      case "raw":
+      case 'raw':
         if (operator.getSql) {
           return operator.getSql(aliasPath);
         } else {
@@ -209,7 +209,7 @@ export class QueryBuilderHelper {
     }
 
     throw new TypeError(
-      `Unsupported FindOperator ${FindOperator.constructor.name}`
+      `Unsupported FindOperator ${FindOperator.constructor.name}`,
     );
   }
 
@@ -218,7 +218,7 @@ export class QueryBuilderHelper {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
-    alias: string
+    alias: string,
   ): IFieldMapper {
     return isFieldMapper(fieldMap.joined)
       ? fieldMap.joined
@@ -238,21 +238,21 @@ export class QueryBuilderHelper {
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
-    }
+    },
   ): { key: string; operator: SortDirection }[] {
     const sortingColumns: any[] = [];
     let alias: string;
     let mapper: IFieldMapper;
     for (const key in findOptions.order as ObjectLiteral) {
       //If is a nested resource we need to change the name format into Parent__Joined_resource
-      if (key.includes(".") && fieldMap) {
-        const splitted = key.split(".");
+      if (key.includes('.') && fieldMap) {
+        const splitted = key.split('.');
         alias = splitted[0];
         mapper = this.getMapper(fieldMap, alias);
 
         const newKey = `${splitted[0]}.${this.convertFieldWithMap(
           splitted[1],
-          mapper
+          mapper,
         )}`;
         sortingColumns.push({
           key: newKey, // we have to alias this way
@@ -284,11 +284,11 @@ export class QueryBuilderHelper {
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
-    }
+    },
   ): string {
     //If the name is of a joined resource we take the joined table name
-    if (key.includes(".")) {
-      const splitted = key.split(".");
+    if (key.includes('.')) {
+      const splitted = key.split('.');
       alias = splitted[0];
 
       if (fieldMap) {

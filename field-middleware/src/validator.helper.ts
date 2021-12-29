@@ -1,4 +1,4 @@
-import { FieldErrorsEnum } from "./fields-error.enum";
+import { FieldErrorsEnum } from './fields-error.enum';
 
 export function errorTrhow(value: string | Date, message?: string) {
   const err = message ? message : `${FieldErrorsEnum.INVALID_VALUE} ${value}`;
@@ -6,7 +6,7 @@ export function errorTrhow(value: string | Date, message?: string) {
 }
 
 export function convertIfStringToDate(date: Date | string): Date {
-  if (typeof date === "string") {
+  if (typeof date === 'string') {
     date = new Date(date);
   }
   return date;
@@ -15,7 +15,7 @@ export function convertIfStringToDate(date: Date | string): Date {
 export function stringIsInEnumOrThrow<T>(
   toCheck: string,
   enumName: T,
-  message?: string
+  message?: string,
 ): true | void {
   if (stringIsInEnum(toCheck, enumName)) {
     return true;
@@ -34,7 +34,7 @@ export function stringIsInEnum<T>(toCheck: string, enumName: T): boolean {
 
 export function validateDate(date: Date | string): boolean {
   date = convertIfStringToDate(date);
-  if (Object.prototype.toString.call(date) === "[object Date]") {
+  if (Object.prototype.toString.call(date) === '[object Date]') {
     if (!isNaN(date.getTime())) {
       return true;
     }
@@ -44,7 +44,7 @@ export function validateDate(date: Date | string): boolean {
 
 export function validateDateOrThrow(
   date: Date | string,
-  message?: string
+  message?: string,
 ): true | void {
   if (validateDate(date)) {
     return true;
@@ -54,7 +54,7 @@ export function validateDateOrThrow(
 
 export function validateStringFormat(
   str: string,
-  stringFormat: string
+  stringFormat: string,
 ): boolean {
   return str.match(stringFormat) !== null;
 }

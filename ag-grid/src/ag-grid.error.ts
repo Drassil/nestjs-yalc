@@ -1,4 +1,4 @@
-import { FilterErrors } from "./strings.enum";
+import { FilterErrors } from './strings.enum';
 
 export class AgGridError extends Error {
   constructor(message?: string) {
@@ -26,13 +26,13 @@ export class AgGridInvalidPropertyError extends AgGridError {
 
 export class AgGridConditionNotSupportedError extends AgGridError {
   constructor(info?: string) {
-    super(FilterErrors.INVALID_CONDITION + (info ? `: ${info}` : ""));
+    super(FilterErrors.INVALID_CONDITION + (info ? `: ${info}` : ''));
   }
 }
 
 export class AgGridFilterNotSupportedError extends AgGridError {
   constructor(info?: string) {
-    super(FilterErrors.FILTER_NOT_SUPPORTED + (info ? `: ${info}` : ""));
+    super(FilterErrors.FILTER_NOT_SUPPORTED + (info ? `: ${info}` : ''));
   }
 }
 

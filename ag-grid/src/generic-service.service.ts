@@ -1,30 +1,30 @@
 import {
   ConditionsTooBroadError,
   NoResultsFoundError,
-} from "./conditions.error";
+} from './conditions.error';
 import {
   CreateEntityError,
   DeleteEntityError,
   EntityError,
   UpdateEntityError,
-} from "./entity.error";
-import { getConnectionName } from "@nestjs-yalc/database/conn.helper";
-import { FactoryProvider, Injectable } from "@nestjs/common";
-import { getRepositoryToken } from "@nestjs/typeorm";
-import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type";
+} from './entity.error';
+import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
+import { FactoryProvider, Injectable } from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import {
   DeepPartial,
   getConnection,
   ObjectLiteral,
   QueryFailedError,
-} from "typeorm";
-import { FindConditions } from "typeorm";
-import { FindManyOptions } from "typeorm";
-import { AgGridRepository } from "@nestjs-yalc/ag-grid/ag-grid.repository";
-import { AgGridFindManyOptions } from "@nestjs-yalc/ag-grid/ag-grid.interface";
-import { ClassType } from "@nestjs-yalc/types/globals";
-import { getProviderToken } from "./ag-grid.helpers";
-import { ReplicationMode } from "@nestjs-yalc/database/query-builder.helper";
+} from 'typeorm';
+import { FindConditions } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
+import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
+import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { ClassType } from '@nestjs-yalc/types/globals';
+import { getProviderToken } from './ag-grid.helpers';
+import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
 
 /**
  *
@@ -38,7 +38,7 @@ import { ReplicationMode } from "@nestjs-yalc/database/query-builder.helper";
 export function GenericServiceFactory<Entity>(
   entity: EntityClassOrSchema,
   connectionName: string,
-  providedClass?: ClassType<GenericService<Entity>>
+  providedClass?: ClassType<GenericService<Entity>>,
 ): FactoryProvider {
   const serviceClass = providedClass ?? GenericService;
 
@@ -46,7 +46,7 @@ export function GenericServiceFactory<Entity>(
     provide:
       providedClass ??
       getServiceToken(
-        typeof entity === "function" ? entity.name : entity.toString()
+        typeof entity === 'function' ? entity.name : entity.toString(),
       ),
     useFactory: (repository: AgGridRepository<any>) => {
       return new serviceClass(repository);
@@ -65,7 +65,7 @@ export function getServiceToken(entity: ClassType | string) {
  * @throws EntityError
  */
 export function validateSupportedError(
-  errorClass: new (error: Error) => EntityError
+  errorClass: new (error: Error) => EntityError,
 ) {
   return (error: Error) => {
     if (error instanceof QueryFailedError) {
@@ -95,7 +95,7 @@ export class GenericService<Entity> {
     const connectionName = getConnectionName(dbName);
     const connection = getConnection(connectionName);
     this.setRepository(
-      connection.getRepository(this.entity) as AgGridRepository<Entity>
+      connection.getRepository(this.entity) as AgGridRepository<Entity>,
     );
   }
 
@@ -125,19 +125,19 @@ export class GenericService<Entity> {
     findOptions: FindManyOptions<Entity> | ObjectLiteral,
     withCount?: false,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<Entity[]>;
   async getEntityList(
     findOptions: FindManyOptions<Entity> | ObjectLiteral,
     withCount: true,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<[Entity[], number]>;
   async getEntityList(
     findOptions: FindManyOptions<Entity> | ObjectLiteral,
     withCount = false,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<[Entity[], number] | Entity[]> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
@@ -160,7 +160,7 @@ export class GenericService<Entity> {
       | string,
     fields?: (keyof Entity)[],
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<Entity> {
     return this.getEntity(where, fields, relations, databaseName, {
       failOnNull: true,
@@ -185,7 +185,7 @@ export class GenericService<Entity> {
     databaseName?: string,
     options?: {
       failOnNull: false;
-    }
+    },
   ): Promise<Entity | undefined>;
   async getEntity(
     where:
@@ -198,7 +198,7 @@ export class GenericService<Entity> {
     databaseName?: string,
     options?: {
       failOnNull?: boolean;
-    }
+    },
   ): Promise<Entity>;
   async getEntity(
     where:
@@ -211,7 +211,7 @@ export class GenericService<Entity> {
     databaseName?: string,
     options?: {
       failOnNull?: boolean;
-    }
+    },
   ): Promise<Entity | undefined> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
@@ -235,7 +235,7 @@ export class GenericService<Entity> {
     return this.repository.getOneAgGrid(
       identifiers[0],
       true,
-      ReplicationMode.MASTER
+      ReplicationMode.MASTER,
     );
   }
 
@@ -249,7 +249,7 @@ export class GenericService<Entity> {
    */
   async updateEntity(
     conditions: FindConditions<Entity>,
-    input: DeepPartial<Entity>
+    input: DeepPartial<Entity>,
   ): Promise<Entity> {
     await this.validateConditions(conditions);
 
@@ -307,19 +307,19 @@ export class GenericService<Entity> {
     findOptions: AgGridFindManyOptions<Entity>,
     withCount?: false,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<Entity[]>;
   async getEntityListAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
     withCount: true,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<[Entity[], number]>;
   async getEntityListAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
     withCount = false,
     relations?: string[],
-    databaseName?: string
+    databaseName?: string,
   ): Promise<[Entity[], number] | Entity[]> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);

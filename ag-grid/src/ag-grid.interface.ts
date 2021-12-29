@@ -1,19 +1,19 @@
 /* istanbul ignore file */
 
-import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface";
-import { ClassType } from "@nestjs-yalc/types";
-import { ArgsOptions, ReturnTypeFuncValue } from "@nestjs/graphql";
-import { GraphQLResolveInfo } from "graphql";
-import { FindManyOptions, FindOperator } from "typeorm";
-import { IAgQueryParams } from "./ag-grid.args";
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { ClassType } from '@nestjs-yalc/types';
+import { ArgsOptions, ReturnTypeFuncValue } from '@nestjs/graphql';
+import { GraphQLResolveInfo } from 'graphql';
+import { FindManyOptions, FindOperator } from 'typeorm';
+import { IAgQueryParams } from './ag-grid.args';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
   Operators,
-} from "./ag-grid.enum";
-import { IWhereCondition } from "./ag-grid.type";
-import { IFieldAndFilterMapper } from "./object.decorator";
+} from './ag-grid.enum';
+import { IWhereCondition } from './ag-grid.type';
+import { IFieldAndFilterMapper } from './object.decorator';
 
 export interface IBaseFilterModel {
   filterType: FilterType;

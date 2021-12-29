@@ -1,14 +1,14 @@
-import { objectToFieldMapper } from "@nestjs-yalc/ag-grid/ag-grid.helpers";
-import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface";
-import { ClassType } from "@nestjs-yalc/types";
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import { objectToFieldMapper } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { ClassType } from '@nestjs-yalc/types';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import {
   Args,
   ArgsOptions,
   GqlExecutionContext,
   ReturnTypeFuncValue,
-} from "@nestjs/graphql";
-import { ObjectLiteral } from "typeorm";
+} from '@nestjs/graphql';
+import { ObjectLiteral } from 'typeorm';
 
 interface IInputArgsOptions {
   /**
@@ -32,7 +32,7 @@ interface IInputArgsOptions {
 
 export const GqlFieldsAsArgsWorker = (
   data: IFieldMapper,
-  info: ObjectLiteral
+  info: ObjectLiteral,
 ) => {
   const keys: ObjectLiteral = {};
   for (const key of Object.keys(info)) {
@@ -43,7 +43,7 @@ export const GqlFieldsAsArgsWorker = (
 
 export const GqlArgsGenerator = (
   data: IInputArgsOptions,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ) => {
   const gqlCtx = GqlExecutionContext.create(ctx);
   const args = gqlCtx.getArgs();
@@ -55,7 +55,7 @@ export const GqlArgsGenerator = (
 
     return GqlFieldsAsArgsWorker(
       fieldMapperAndFilter.field,
-      args[data.gql?.name ?? data._name ?? "input"]
+      args[data.gql?.name ?? data._name ?? 'input'],
     );
   }
 
@@ -69,7 +69,7 @@ export const InputArgsMapper = createParamDecorator(GqlArgsGenerator);
  * @returns the mapped params in the input object
  */
 export const InputArgs = (params: IInputArgsOptions) => {
-  const args = Args(params._name ?? "input", params.gql ?? {});
+  const args = Args(params._name ?? 'input', params.gql ?? {});
   const mapper = InputArgsMapper(params);
   return function (target: any, key: string, index: number) {
     args(target, key, index);

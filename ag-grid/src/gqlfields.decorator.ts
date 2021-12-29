@@ -1,15 +1,15 @@
-import { createParamDecorator, ExecutionContext, Type } from "@nestjs/common";
-import { GqlExecutionContext, ReturnTypeFuncValue } from "@nestjs/graphql";
+import { createParamDecorator, ExecutionContext, Type } from '@nestjs/common';
+import { GqlExecutionContext, ReturnTypeFuncValue } from '@nestjs/graphql';
 import {
   IFieldMapper,
   FieldMapperProperty,
-} from "@nestjs-yalc/interfaces/maps.interface";
+} from '@nestjs-yalc/interfaces/maps.interface';
 import {
   columnConversion,
   objectToFieldMapper,
-} from "@nestjs-yalc/ag-grid/ag-grid.helpers";
-import { ClassType } from "@nestjs-yalc/types/globals";
-import { GraphQLResolveInfo } from "graphql";
+} from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { ClassType } from '@nestjs-yalc/types/globals';
+import { GraphQLResolveInfo } from 'graphql';
 
 export interface IGqlAgSingleParams {
   id: Type<any>;
@@ -17,19 +17,19 @@ export interface IGqlAgSingleParams {
 
 export const GqlAgGridFieldsMapper = (
   data: IFieldMapper | ReturnTypeFuncValue | ClassType,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ): string[] => {
   const fieldMapper = objectToFieldMapper(data);
 
   const keys: Array<string> = [];
   info.fieldNodes?.[0].selectionSet?.selections.forEach((item: any) => {
     if (item.selectionSet) {
-      if (item.name.value === "nodes") {
+      if (item.name.value === 'nodes') {
         item.selectionSet.selections.forEach((subItem: any) => {
           if (subItem.selectionSet) return;
 
           keys.push(
-            columnConversion(fieldMapper.field, subItem.name.value).toString()
+            columnConversion(fieldMapper.field, subItem.name.value).toString(),
           );
         });
       }
@@ -49,7 +49,7 @@ export const GqlAgGridFieldsMapper = (
 
 export const GqlInfoGenerator = (
   data: IFieldMapper | ReturnTypeFuncValue | ClassType = {},
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ) => {
   const gqlCtx = GqlExecutionContext.create(ctx);
   const info = gqlCtx.getInfo();

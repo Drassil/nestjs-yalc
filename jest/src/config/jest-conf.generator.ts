@@ -1,13 +1,13 @@
 /* istanbul ignore file */
 
-import * as path from "path";
+import * as path from 'path';
 import defaultConf, {
   coveragePathIgnorePatterns,
   globals,
   coverageThreshold,
-} from "./jest-def.config";
-import { options as jestOptionObject } from "jest-cli/build/cli/args";
-import yargs from "yargs";
+} from './jest-def.config';
+import { options as jestOptionObject } from 'jest-cli/build/cli/args';
+import yargs from 'yargs';
 
 interface IAppDep {
   name: string;
@@ -36,15 +36,15 @@ export function jestConfGenerator(
   appProjectsSettings: {
     [key: string]: IAppProjSetting;
   },
-  options: IOptions
+  options: IOptions,
 ) {
   const createProjectSets = (projects: any[]) => {
     const _projectSets: { [key: string]: any } = {};
     for (const app in appProjectsSettings) {
       _projectSets[app] = projects.filter((p) =>
         appProjectsSettings[app].deps.some((v) =>
-          p.name.startsWith(`unit/${v.name}`)
-        )
+          p.name.startsWith(`unit/${v.name}`),
+        ),
       );
     }
 
@@ -54,7 +54,7 @@ export function jestConfGenerator(
     };
   };
 
-  const cacheDirBase = "/tmp/jest_rs/";
+  const cacheDirBase = '/tmp/jest_rs/';
 
   let projects = [];
 
@@ -67,8 +67,8 @@ export function jestConfGenerator(
     rootDir: `${rootPath}/${root}/`,
     roots: [`${rootPath}/${root}`],
     maxWorkers,
-    setupFiles: [`${rootPath}/jest/src/config/jest.setup.ts`],
-    coverageReporters: ["json-summary", "json", "lcov", "text", "clover"],
+    setupFiles: [`${__dirname}/jest.setup.ts`],
+    coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
     coverageThreshold: coverageThreshold(projects),
     coveragePathIgnorePatterns,
   });
@@ -81,15 +81,15 @@ export function jestConfGenerator(
 
   const projectSets: { [key: string]: any } = createProjectSets(projects);
 
-  const selectedProj = process.env.npm_config_bcaproj || "all";
+  const selectedProj = process.env.npm_config_bcaproj || 'all';
 
   projects = projectSets[selectedProj];
 
   // use argv to catch the path argument in any position
   const argv = yargs(process.argv.slice(2))
-    .command("$0 [path]", "test path", (yargs) => {
-      return yargs.positional("path", {
-        describe: "test path",
+    .command('$0 [path]', 'test path', (yargs) => {
+      return yargs.positional('path', {
+        describe: 'test path',
       });
     })
     .showHelpOnFail(false)
@@ -99,17 +99,17 @@ export function jestConfGenerator(
     }).argv;
 
   const possiblePath = argv.path ?? argv.testPathPattern?.[0];
-  const testPath: string = typeof possiblePath === "string" ? possiblePath : "";
+  const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
 
   let config: any = {};
 
   // "." must be converted to "/"
-  let subProjectPath = testPath.startsWith(".") ? testPath.slice(1) : testPath;
+  let subProjectPath = testPath.startsWith('.') ? testPath.slice(1) : testPath;
   subProjectPath = subProjectPath.startsWith(rootPath)
     ? subProjectPath.slice(rootPath.length)
     : subProjectPath;
   // we always need "/" at the beginning of the string
-  subProjectPath = subProjectPath.startsWith("/")
+  subProjectPath = subProjectPath.startsWith('/')
     ? subProjectPath
     : `/${subProjectPath}`;
 
@@ -127,23 +127,23 @@ export function jestConfGenerator(
     subProjectPath = subProjectPath.substring(0, lastIndexOfSrc);
 
   // eslint-disable-next-line no-console
-  console.debug("Subproject path:", subProjectPath ?? "");
+  console.debug('Subproject path:', subProjectPath ?? '');
 
   config = {
     rootDir: `${rootPath}`,
     coverageThreshold: coverageThreshold(
       projects.filter((v: any) =>
-        v.rootDir.startsWith(`${rootPath}${subProjectPath}`)
-      )
+        v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
+      ),
     ),
     coverageDirectory: path.join(
       rootPath,
-      `docs/compodoc/jestcoverage/${subProjectPath}`
+      `docs/compodoc/jestcoverage/${subProjectPath}`,
     ),
     collectCoverageFrom: [
       `**/*.{js,ts}`,
-      "!**/node_modules/**",
-      "!**/.warmup/**",
+      '!**/node_modules/**',
+      '!**/.warmup/**',
     ],
   };
 

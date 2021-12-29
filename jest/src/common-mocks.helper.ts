@@ -1,16 +1,16 @@
 /* istanbul ignore file */
 
-jest.mock("@nestjs/graphql");
+jest.mock('@nestjs/graphql');
 
-import * as NestGraphql from "@nestjs/graphql";
-import { ExecutionContext } from "@nestjs/common";
+import * as NestGraphql from '@nestjs/graphql';
+import { ExecutionContext } from '@nestjs/common';
 import {
   createMock,
   DeepMocked,
   MockOptions,
   PartialFuncReturn,
-} from "@golevelup/ts-jest";
-import { SelectQueryBuilder } from "typeorm";
+} from '@golevelup/ts-jest';
+import { SelectQueryBuilder } from 'typeorm';
 
 export const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
 export const mockedGqlCtxCreate =
@@ -26,7 +26,7 @@ export const mockedExecutionContext = createMock<ExecutionContext>();
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const mockChainingObject = <T extends object>(
   partial?: PartialFuncReturn<T>,
-  options?: MockOptions
+  options?: MockOptions,
 ): DeepMocked<T> => {
   const mockObject = createMock<T>(partial, options);
 
@@ -41,7 +41,7 @@ export const mockChainingObject = <T extends object>(
         return Reflect.get(target, prop, receiver);
       }
 
-      return typeof checkProp === "function"
+      return typeof checkProp === 'function'
         ? checkProp.mockImplementation(() => {
             Reflect.get(target, prop, receiver);
             return proxy; // return this proxy instead of the method result
@@ -65,11 +65,11 @@ export const mockChainingObject = <T extends object>(
 // eslint-disable-next-line @typescript-eslint/ban-types
 export const mockQueryBuilder = <T extends object>(
   partial?: PartialFuncReturn<SelectQueryBuilder<T>>,
-  options?: MockOptions
+  options?: MockOptions,
 ): DeepMocked<SelectQueryBuilder<T>> => {
   const mockObject = mockChainingObject<SelectQueryBuilder<T>>(
     partial,
-    options
+    options,
   );
 
   mockObject.connection.createQueryBuilder = jest
