@@ -22,6 +22,7 @@ export const isFieldMapperProperty = (
  */
 
 export type FieldMapperProperty = {
+  src?: string;
   /**
    * dst will be used to map in a bidirectional way the name of the requested
    * field to the string specified in dst property
@@ -42,4 +43,11 @@ export type FieldMapperProperty = {
    * if denyFilter is true, this property can't be used as a filter
    */
   denyFilter?: boolean;
+
+  mode?: 'derived' | 'virtual' | 'regular';
+
+  /**
+   * internally used
+   */
+  _propertyName?: string;
 };

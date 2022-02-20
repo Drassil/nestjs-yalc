@@ -11,8 +11,17 @@ import {
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
-import { whereObjectToSqlString } from './ag-grid.helpers';
+import {
+  applySelectOnFind,
+  objectToFieldMapper,
+  whereObjectToSqlString,
+} from './ag-grid.helpers';
 import { AgGridFindManyOptions } from './ag-grid.interface';
+import { IWhereFilters } from './ag-grid.type';
+import { IAgGridFieldMetadata } from './object.decorator';
+import './query-builder.helpers'; // must be imported here
+
+export const AG_GRID_MAIN_ALIAS = 'AgGridMainAlias';
 
 export class AgGridRepository<Entity> extends Repository<Entity> {
   protected entity: EntityClassOrSchema;
@@ -53,16 +62,104 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       skip,
       take,
       extra,
+      join,
       ...strippedFindOptions
     } = findOptions;
 
-    let queryBuilder = qb ?? this.createQueryBuilder();
+    /**
+     * We need at least one property in this object
+     */
+    if (!findOptions.select) {
+      strippedFindOptions.select = [];
+    }
+
+    let queryBuilder = qb ?? this.createQueryBuilder(extra?._aliasType);
+
+    const rawSelection: string[] = [];
+    const joinSelection: string[] = [];
+    const customSel = extra?._keysMeta;
+    if (customSel) {
+      Object.values(customSel).forEach((v) => {
+        const meta = v;
+
+        const _mapper = meta?.fieldMapper;
+
+        const isNested = meta?.isNested;
+        const isDerived = _mapper?.mode === 'derived';
+
+        if (meta && isDerived) {
+          if (isNested) {
+            joinSelection.push(meta.rawSelect);
+          } else {
+            rawSelection.push(meta.rawSelect);
+          }
+        }
+      });
+    }
+
+    /**
+     * Add join where conditions from AgGrid decorator relation property
+     */
+
+    let joinCopy;
+    const customJoinToApply: {
+      (queryBuilder: SelectQueryBuilder<Entity>): void;
+    }[] = [];
+    if (join) {
+      joinCopy = { ...join };
+      const processRelationExtraConditions = (
+        joinType: 'left' | 'inner',
+        joinInfo?: Record<string, string>,
+      ) => {
+        if (!joinInfo) return;
+
+        /**
+         * when fieldInfo?.relation we need to execute
+         * join by using the queryBuilder functions directly
+         * in order to apply the extra conditions
+         */
+        Object.keys(joinInfo).forEach((key) => {
+          const fieldInfo = extra?._fieldMapper?.[key] as IAgGridFieldMetadata;
+
+          if (!fieldInfo?.relation) return;
+
+          const relation = fieldInfo.relation;
+
+          const type: 'leftJoinAndSelect' | 'innerJoinAndSelect' =
+            joinType === 'left' ? 'leftJoinAndSelect' : 'innerJoinAndSelect';
+
+          // store joins to apply later
+          customJoinToApply.push((qb: SelectQueryBuilder<Entity>) => {
+            /* istanbul ignore next */
+            const alias = extra?._aliasType ?? '';
+            qb[type](
+              `${alias}.${key}`,
+              `${key}`,
+              `${key}.${relation.targetKey.dst} = ${relation.sourceKey.dst}`,
+            );
+          });
+
+          delete joinInfo[key];
+        });
+      };
+
+      processRelationExtraConditions('inner', joinCopy.innerJoinAndSelect);
+      processRelationExtraConditions('left', joinCopy.leftJoinAndSelect);
+    }
 
     queryBuilder =
       FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
         queryBuilder,
-        strippedFindOptions,
+        { ...strippedFindOptions, join: joinCopy },
       );
+
+    rawSelection.length > 0 && queryBuilder.addSelect(rawSelection);
+
+    if (join) {
+      joinSelection.length > 0 && queryBuilder.addSelect(joinSelection);
+      // apply custom joins
+      customJoinToApply.forEach((fn) => fn(queryBuilder));
+    }
 
     if (extra && extra.rawLimit === true) {
       // .take() and .skip() methods create
@@ -107,7 +204,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ) {
-    const queryBuilder = this.createQueryBuilder();
+    const queryBuilder = this.createQueryBuilder(findOptions.extra?._aliasType);
 
     if (findOptions.subQueryFilters) {
       const joinQueryBuilder = queryBuilder.connection.createQueryBuilder();
@@ -188,12 +285,16 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<Entity[]> {
-    // console.log('==========START QUERY==============');
     const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
 
     return queryBuilder.getMany();
   }
 
+  /**
+   * @param findOptions All we need to select, filter, order and join the data
+   * @param withFail If true ignore the fail, if false when u don't find a entity it'll trhow an error
+   * @param mode Set it to true to query data after a mutation
+   */
   async getOneAgGrid(
     findOptions: AgGridFindManyOptions<Entity>,
     withFail?: boolean,
@@ -204,27 +305,50 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     withFail?: boolean,
     mode: ReplicationMode = ReplicationMode.SLAVE,
   ): Promise<Entity | undefined> {
-    // console.log('==========START QUERY==============');
     const queryBuilder = this.getFormattedAgGridQueryBuilder(findOptions);
-    const returnFunction = withFail
-      ? qbGetOneOrFail(findOptions)
-      : qbGetOne(findOptions);
-
+    const returnFunction = this.getOneOrFail(withFail);
     return QueryBuilderHelper.applyOperationToQueryBuilder(
       queryBuilder,
       mode,
       returnFunction,
     );
   }
-}
 
-export function qbGetOne<Entity>(conditions: any) {
-  return (qb: SelectQueryBuilder<Entity>) => qb.where(conditions).getOne();
-}
+  private getOneOrFail(withFail?: boolean) {
+    return (qb: SelectQueryBuilder<Entity>) => {
+      return withFail ? qb.getOne() : qb.getOneOrFail();
+    };
+  }
 
-export function qbGetOneOrFail<Entity>(conditions: any) {
-  return (qb: SelectQueryBuilder<Entity>) =>
-    qb.where(conditions).getOneOrFail();
+  /**
+   *
+   * @param ids Could be either a object map between entity primaryColumn name and value or a single value of the primaryColumn
+   * @returns where filter with conditions on entity primaryColumn
+   */
+  public generateFilterOnPrimaryColumn(ids: any) {
+    const filters: IWhereFilters = {};
+    const entityPrimaryColumn = this.metadata.primaryColumns.map(
+      (x) => x.propertyName,
+    );
+    entityPrimaryColumn.map((key: string) => {
+      filters[key] = ` = '${ids[key] ?? ids}'`;
+    });
+
+    return filters;
+  }
+
+  public generateSelectOnFind(
+    fields: (keyof Entity)[],
+    gqlType: ClassType<Entity>,
+  ) {
+    const findOptions: AgGridFindManyOptions = {};
+    const fieldMapper = objectToFieldMapper(gqlType);
+
+    fields.forEach((field) =>
+      applySelectOnFind(findOptions, field, fieldMapper.field),
+    );
+    return findOptions;
+  }
 }
 
 const repositoryMap = new WeakMap();

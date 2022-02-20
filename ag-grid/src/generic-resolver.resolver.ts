@@ -42,7 +42,7 @@ import { getAgGridFieldMetadataList } from './object.decorator';
 import { AgGridError } from './ag-grid.error';
 import { ExtraArgsStrategy } from './ag-grid.enum';
 import { IAgQueryParams } from './ag-grid.args';
-import { InputArgs } from '@nestjs-yalc/graphql/decorators/gqlmapper.decorator';
+import { InputArgs } from '@nestjs-yalc/ag-grid/gqlmapper.decorator';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 export interface IGenericResolver {
   [index: string]: any; //index signature
@@ -58,15 +58,6 @@ export interface IGenericResolverMethodOptions {
   fieldMap?: IFieldMapper;
   decorators?: IDecoratorType[];
   defaultValue?: IAgQueryParams | any;
-}
-
-export interface IGenericResolverQueryOptions
-  extends IGenericResolverMethodOptions {
-  idName?: string;
-  throwOnNotFound?: boolean;
-}
-
-export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
   /**
    * Filters with direct arguments
    */
@@ -76,6 +67,22 @@ export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
   };
 }
 
+export interface IGenericResolverQueryOptions
+  extends IGenericResolverMethodOptions {
+  idName?: string;
+  throwOnNotFound?: boolean;
+}
+
+// export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
+//   /**
+//    * Filters with direct arguments
+//    */
+//   extraArgsStrategy?: ExtraArgsStrategy;
+//   extraArgs?: {
+//     [index: string]: IExtraArg;
+//   };
+// }
+
 export interface ICustomSingleQueryOptions
   extends IGenericResolverMethodOptions {
   isSingleResource: true;
@@ -84,15 +91,13 @@ export interface ICustomSingleQueryOptions
 }
 
 export function isCustomSingleQueryOptions(
-  option: ICustomQueryOptions | ICustomSingleQueryOptions,
+  option: IGenericResolverQueryOptions | ICustomSingleQueryOptions,
 ): option is ICustomSingleQueryOptions {
   return (<ICustomSingleQueryOptions>option).isSingleResource === true;
 }
 
-export function isCustomGridQueryOptions(
-  option: ICustomQueryOptions | IGenericResolverQueryOptions,
-): option is ICustomQueryOptions {
-  return !!(<ICustomQueryOptions>option).extraArgs;
+export function hasExtraArgs(option: IGenericResolverQueryOptions): boolean {
+  return !!(<IGenericResolverQueryOptions>option).extraArgs;
 }
 
 export function hasFilters(findOptions: AgGridFindManyOptions) {
@@ -117,7 +122,7 @@ export interface IGenericResolverOptions<Entity> {
     getResourceGrid?: IGenericResolverMethodOptions;
   };
   customQueries?: {
-    [index: string]: ICustomQueryOptions | ICustomSingleQueryOptions;
+    [index: string]: IGenericResolverQueryOptions | ICustomSingleQueryOptions;
   };
   mutations?: {
     createResource: IGenericResolverMethodOptions;
@@ -133,11 +138,11 @@ export interface IGenericResolverOptions<Entity> {
     /**
      * Override default dataloader (must be based on class GQLDataLoader)
      */
-    dataLoaderToken: string;
+    dataLoaderToken?: string;
     /**
      * Override default service (must be based on class GenericService)
      */
-    serviceToken: string;
+    serviceToken?: string;
   };
 }
 
@@ -167,7 +172,6 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       (typeof resolverInfo.relation.type === 'function'
         ? resolverInfo.relation.type()
         : resolverInfo.relation.type);
-
     if (
       resolverInfo.relation.relationType === 'one-to-many' ||
       resolverInfo.relation.relationType === 'many-to-many'
@@ -185,7 +189,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           ): Promise<[Array<Entity | null>, number]> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
-            if (parentRes) {
+            if (parentRes !== undefined) {
               if (hasFilters(findOptions))
                 throw new AgGridError(
                   'Cannot specify join arguments and resolver arguments at the same time',
@@ -204,8 +208,11 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               resolverInfo.join?.referencedColumnName ??
               dataLoader.getSearchKey();
 
+            const parentCol =
+              resolverInfo.join?.name ?? dataLoader.getSearchKey();
+
             return dataLoader.loadOneToMany(
-              [joinCol, parent[joinCol]],
+              [joinCol, parent[parentCol]],
               findOptions,
               true,
             );
@@ -237,7 +244,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       AgGridArgs({
         fieldType: relType,
         entityType: relType,
-        defaultValue: resolverInfo.agField?.dataLoader?.defaultValue,
+        defaultValue: resolverInfo.agField?.relation?.defaultValue,
       })(resolver.prototype, resolverInfo.relation.propertyName, 1);
 
       // without the design:paramtypes metadata
@@ -265,7 +272,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           ): Promise<Entity | null> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
-            if (parentRes) {
+            if (parentRes !== undefined) {
               if (hasFilters(findOptions))
                 throw new AgGridError(
                   'Cannot specify join arguments and resolver arguments at the same time',
@@ -285,8 +292,10 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               resolverInfo.join?.referencedColumnName ??
               dataLoader.getSearchKey();
 
+            const parentCol =
+              resolverInfo.join?.name ?? dataLoader.getSearchKey();
             return dataLoader.loadOne(
-              [joinCol, parent[joinCol]],
+              [joinCol, parent[parentCol]],
               findOptions,
               false,
             );
@@ -369,6 +378,7 @@ export function defineGetSingleResource<Entity>(
   )(resolver.prototype, queryName, descriptor);
 
   const fieldType = methodOptions.returnType?.() ?? returnType;
+
   const entityType =
     !isClass(fieldType) && typeof fieldType === 'function'
       ? fieldType()
@@ -393,7 +403,7 @@ export function defineGetGridResource<Entity>(
   queryName: string,
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
-  methodOptions: IGenericResolverQueryOptions | ICustomQueryOptions,
+  methodOptions: IGenericResolverQueryOptions,
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
@@ -438,7 +448,7 @@ export function defineGetGridResource<Entity>(
       : fieldType;
 
   let extraArgTypes: any[] = [];
-  if (isCustomGridQueryOptions(methodOptions)) {
+  if (hasExtraArgs(methodOptions)) {
     AgGridArgs({
       fieldType,
       entityType,
@@ -475,8 +485,11 @@ export function defineCreateMutation<Entity>(
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
     writable: true,
-    value: async function (input: Entity): Promise<Entity | null> {
-      return this.service.createEntity(input);
+    value: async function (
+      input: Entity,
+      findOptions: AgGridFindManyOptions<Entity>,
+    ): Promise<Entity | null> {
+      return this.service.createEntity(input, findOptions);
     },
   });
 
@@ -509,6 +522,17 @@ export function defineCreateMutation<Entity>(
     _name: 'input',
   })(resolver.prototype, queryName, 0);
 
+  const fieldType = methodOptions.returnType?.() ?? returnType;
+  const entityType =
+    !isClass(fieldType) && typeof fieldType === 'function'
+      ? fieldType()
+      : fieldType;
+
+  AgGridArgsSingle({
+    fieldType,
+    entityType,
+  })(resolver.prototype, queryName, 1);
+
   Reflect.metadata('design:paramtypes', [Object])(
     resolver.prototype,
     queryName,
@@ -528,8 +552,9 @@ export function defineUpdateMutation<Entity>(
     value: async function (
       conditions: Entity,
       input: Entity,
+      findOptions: AgGridFindManyOptions<Entity>,
     ): Promise<Entity | null> {
-      return this.service.updateEntity(conditions, input);
+      return this.service.updateEntity(conditions, input, findOptions);
     },
   });
 
@@ -546,7 +571,7 @@ export function defineUpdateMutation<Entity>(
   applyDecorators(
     ...generateDecorators(
       Mutation,
-      `${options.prefix}update${options.entityModel.name}`,
+      `${options.prefix ?? ''}update${options.entityModel.name}`,
       methodOptions.returnType ?? returnValue(returnType),
       methodOptions,
     ),
@@ -571,6 +596,17 @@ export function defineUpdateMutation<Entity>(
     },
     _name: 'input',
   })(resolver.prototype, queryName, 1);
+
+  const fieldType = methodOptions.returnType?.() ?? returnType;
+  const entityType =
+    !isClass(fieldType) && typeof fieldType === 'function'
+      ? fieldType()
+      : fieldType;
+
+  AgGridArgsSingle({
+    fieldType,
+    entityType,
+  })(resolver.prototype, queryName, 2);
 
   Reflect.metadata('design:paramtypes', [Object, Object])(
     resolver.prototype,
@@ -628,11 +664,14 @@ export function defineDeleteMutation<Entity>(
   );
 }
 
-export function resolverFactory<Entity extends Record<string, any> = any>(
+export function resolverFactory<
+  Entity extends Record<string, any> = any,
+  EntityWrite = Entity,
+>(
   options: IGenericResolverOptions<Entity>,
 ): {
   new (
-    service: GenericService<Entity>,
+    service: GenericService<Entity, EntityWrite>,
     dataloader: GQLDataLoader<Entity>,
     moduleRef: ModuleRef,
   ): IGenericResolver;
@@ -649,7 +688,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
       @Inject(
         options.service?.serviceToken ?? getServiceToken(options.entityModel),
       )
-      protected service: GenericService<Entity>,
+      protected service: GenericService<Entity, EntityWrite>,
       @Inject(
         options.service?.dataLoaderToken ??
           getDataloaderToken(options.entityModel),
@@ -672,11 +711,11 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     options.dto,
   );
 
-  const fieldMetadataList = getAgGridFieldMetadataList(options.entityModel);
+  const fieldMetadataList = getAgGridFieldMetadataList(returnType);
   if (fieldMetadataList) {
     Object.keys(fieldMetadataList).forEach((propertyName) => {
       const field = fieldMetadataList[propertyName];
-      if (!field.dataLoader) return;
+      if (!field.relation) return;
 
       const objIndex = resolverInfoList.findIndex((obj) => {
         if (obj.join) {
@@ -690,18 +729,22 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
       if (objIndex >= 0) {
         const relInfo = resolverInfoList[objIndex];
 
+        const target = field.relation.targetKey.alias;
+
         resolverInfoList[objIndex] = {
           ...relInfo,
           join: {
             ...relInfo.join,
             propertyName,
-            target: field.dataLoader.searchKey,
+            name: field.relation.sourceKey.alias,
+            target,
+            referencedColumnName: target,
           },
           relation: {
             ...relInfo.relation,
             propertyName,
-            relationType: field.dataLoader.relationType,
-            type: field.dataLoader.type,
+            relationType: field.relation.relationType,
+            type: field.relation.type,
             target: options.entityModel,
           },
           agField: {
@@ -710,15 +753,19 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
           },
         };
       } else {
+        const target = field.relation.targetKey.alias;
+
         const dataLoaderRelation: IRelationInfo = {
           join: {
             propertyName,
-            target: field.dataLoader.searchKey,
+            name: field.relation.sourceKey.alias,
+            target,
+            referencedColumnName: target,
           },
           relation: {
             propertyName,
-            relationType: field.dataLoader.relationType,
-            type: field.dataLoader.type,
+            relationType: field.relation.relationType,
+            type: field.relation.type,
             isLazy: true,
             target: options.entityModel,
             options: {},
@@ -745,7 +792,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
   class Mutations extends BaseClass {}
 
   defineCreateMutation(
-    `${options.prefix}create${options.entityModel.name}`,
+    `${options.prefix ?? ''}create${options.entityModel.name}`,
     returnType,
     Mutations,
     options,
@@ -753,7 +800,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
   );
 
   defineUpdateMutation(
-    `${options.prefix}update${options.entityModel.name}`,
+    `${options.prefix ?? ''}update${options.entityModel.name}`,
     returnType,
     Mutations,
     options,
@@ -761,7 +808,7 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
   );
 
   defineDeleteMutation(
-    `${options.prefix}delete${options.entityModel.name}`,
+    `${options.prefix ?? ''}delete${options.entityModel.name}`,
     returnType,
     Mutations,
     options,
@@ -782,14 +829,14 @@ export function resolverFactory<Entity extends Record<string, any> = any>(
     implements IGenericResolver {}
 
   defineGetSingleResource(
-    `${options.prefix}get${options.entityModel.name}`,
+    `${options.prefix ?? ''}get${options.entityModel.name}`,
     returnType,
     GenericResolver,
     getResourceOptions,
   );
 
   defineGetGridResource(
-    `${options.prefix}get${options.entityModel.name}Grid`,
+    `${options.prefix ?? ''}get${options.entityModel.name}Grid`,
     returnType,
     GenericResolver,
     getResourceGridOptions,

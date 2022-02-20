@@ -38,7 +38,7 @@ export const globals = (tsConfPath = '') => {
 };
 
 export const coverageThreshold = (projects: any[] = []) => {
-  const coverage = {
+  const coverage: Record<string, any> = {
     global: {
       branches: 100,
       functions: 100,
@@ -91,7 +91,7 @@ export const globalsE2E = (tsConfPath = '') => ({
 
 const defaultConf = (dirname: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const compilerOptions = require(`${dirname}tsconfig.json`).compilerOptions;
+  const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
 
   return {
     rootDir: dirname,
@@ -116,14 +116,18 @@ const defaultConf = (dirname: string) => {
   };
 };
 
-export const createE2EConfig = (alias: string, dirname: string) => ({
-  ...defaultConf(dirname),
+export const createE2EConfig = (
+  alias: string,
+  e2eDirname: string,
+  rootDirname: string,
+) => ({
+  ...defaultConf(`${rootDirname}`),
   name: `e2e/${alias}`,
   displayName: `e2e/${alias}`,
   testRegex: 'main.ts',
-  setupFilesAfterEnv: [`${dirname}/jest.e2e-setup.ts`],
-  roots: [`${dirname}`],
-  globals: globalsE2E(path.resolve(`${dirname}/../tsconfig.json`)),
+  setupFilesAfterEnv: [`${e2eDirname}/jest.e2e-setup.ts`],
+  roots: [`${e2eDirname}`],
+  globals: globalsE2E(path.resolve(`${e2eDirname}/../tsconfig.json`)),
   bail: 1,
 });
 

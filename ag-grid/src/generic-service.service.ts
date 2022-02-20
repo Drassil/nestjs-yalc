@@ -25,6 +25,8 @@ import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from './ag-grid.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
+import { isClass } from '@nestjs-yalc/utils/class.helper';
+import { getAgGridFieldMetadataList, isDstExtended } from './object.decorator';
 
 /**
  *
@@ -39,6 +41,8 @@ export function GenericServiceFactory<Entity>(
   entity: EntityClassOrSchema,
   connectionName: string,
   providedClass?: ClassType<GenericService<Entity>>,
+  entityWrite?: EntityClassOrSchema,
+  connectionNameWrite?: string,
 ): FactoryProvider {
   const serviceClass = providedClass ?? GenericService;
 
@@ -48,10 +52,19 @@ export function GenericServiceFactory<Entity>(
       getServiceToken(
         typeof entity === 'function' ? entity.name : entity.toString(),
       ),
-    useFactory: (repository: AgGridRepository<any>) => {
-      return new serviceClass(repository);
+    useFactory: (
+      repository: AgGridRepository<any>,
+      repositoryWrite: AgGridRepository<any>,
+    ) => {
+      return new serviceClass(repository, repositoryWrite);
     },
-    inject: [getRepositoryToken(entity, connectionName)],
+    inject: [
+      getRepositoryToken(entity, connectionName),
+      getRepositoryToken(
+        entityWrite ?? entity,
+        connectionNameWrite ?? connectionName,
+      ),
+    ],
   };
 }
 
@@ -79,12 +92,28 @@ export function validateSupportedError(
  * @todo must be refactorized with better types
  */
 @Injectable()
-export class GenericService<Entity> {
-  protected entity: EntityClassOrSchema;
+export class GenericService<EntityRead, EntityWrite = EntityRead> {
+  protected entityRead: EntityClassOrSchema;
+  protected entityWrite: EntityClassOrSchema;
+  protected repositoryWrite: AgGridRepository<EntityWrite>;
 
-  constructor(protected repository: AgGridRepository<Entity>) {
+  /**
+   *
+   * @param repositoryRead the main repository, if you do not specify the repositoryWrite it is used as write repository too
+   * @param repositoryWrite specify this repository when you have to write on another entity, this is useful when you read from a view but you
+   * need to write on another source
+   */
+  constructor(
+    protected repository: AgGridRepository<EntityRead>,
+    repositoryWrite?: AgGridRepository<EntityWrite>,
+  ) {
+    this.repositoryWrite =
+      repositoryWrite ??
+      ((<unknown>this.repository) as AgGridRepository<EntityWrite>);
+
     // Extracts the target Entity from the AgGridRepository
-    this.entity = repository.target as EntityClassOrSchema;
+    this.entityRead = this.repository.target as EntityClassOrSchema;
+    this.entityWrite = this.repositoryWrite.target as EntityClassOrSchema;
   }
 
   /**
@@ -94,24 +123,58 @@ export class GenericService<Entity> {
   protected switchDatabaseConnection(dbName: string): void {
     const connectionName = getConnectionName(dbName);
     const connection = getConnection(connectionName);
-    this.setRepository(
-      connection.getRepository(this.entity) as AgGridRepository<Entity>,
+    this.setRepositoryRead(
+      connection.getRepository(this.entityRead) as AgGridRepository<EntityRead>,
+    );
+
+    this.setRepositoryWrite(
+      connection.getRepository(
+        this.entityWrite,
+      ) as AgGridRepository<EntityWrite>,
     );
   }
 
   /**
-   * Changes the Service repository
+   * Changes the Service repository (both write and read)
    * @param repository
    */
-  protected setRepository(repository: AgGridRepository<Entity>): void {
+  protected setRepository(
+    repository: AgGridRepository<EntityRead | EntityWrite>,
+  ): void {
+    this.setRepositoryRead(repository as AgGridRepository<EntityRead>);
+    this.setRepositoryWrite(repository as AgGridRepository<EntityWrite>);
+  }
+
+  /**
+   * Changes the Service repository for read operations
+   * @param repository
+   */
+  protected setRepositoryRead(repository: AgGridRepository<EntityRead>): void {
     this.repository = repository;
   }
 
   /**
-   * Returns the Service repository
+   * Changes the Service repository for read operations
+   * @param repository
    */
-  getRepository(): AgGridRepository<Entity> {
+  protected setRepositoryWrite(
+    repository: AgGridRepository<EntityWrite>,
+  ): void {
+    this.repositoryWrite = repository;
+  }
+
+  /**
+   * Returns the Service repository (read)
+   */
+  getRepository(): AgGridRepository<EntityRead> {
     return this.repository;
+  }
+
+  /**
+   * Returns the Service repository (write)
+   */
+  getRepositoryWrite(): AgGridRepository<EntityWrite> {
+    return this.repositoryWrite;
   }
 
   /**
@@ -122,23 +185,23 @@ export class GenericService<Entity> {
    * @param databaseName The database name, to open a new database connection
    */
   async getEntityList(
-    findOptions: FindManyOptions<Entity> | ObjectLiteral,
+    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
     withCount?: false,
     relations?: string[],
     databaseName?: string,
-  ): Promise<Entity[]>;
+  ): Promise<EntityRead[]>;
   async getEntityList(
-    findOptions: FindManyOptions<Entity> | ObjectLiteral,
+    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
     withCount: true,
     relations?: string[],
     databaseName?: string,
-  ): Promise<[Entity[], number]>;
+  ): Promise<[EntityRead[], number]>;
   async getEntityList(
-    findOptions: FindManyOptions<Entity> | ObjectLiteral,
+    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
     withCount = false,
     relations?: string[],
     databaseName?: string,
-  ): Promise<[Entity[], number] | Entity[]> {
+  ): Promise<[EntityRead[], number] | EntityRead[]> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
     if (relations) findOptions.relations = relations;
@@ -154,14 +217,14 @@ export class GenericService<Entity> {
    */
   async getEntityOrFail(
     where:
-      | FindConditions<Entity>[]
-      | FindConditions<Entity>
+      | FindConditions<EntityRead>[]
+      | FindConditions<EntityRead>
       | ObjectLiteral
       | string,
-    fields?: (keyof Entity)[],
+    fields?: (keyof EntityRead)[],
     relations?: string[],
     databaseName?: string,
-  ): Promise<Entity> {
+  ): Promise<EntityRead> {
     return this.getEntity(where, fields, relations, databaseName, {
       failOnNull: true,
     });
@@ -176,47 +239,47 @@ export class GenericService<Entity> {
    */
   async getEntity(
     where:
-      | FindConditions<Entity>[]
-      | FindConditions<Entity>
+      | FindConditions<EntityRead>[]
+      | FindConditions<EntityRead>
       | ObjectLiteral
       | string,
-    fields?: (keyof Entity)[],
+    fields?: (keyof EntityRead)[],
     relations?: string[],
     databaseName?: string,
     options?: {
       failOnNull: false;
     },
-  ): Promise<Entity | undefined>;
+  ): Promise<EntityRead | undefined>;
   async getEntity(
     where:
-      | FindConditions<Entity>[]
-      | FindConditions<Entity>
+      | FindConditions<EntityRead>[]
+      | FindConditions<EntityRead>
       | ObjectLiteral
       | string,
-    fields?: (keyof Entity)[],
+    fields?: (keyof EntityRead)[],
     relations?: string[],
     databaseName?: string,
     options?: {
       failOnNull?: boolean;
     },
-  ): Promise<Entity>;
+  ): Promise<EntityRead>;
   async getEntity(
     where:
-      | FindConditions<Entity>[]
-      | FindConditions<Entity>
+      | FindConditions<EntityRead>[]
+      | FindConditions<EntityRead>
       | ObjectLiteral
       | string,
-    fields?: (keyof Entity)[],
+    fields?: (keyof EntityRead)[],
     relations?: string[],
     databaseName?: string,
     options?: {
       failOnNull?: boolean;
     },
-  ): Promise<Entity | undefined> {
+  ): Promise<EntityRead | undefined> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
 
-    return options?.failOnNull === false
+    return options?.failOnNull !== true
       ? this.repository.findOne({ where, select: fields, relations })
       : this.repository.findOneOrFail({ where, select: fields, relations });
   }
@@ -226,17 +289,51 @@ export class GenericService<Entity> {
    * @param entity
    * @throws CreateEntityError
    */
-  async createEntity(entity: DeepPartial<Entity>): Promise<Entity> {
-    const newEntity = this.repository.create(entity);
-    const { identifiers } = await this.repository
+  async createEntity(
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: true,
+  ): Promise<EntityRead>;
+  async createEntity(
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: boolean,
+  ): Promise<EntityRead | boolean>;
+  async createEntity(
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity = true,
+  ): Promise<EntityRead | boolean> {
+    /**
+     * This is needed to keep the prototype of the
+     * entity in order to allow the beforeInsert to be executed
+     */
+    let entityHydrated = this.mapEntityR2W(input);
+    const entity = this.entityWrite;
+    if (isClass(entity)) {
+      const inputValues = entityHydrated;
+      entityHydrated = new entity();
+      Object.assign(entityHydrated, inputValues);
+    }
+
+    const newEntity = this.repositoryWrite.create(entityHydrated);
+    const { identifiers } = await this.repositoryWrite
       .insert(newEntity)
       .catch(validateSupportedError(CreateEntityError));
+    /**
+     * Create where condition for the identifiers
+     * @todo maybe conversion is needed here as well
+     */
+    const ids = identifiers[0];
+    const filters = this.repository.generateFilterOnPrimaryColumn(ids);
 
-    return this.repository.getOneAgGrid(
-      identifiers[0],
-      true,
-      ReplicationMode.MASTER,
-    );
+    return !returnEntity
+      ? true
+      : this.repository.getOneAgGrid(
+          { ...findOptions, where: { filters } },
+          true,
+          ReplicationMode.MASTER,
+        );
   }
 
   /**
@@ -248,16 +345,56 @@ export class GenericService<Entity> {
    * @throws ConditionsTooBroadError
    */
   async updateEntity(
-    conditions: FindConditions<Entity>,
-    input: DeepPartial<Entity>,
-  ): Promise<Entity> {
-    await this.validateConditions(conditions);
+    conditions: FindConditions<EntityRead>,
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: true,
+  ): Promise<EntityRead>;
+  async updateEntity(
+    conditions: FindConditions<EntityRead>,
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: boolean,
+  ): Promise<EntityRead | boolean>;
+  async updateEntity(
+    conditions: FindConditions<EntityRead>,
+    input: DeepPartial<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity = true,
+  ): Promise<EntityRead | boolean> {
+    const result = await this.validateConditions(conditions);
 
-    await this.repository
-      .update(conditions, input)
+    /**
+     * This is needed to keep the prototype of the
+     * entity in order to allow the beforeUpdate to be executed
+     */
+    let entityHydrated = this.mapEntityR2W(input);
+    const entity = this.entityWrite;
+    if (isClass(entity)) {
+      const _inputValues = entityHydrated;
+      entityHydrated = new entity();
+      Object.assign(entityHydrated, _inputValues);
+    }
+
+    const mappedConditions = this.mapEntityR2W(conditions);
+
+    await this.repositoryWrite
+      .update(mappedConditions, entityHydrated)
       .catch(validateSupportedError(UpdateEntityError));
 
-    return this.repository.getOneAgGrid(input, true, ReplicationMode.MASTER);
+    /**
+     * Create where condition for the the identifiers
+     */
+    const ids = this.repository.getId(Object.assign(result, entityHydrated));
+    const filters = this.repository.generateFilterOnPrimaryColumn(ids);
+
+    return !returnEntity
+      ? true
+      : this.repository.getOneAgGrid(
+          { ...findOptions, where: { filters } },
+          true,
+          ReplicationMode.MASTER,
+        );
   }
 
   /**
@@ -267,11 +404,13 @@ export class GenericService<Entity> {
    * @throws NoResultsForConditions
    * @throws ConditionsTooBroadError
    */
-  async deleteEntity(conditions: FindConditions<Entity>): Promise<boolean> {
+  async deleteEntity(conditions: FindConditions<EntityRead>): Promise<boolean> {
     await this.validateConditions(conditions);
 
-    const result = await this.repository
-      .delete(conditions)
+    const mappedConditions = this.mapEntityR2W(conditions);
+
+    const result = await this.repositoryWrite
+      .delete(mappedConditions)
       .catch(validateSupportedError(DeleteEntityError));
 
     return !!result.affected && result.affected > 0;
@@ -283,7 +422,9 @@ export class GenericService<Entity> {
    * @throws NoResultsForConditions
    * @throws ConditionsTooBroadError
    */
-  async validateConditions(conditions: FindConditions<Entity>): Promise<void> {
+  async validateConditions(
+    conditions: FindConditions<EntityRead>,
+  ): Promise<EntityRead> {
     const results = await this.repository.find({
       where: conditions,
       take: 2, // Prevent finding more records than we need for the validation
@@ -295,6 +436,7 @@ export class GenericService<Entity> {
     if (results.length > 1) {
       throw new ConditionsTooBroadError(conditions);
     }
+    return results[0];
   }
 
   /**   * Returns a List of entities based in the provided options.
@@ -304,23 +446,23 @@ export class GenericService<Entity> {
    * @param databaseName The database name, to open a new database connection
    */
   async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+    findOptions: AgGridFindManyOptions<EntityRead>,
     withCount?: false,
     relations?: string[],
     databaseName?: string,
-  ): Promise<Entity[]>;
+  ): Promise<EntityRead[]>;
   async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+    findOptions: AgGridFindManyOptions<EntityRead>,
     withCount: true,
     relations?: string[],
     databaseName?: string,
-  ): Promise<[Entity[], number]>;
+  ): Promise<[EntityRead[], number]>;
   async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+    findOptions: AgGridFindManyOptions<EntityRead>,
     withCount = false,
     relations?: string[],
     databaseName?: string,
-  ): Promise<[Entity[], number] | Entity[]> {
+  ): Promise<[EntityRead[], number] | EntityRead[]> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
     if (relations) findOptions.relations = relations;
@@ -328,5 +470,46 @@ export class GenericService<Entity> {
     return withCount
       ? this.repository.getManyAndCountAgGrid(findOptions)
       : this.repository.getManyAgGrid(findOptions);
+  }
+
+  protected mapEntityR2W(
+    entityRead: FindConditions<EntityRead>,
+  ): FindConditions<EntityWrite>;
+  protected mapEntityR2W(
+    entityRead: EntityRead | DeepPartial<EntityRead>,
+  ): EntityWrite;
+  protected mapEntityR2W(
+    entityRead:
+      | EntityRead
+      | DeepPartial<EntityRead>
+      | FindConditions<EntityRead>,
+  ): EntityWrite | FindConditions<EntityWrite> {
+    const entity = this.entityWrite;
+
+    if (!isClass(entity) || !isClass(this.entityRead))
+      return entityRead as EntityWrite;
+
+    const newEntityWrite = new entity();
+
+    const fieldMetadataList = getAgGridFieldMetadataList(this.entityRead);
+
+    for (const propertyName of Object.keys(entityRead)) {
+      const fieldMetadata = fieldMetadataList?.[propertyName];
+
+      if (!fieldMetadata?.dst || !isDstExtended(fieldMetadata.dst)) {
+        newEntityWrite[propertyName] =
+          entityRead[propertyName as keyof EntityRead];
+        continue;
+      }
+
+      const dst = fieldMetadata.dst;
+
+      dst.transformer(
+        newEntityWrite,
+        entityRead[propertyName as keyof EntityRead],
+      );
+    }
+
+    return newEntityWrite;
   }
 }

@@ -13,7 +13,12 @@ import {
   UpdateResult,
   DeleteResult,
 } from 'typeorm';
-import { baseEntityRepository } from '../__mocks__/generic-service.mocks';
+import {
+  baseEntityRepository as _baseEntityRepository,
+  MockedEntity,
+  ReadEntity,
+  WriteEntity,
+} from '../__mocks__/generic-service.mocks';
 import { mocked } from 'ts-jest/utils';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { createMock } from '@golevelup/ts-jest';
@@ -29,24 +34,54 @@ import {
   NoResultsFoundError,
   ConditionsTooBroadError,
 } from '../conditions.error';
+import * as ClassHelper from '@nestjs-yalc/utils/class.helper';
 jest.mock('typeorm');
 
 describe('GenericService', () => {
-  let service: GenericService<BaseEntity>;
+  let service: GenericService<MockedEntity>;
   let mockedGetConnection: any;
+  let baseEntityRepository = _baseEntityRepository;
 
   beforeEach(async () => {
     mockedGetConnection = mocked(getConnection, true);
 
+    // the target property can't be proxied
+    // we need to create a new proxy by overriding the
+    // target handled
+    baseEntityRepository = new Proxy(baseEntityRepository, {
+      get(obj, p) {
+        if (p === 'target') return MockedEntity;
+
+        return obj[p];
+      },
+    });
+
     service = new GenericService(baseEntityRepository);
+    baseEntityRepository.metadata.primaryColumns = [{ propertyName: 'xx' }];
   });
 
   afterEach(() => {
+    jest.resetAllMocks();
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('should create a service with write repository', () => {
+    const writeRepo = new AgGridRepository();
+    service = new GenericService(baseEntityRepository, writeRepo);
+    expect(service.getRepository() === baseEntityRepository).toBeTruthy();
+    expect(service.getRepositoryWrite() === writeRepo).toBeTruthy();
+  });
+
+  it('should set all repositories correctly', () => {
+    const writeRepo = new AgGridRepository();
+    service.setRepository(writeRepo);
+    expect(service.getRepository() === writeRepo).toBeTruthy();
+    expect(service.getRepositoryWrite() === writeRepo).toBeTruthy();
   });
 
   it('should call the factory function properly', () => {
@@ -58,6 +93,26 @@ describe('GenericService', () => {
       () => BaseEntity,
       'fakeConnection',
       GenericService,
+    );
+    expect(result).toBeDefined();
+    expect(result.useFactory()).toBeDefined();
+
+    expect(spiedGenerciService).toHaveBeenCalledTimes(1);
+
+    spiedGenerciService.mockRestore();
+  });
+
+  it('should call the factory function properly with parameters', () => {
+    const spiedGenerciService = jest
+      .spyOn(GenericServiceModule, 'GenericService')
+      .mockImplementation(jest.fn());
+
+    const result: FactoryProvider = GenericServiceFactory<BaseEntity>(
+      () => BaseEntity,
+      'fakeConnection',
+      GenericService,
+      MockedEntity,
+      'fakeWriteConnection',
     );
     expect(result).toBeDefined();
     expect(result.useFactory()).toBeDefined();
@@ -121,7 +176,7 @@ describe('GenericService', () => {
     const spiedGetEntity = jest.spyOn(service, 'getEntity');
     expect(spiedGetEntity).not.toHaveBeenCalled();
     await service.getEntity({}, [], ['RelatedEntity']);
-    expect(baseEntityRepository.findOneOrFail).toBeCalledWith({
+    expect(baseEntityRepository.findOne).toBeCalledWith({
       where: {},
       select: [],
       relations: ['RelatedEntity'],
@@ -136,10 +191,11 @@ describe('GenericService', () => {
     mockedGetConnection.mockReturnValueOnce(mockedConnection);
 
     const mockedEntity = new BaseEntity();
-    testRepository.findOneOrFail.mockResolvedValue(mockedEntity);
+    testRepository.findOne.mockResolvedValue(mockedEntity);
 
     // Checks the base repository to be set before changing it
     expect(service.getRepository()).toBe(baseEntityRepository);
+    expect(service.getRepositoryWrite()).toBe(baseEntityRepository);
 
     const entity = await service.getEntity(
       '',
@@ -155,6 +211,7 @@ describe('GenericService', () => {
       getConnectionName('databaseName'),
     );
     expect(service.getRepository()).toBe(testRepository);
+    expect(service.getRepositoryWrite()).toBe(testRepository);
     expect(entity).toBe(mockedEntity);
   });
 
@@ -239,8 +296,85 @@ describe('GenericService', () => {
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
     baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    expect(service.createEntity({})).resolves.toBe(mockedEntity);
+  });
+
+  it('Should insert an entity correctly with true', async () => {
+    const mockedEntity = new BaseEntity();
+    const insertResult = new InsertResult();
+    insertResult.identifiers = [{ id: '123' }];
+
+    baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    const result = await service.createEntity({}, {}, false);
+    expect(result).toBe(true);
+    baseEntityRepository.insert.mockRestore();
+    baseEntityRepository.getOneAgGrid.mockRestore();
+  });
+
+  it('Should insert an entity correctly when entity isClass', async () => {
+    const mockedEntity = new BaseEntity();
+    const insertResult = new InsertResult();
+    insertResult.identifiers = [{ id: '123' }];
+    const mockedIsClass = jest
+      .spyOn(ClassHelper, 'isClass')
+      .mockReturnValue(true);
+
+    baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
     const result = await service.createEntity({});
     expect(result).toBe(mockedEntity);
+    mockedIsClass.mockRestore();
+  });
+
+  it('should correctly map entities from read to write', () => {
+    const writeRepo = new AgGridRepository();
+    writeRepo.target = WriteEntity;
+
+    const readRepo = new AgGridRepository();
+    readRepo.target = ReadEntity;
+
+    const newService = new GenericService<ReadEntity, WriteEntity>(
+      readRepo,
+      writeRepo,
+    );
+
+    const res = newService.mapEntityR2W({
+      jsonProperty: 'test',
+      noDest: 'test',
+      noTransform: '',
+    });
+    expect(res).toBeDefined();
+  });
+
+  it('should correctly map entities from read to write (without mapper)', () => {
+    const writeRepo = new AgGridRepository();
+    writeRepo.target = WriteEntity;
+
+    const readRepo = new AgGridRepository();
+    readRepo.target = WriteEntity;
+
+    const newService = new GenericService<WriteEntity, WriteEntity>(
+      readRepo,
+      writeRepo,
+    );
+
+    newService.mapEntityR2W({ data: 'test' });
+  });
+
+  it('should not map entities from read to write when there are no classes', () => {
+    const writeRepo = new AgGridRepository();
+    writeRepo.target = {};
+
+    const readRepo = new AgGridRepository();
+    readRepo.target = {};
+
+    const newService = new GenericService<WriteEntity, WriteEntity>(
+      readRepo,
+      writeRepo,
+    );
+
+    newService.mapEntityR2W({ data: 'test' });
   });
 
   it('Should update an entity correctly', async () => {
@@ -252,6 +386,32 @@ describe('GenericService', () => {
 
     const result = await service.updateEntity({}, {});
     expect(result).toBe(mockedEntity);
+  });
+
+  it('Should update an entity correctly and return true', async () => {
+    const mockedEntity = new BaseEntity();
+
+    baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
+    baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+
+    await expect(service.updateEntity({}, {}, {}, false)).resolves.toBe(true);
+  });
+
+  it('Should update an entity correctly when entity isClass', async () => {
+    const mockedEntity = new BaseEntity();
+    const mockedIsClass = jest
+      .spyOn(ClassHelper, 'isClass')
+      .mockReturnValue(true);
+
+    baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
+    baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getId.mockReturnValue({ id: 'id' });
+
+    const result = await service.updateEntity({}, {});
+    expect(result).toBeDefined();
+    mockedIsClass.mockReset();
   });
 
   it('should delete an entity correctly', async () => {
@@ -270,7 +430,9 @@ describe('GenericService', () => {
       new QueryFailedError('', [], ''),
     );
 
-    expect(service.createEntity({})).rejects.toThrow(CreateEntityError);
+    await expect(async () => service.createEntity({})).rejects.toThrow(
+      CreateEntityError,
+    );
   });
 
   it('should handle an update error', async () => {
@@ -279,7 +441,9 @@ describe('GenericService', () => {
       new QueryFailedError('', [], ''),
     );
 
-    expect(service.updateEntity({}, {})).rejects.toThrow(UpdateEntityError);
+    await expect(async () => service.updateEntity({}, {})).rejects.toThrow(
+      UpdateEntityError,
+    );
   });
 
   it('should handle a deletion error', async () => {
@@ -288,7 +452,9 @@ describe('GenericService', () => {
       new QueryFailedError('', [], ''),
     );
 
-    expect(service.deleteEntity({})).rejects.toThrow(DeleteEntityError);
+    await expect(async () => service.deleteEntity({})).rejects.toThrow(
+      DeleteEntityError,
+    );
   });
 
   it('should not handle a differnt kind of error', async () => {
@@ -297,13 +463,15 @@ describe('GenericService', () => {
       new ConnectionNotFoundError('Another Error'),
     );
 
-    await expect(service.deleteEntity({})).rejects.toEqual({});
+    await expect(async () => service.deleteEntity({})).rejects.toEqual({});
   });
 
   it('Tests the conditions validation checks is empty', async () => {
     baseEntityRepository.find.mockResolvedValueOnce([]);
 
-    expect(service.validateConditions({})).rejects.toThrow(NoResultsFoundError);
+    await expect(async () => service.validateConditions({})).rejects.toThrow(
+      NoResultsFoundError,
+    );
   });
 
   it('Checks if the validation works when the conditions return too many results', async () => {
@@ -312,7 +480,7 @@ describe('GenericService', () => {
       new BaseEntity(),
     ]);
 
-    expect(service.validateConditions({})).rejects.toThrow(
+    await expect(async () => service.validateConditions({})).rejects.toThrow(
       ConditionsTooBroadError,
     );
   });

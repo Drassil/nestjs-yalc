@@ -1,8 +1,9 @@
+import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
 import { FilterErrors } from './strings.enum';
 
-export class AgGridError extends Error {
-  constructor(message?: string) {
-    super(message);
+export class AgGridError extends GqlError {
+  constructor(message?: string, public systemMessage?: string) {
+    super(message, systemMessage);
   }
 }
 

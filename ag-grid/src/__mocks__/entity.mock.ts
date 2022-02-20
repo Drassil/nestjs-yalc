@@ -7,10 +7,17 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { AgGridField, AgGridObject } from '../object.decorator';
 
 @Entity()
 export class TestEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
+  id: number;
+}
+
+@AgGridObject()
+export class TestEntityDto extends TestEntity {
+  @AgGridField({ gqlOptions: { name: 'entityId' } })
   id: number;
 }
 

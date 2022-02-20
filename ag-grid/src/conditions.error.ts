@@ -1,5 +1,7 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
+// nothing to cover on simple class
+/* istanbul ignore next */
 export class ConditionsTooBroadError extends ConflictException {
   constructor(conditions: any) {
     super(
@@ -9,6 +11,8 @@ export class ConditionsTooBroadError extends ConflictException {
   }
 }
 
+// nothing to cover on simple class
+/* istanbul ignore next */
 export class NoResultsFoundError extends NotFoundException {
   constructor(conditions: any) {
     super({ conditions }, 'No results found for the provided conditions.');

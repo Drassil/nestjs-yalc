@@ -13,6 +13,7 @@ import { getDefaultConnectionOptions } from 'typeorm-model-generator/dist/src/IC
 import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
 import IConnectionOptions from 'typeorm-model-generator/dist/src/IConnectionOptions';
+import { SeedService } from './seed.service';
 
 export type MigrationSelection = { [database: string]: string[] };
 
@@ -24,6 +25,10 @@ export interface MigrationOptions {
    * property value -> array of migration class names to skip
    */
   selMigrations?: MigrationSelection;
+  /**
+   * Reseed after all migrations have been executed
+   */
+  reseed?: boolean;
 }
 
 /**
@@ -34,6 +39,7 @@ export class DbOpsService {
   constructor(
     _options: any,
     private loggerService: LoggerService,
+    private seedService: SeedService,
     private dbConnections: { conn: Connection; dbName: string }[],
   ) {}
 
@@ -80,6 +86,12 @@ export class DbOpsService {
   public async migrate(options?: MigrationOptions) {
     this.loggerService.debug?.('Migrating db...');
 
+    if (options?.selMigrations) {
+      this.loggerService.debug?.(
+        `Selected migrations ${JSON.stringify(options.selMigrations)}`,
+      );
+    }
+
     for (const v of this.dbConnections) {
       if (!v.conn.isConnected)
         throw new CannotExecuteNotConnectedError(v.conn.name);
@@ -91,7 +103,7 @@ export class DbOpsService {
 
       const migrations = await migrationExecutor.getAllMigrations();
 
-      const dbName = v.conn.driver.database;
+      const dbName = v.conn.driver.database ?? v.dbName;
 
       // if there are no migrations, then do not execute anything!
       if (!Array.isArray(migrations) || migrations.length <= 0) {
@@ -99,11 +111,9 @@ export class DbOpsService {
         continue;
       }
 
-      if (options && options.selMigrations) {
+      if (options?.selMigrations) {
         this.loggerService.debug?.(
-          `Executing selected migrations ${JSON.stringify(
-            options.selMigrations,
-          )} for ${dbName}`,
+          `Executing selected migrations on ${dbName}`,
         );
 
         const pendingMigrations =
@@ -129,6 +139,10 @@ export class DbOpsService {
         this.loggerService.debug?.(`Executing migration for ${dbName}`);
         await migrationExecutor.executePendingMigrations();
       }
+    }
+
+    if (options?.reseed) {
+      await this.seedService.seedDatabases(true);
     }
 
     this.loggerService.debug?.('Migration completed!');
@@ -199,19 +213,21 @@ export const dbConnectionMap = (c: Connection) => ({
 });
 
 export const DbObpsServiceFactory = (
-  loggerService: string,
+  loggerServiceToken: string,
   connectionTokens: any[],
 ): Provider => ({
   provide: DbOpsService,
   useFactory: async (
     loggerService: LoggerService,
+    seedService: SeedService,
     ...dbConnections: Connection[]
   ) => {
     return new DbOpsService(
       {},
       loggerService,
+      seedService,
       dbConnections.map(dbConnectionMap),
     );
   },
-  inject: [loggerService, ...connectionTokens],
+  inject: [loggerServiceToken, SeedService, ...connectionTokens],
 });

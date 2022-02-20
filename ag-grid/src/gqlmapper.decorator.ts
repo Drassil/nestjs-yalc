@@ -1,4 +1,7 @@
-import { objectToFieldMapper } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import {
+  columnConversion,
+  objectToFieldMapper,
+} from '@nestjs-yalc/ag-grid/ag-grid.helpers';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
@@ -36,7 +39,8 @@ export const GqlFieldsAsArgsWorker = (
 ) => {
   const keys: ObjectLiteral = {};
   for (const key of Object.keys(info)) {
-    keys[data[key] ? data[key].dst : key] = info[key];
+    const dst = columnConversion(key, data);
+    keys[dst] = info[key];
   }
   return keys;
 };
