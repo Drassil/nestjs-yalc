@@ -26,11 +26,34 @@ export class SeedService {
     }
   }
 
-  private async seedDatabase(
-    connection: Connection,
-    name: string,
-    reseed: boolean,
-  ) {
+  private async clearDatabase(connection: Connection, name: string) {
+    const dbConf = this.configService.get<IDbConfType>(
+      getConfNameByConnection(connection.name),
+    );
+
+    if (!dbConf?.seeds || dbConf?.seeds.length === 0) return;
+
+    this.resetConnection();
+
+    this.loggerService.debug?.(
+      `Reseeding ${name} on connection: ${connection.name}...`,
+    );
+    const queryRunner = connection.createQueryRunner();
+    this.loggerService.debug?.('Clear tables');
+    for (const meta of connection.entityMetadatas) {
+      const skipTable = await queryRunner.hasTable(meta.tableName);
+
+      if (meta.tableType === 'view' || !skipTable) {
+        this.loggerService.debug?.(`Skip truncating ${meta.tableName}`);
+        continue;
+      }
+      this.loggerService.debug?.(`Truncating ${meta.tableName}`);
+      await queryRunner.clearTable(meta.tableName);
+    }
+    this.loggerService.debug?.('Database cleared!');
+  }
+
+  private async seedDatabase(connection: Connection, name: string) {
     const dbConf = this.configService.get<IDbConfType>(
       getConfNameByConnection(connection.name),
     );
@@ -46,19 +69,6 @@ export class SeedService {
     };
 
     this.resetConnection();
-
-    if (reseed) {
-      this.loggerService.debug?.(
-        `Reseeding ${name} on connection: ${connection.name}...`,
-      );
-      const queryRunner = connection.createQueryRunner();
-      this.loggerService.debug?.('Clear tables');
-      for (const meta of connection.entityMetadatas) {
-        this.loggerService.debug?.(`Truncating ${meta.tableName}`);
-        await queryRunner.clearTable(meta.tableName);
-      }
-      this.loggerService.debug?.('Database cleared!');
-    }
 
     this.loggerService.debug?.('Use seeding');
     await useSeeding(option);
@@ -82,12 +92,21 @@ export class SeedService {
   public async seedDatabases(reseed: boolean /*, _databases*/) {
     this.loggerService.debug?.('Seeding db...');
 
+    if (reseed) {
+      for (const connection of this.dbConnections) {
+        if (!connection.options.database) continue;
+        await this.clearDatabase(
+          connection,
+          connection.options.database.toString(),
+        );
+      }
+    }
+
     for (const connection of this.dbConnections) {
       if (!connection.options.database) continue;
       await this.seedDatabase(
         connection,
         connection.options.database.toString(),
-        reseed,
       );
     }
 

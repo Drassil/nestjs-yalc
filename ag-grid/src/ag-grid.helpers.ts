@@ -1,11 +1,20 @@
-import { DataLoaderFactory } from '@nestjs-yalc/data-loader/dataloader.helper';
+import {
+  DataLoaderFactory,
+  getDataloaderToken,
+} from '@nestjs-yalc/data-loader/dataloader.helper';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
 import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
-import { FactoryProvider, Provider } from '@nestjs/common';
+import {
+  ClassProvider,
+  ExistingProvider,
+  FactoryProvider,
+  Provider,
+  ValueProvider,
+} from '@nestjs/common';
 import { ReturnTypeFuncValue } from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
 import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
@@ -43,21 +52,25 @@ import {
   IGenericResolverOptions,
   resolverFactory,
 } from './generic-resolver.resolver';
-import { GenericServiceFactory } from './generic-service.service';
 import {
+  GenericService,
+  GenericServiceFactory,
+} from './generic-service.service';
+import {
+  DstExtended,
   getAgGridFieldMetadataList,
   getAgGridObjectMetadata,
   IAgGridFieldMetadata,
   IFieldAndFilterMapper,
+  isDstExtended,
 } from './object.decorator';
-
 export const columnConversion = (
-  data: IFieldMapper | undefined,
   key: string,
+  data: IFieldMapper | { [key: string]: IAgGridFieldMetadata } | undefined,
 ): string => {
   if (data) {
     const dst = data[key]?.dst ?? key;
-    return dst;
+    return getDestinationFieldName(dst);
   }
 
   return key;
@@ -102,7 +115,7 @@ export const forceFilters = (
     if (property.value) {
       where = forceFilterWorker(
         where,
-        columnConversion(fieldMap, property.key),
+        columnConversion(property.key, fieldMap),
         property.value,
         property.descriptors,
       );
@@ -241,6 +254,14 @@ export const isAskingForCount = (info: GraphQLResolveInfo): boolean => {
   }
 };
 
+export function getDestinationFieldName(dst: string | DstExtended): string {
+  if (isDstExtended(dst)) {
+    return dst.name;
+  }
+
+  return dst;
+}
+
 const objectToFieldMapperCache = new WeakMap();
 export const objectToFieldMapper = (
   object:
@@ -258,6 +279,8 @@ export const objectToFieldMapper = (
 
   let fieldMapper: IFieldAndFilterMapper = { field: {} };
 
+  fieldMapper.extraInfo = {};
+
   const objectMetadata = getAgGridObjectMetadata(object as any);
 
   if (objectMetadata) {
@@ -270,10 +293,19 @@ export const objectToFieldMapper = (
         const fieldMetadata = fieldMetadataList[propertyName];
         const { src, dst, ...fieldMapperProperties } = fieldMetadata;
         if (src) {
+          const newDst = dst ? getDestinationFieldName(dst) : src;
+
           fieldMapper.field[src] = {
-            dst: dst ?? src,
+            dst: newDst,
             ...fieldMapperProperties,
+            _propertyName: propertyName,
           };
+
+          const gqlType = fieldMetadata.gqlType?.();
+
+          if (gqlType) {
+            fieldMapper.extraInfo[src] = objectToFieldMapper(gqlType);
+          }
         }
       }
     }
@@ -281,13 +313,17 @@ export const objectToFieldMapper = (
     fieldMapper.field = object;
   } else if (isIFieldAndFilterMapper(object as any)) {
     fieldMapper = object as IFieldAndFilterMapper;
-  } else if (Object.keys(object).length !== 0) {
+  } /**
+  @todo rework or delete, it throws an error with enum as gqlType
+  
+  else if (Object.keys(object).length !== 0) {
+    console.trace(object);
     throw new TypeError(
       `This object is not compatible with IFieldMapper ${JSON.stringify(
         object,
       )}`,
     );
-  }
+  } */
 
   if (typeof object !== 'symbol')
     objectToFieldMapperCache.set(object, fieldMapper);
@@ -306,13 +342,25 @@ export interface IDependencyObject<Entity> {
   repository: ClassType<AgGridRepository<Entity>>;
 }
 
-export interface IProviderOverride {
-  providerClass: Provider;
+export interface IProviderOverride<T = any> {
+  provider:
+    | ClassProvider<T>
+    | ValueProvider<T>
+    | FactoryProvider<T>
+    | ExistingProvider<T>;
 }
 
-interface IGeneridServiceOptions<Entity> {
+export interface IResolverOverride<T = any> {
+  provider: ClassType<T>;
+}
+
+interface IGenericServiceOptions<Entity> {
   dbConnection: string;
   entityModel?: ClassType<Entity>;
+  /**
+   * Used only if the service has not external injected dependency rather than the repository
+   */
+  providerClass?: ClassType<GenericService<Entity>>;
 }
 
 interface IDataLoaderOptions<Entity> {
@@ -324,9 +372,9 @@ export interface IAgGridDependencyFactoryOptions<Entity> {
   entityModel: ClassType<Entity>;
   resolver?:
     | Omit<IGenericResolverOptions<Entity>, 'entityModel'>
-    | IProviderOverride
+    | IResolverOverride
     | false;
-  service?: IGeneridServiceOptions<Entity> | IProviderOverride;
+  service?: IGenericServiceOptions<Entity> | IProviderOverride;
   dataloader?: IDataLoaderOptions<Entity> | IProviderOverride;
   repository?: ClassType<AgGridRepository<Entity>>;
 }
@@ -335,7 +383,7 @@ export function isProviderOverride(
   resolver: any,
 ): resolver is IProviderOverride {
   const casted = resolver as IProviderOverride;
-  return !!casted.providerClass;
+  return !!casted.provider;
 }
 
 export function AgGridDependencyFactory<Entity>({
@@ -356,29 +404,37 @@ export function AgGridDependencyFactory<Entity>({
 
   if (service) {
     if (isProviderOverride(service)) {
-      serviceToken = getProviderToken(service.providerClass);
-      providers.push({
-        provide: serviceToken,
-        useExisting: service.providerClass,
-      });
+      serviceToken = getProviderToken(service.provider.provide);
+      providers.push(service.provider);
     } else {
-      providers.push(
-        GenericServiceFactory<Entity>(
-          service.entityModel ?? entityModel,
-          service.dbConnection,
-        ),
+      const provider = GenericServiceFactory<Entity>(
+        service.entityModel ?? entityModel,
+        service.dbConnection,
+        service.providerClass,
       );
+
+      serviceToken = getProviderToken(provider.provide);
+
+      providers.push(provider);
+
+      // We always want a string alias for this provider
+      if (typeof provider.provide !== 'string') {
+        providers.push({
+          provide: serviceToken,
+          useExisting: provider.provide,
+        });
+      }
     }
   }
 
   if (dataloader) {
     if (isProviderOverride(dataloader)) {
-      dataLoaderToken = getProviderToken(dataloader.providerClass);
-      providers.push({
-        provide: dataLoaderToken,
-        useExisting: dataloader.providerClass,
-      });
+      dataLoaderToken = getProviderToken(dataloader.provider.provide);
+      providers.push(dataloader.provider);
     } else {
+      dataLoaderToken = getDataloaderToken(
+        dataloader.entityModel ?? entityModel,
+      );
       providers.push(
         DataLoaderFactory<Entity>(
           dataloader.databaseKey,
@@ -390,20 +446,14 @@ export function AgGridDependencyFactory<Entity>({
   }
 
   if (resolver !== false) {
-    if (serviceToken && dataLoaderToken) {
-      resolverOptions.service = {
-        serviceToken,
-        dataLoaderToken,
-      };
-    } else if (serviceToken || dataLoaderToken) {
-      throw new Error(
-        'Both service and dataloader providers must be defined when using custom ones',
-      );
-    }
+    resolverOptions.service = {
+      serviceToken,
+      dataLoaderToken,
+    };
 
     providers.push(
       resolver && isProviderOverride(resolver)
-        ? resolver.providerClass
+        ? resolver.provider
         : resolverFactory<Entity>(resolverOptions),
     );
   }
@@ -414,7 +464,10 @@ export function AgGridDependencyFactory<Entity>({
   };
 }
 
-export function getProviderToken(entity: ClassType | Provider | string) {
+export function getProviderToken(
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  entity: ClassType | Provider | string | symbol | Function,
+) {
   if (entity && typeof entity === 'object' && entity.provide) {
     return typeof entity.provide === 'function'
       ? entity.provide.name
@@ -472,7 +525,7 @@ export function getEntityRelations<Entity, DTO = Entity>(
     ),
     agField: agGridMetadata
       ? Object.values(agGridMetadata).find((v) => v.dst === r.propertyName)
-      : {},
+      : { _propertyName: r.propertyName },
   }));
 }
 
@@ -484,25 +537,25 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
   );
 
   // to get ag-grid fields
-  // const fieldMetadataList = getAgGridFieldMetadataList(entityModel);
+  const fieldMetadataList = getAgGridFieldMetadataList(entityModel);
 
-  // if (fieldMetadataList) {
-  //   for (const propertyName of Object.keys(fieldMetadataList ?? [])) {
-  //     const fieldMetadata = fieldMetadataList[propertyName];
+  if (fieldMetadataList) {
+    for (const propertyName of Object.keys(fieldMetadataList)) {
+      const fieldMetadata = fieldMetadataList[propertyName];
 
-  //     if (fieldMetadata.dataLoader) {
-  //       // skip dataloaders
-  //       continue;
-  //     }
+      if (fieldMetadata.mode !== 'derived') {
+        // skip non virtual columns
+        continue;
+      }
 
-  //     columns.push({
-  //       propertyName,
-  //       target: entityModel,
-  //       mode: 'regular',
-  //       options: {},
-  //     });
-  //   }
-  // }
+      columns.push({
+        propertyName,
+        target: entityModel,
+        mode: 'regular',
+        options: {},
+      });
+    }
+  }
 
   return columns;
 }
@@ -524,7 +577,7 @@ export function applyJoinArguments(
   findManyOptions: AgGridFindManyOptions,
   alias: string,
   join: { [index: string]: JoinArgOptions },
-  fieldMapper: IFieldMapper,
+  fieldMapper: { [key: string]: IAgGridFieldMetadata },
 ): void {
   const _joinObject: {
     alias: string;
@@ -548,10 +601,15 @@ export function applyJoinArguments(
         break;
     }
 
+    const type = fieldMapper[table].gqlType?.();
+    const _fieldMapper: IFieldAndFilterMapper = type
+      ? objectToFieldMapper(type)
+      : { field: {} };
+
     if (j.filters) {
       findManyOptions.where = createWhere(
         j.filters,
-        fieldMapper,
+        _fieldMapper.field,
         table,
         findManyOptions.where,
       );
@@ -559,6 +617,11 @@ export function applyJoinArguments(
   });
 
   findManyOptions.join = _joinObject;
+
+  findManyOptions.extra = {
+    ...findManyOptions.extra,
+    _aliasType: _joinObject.alias,
+  };
 }
 
 export function isFilterExpressionInput(
@@ -582,5 +645,76 @@ export function traverseFiltersAndApplyFunction(
     where.childExpressions.map((expr) =>
       traverseFiltersAndApplyFunction(expr, callback),
     );
+  }
+}
+
+export function formatRawSelection(
+  selection: string,
+  fieldName: string,
+  /* istanbul ignore next */
+  prefix = '',
+  onlyAlias = false,
+): string {
+  let aliasPrefix = '';
+  let _prefix = '';
+  if (prefix) {
+    aliasPrefix = prefix + '_';
+    _prefix = prefix + `.`;
+  }
+
+  const alias = `${aliasPrefix}${fieldName}`;
+
+  if (onlyAlias) return alias;
+
+  selection = `${_prefix}${selection} AS \`${alias}\``;
+
+  return selection;
+}
+
+/**
+ * Derived fields need metadata attached in order to be processed by
+ * the AgGrid Repository. Use this method to apply the proper
+ * selection with metadata to a find option object
+ */
+export function applySelectOnFind<T = any>(
+  findOptions: AgGridFindManyOptions,
+  field: keyof T,
+  fieldMapper: { [key: string]: IAgGridFieldMetadata },
+  alias = '',
+  /**
+   * If it's a nested field, you need to specify a path
+   */
+  path = '',
+) {
+  if (path && !path.endsWith('.')) path = path + '.';
+
+  const fieldName = field.toString();
+  const dst = columnConversion(fieldName, fieldMapper).toString();
+
+  const key = path + dst;
+
+  if (!findOptions.extra) {
+    findOptions.extra = { _keysMeta: {} };
+  }
+
+  if (fieldMapper[fieldName]?.mode === 'derived' || path) {
+    const keysMeta = findOptions.extra._keysMeta ?? {};
+
+    // do not apply twice
+    if (keysMeta[key]) return;
+
+    keysMeta[key] = {
+      fieldMapper: fieldMapper[fieldName],
+      isNested: !!path,
+      rawSelect: formatRawSelection(dst, fieldName, alias),
+    };
+
+    findOptions.extra._keysMeta = keysMeta;
+  } else {
+    const selection = findOptions.select ?? [];
+
+    selection.push(key);
+
+    findOptions.select = selection;
   }
 }

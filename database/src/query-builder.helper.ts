@@ -13,6 +13,11 @@ import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface';
+import { isJsonSQLRaw } from './json.helpers';
+// import {
+//   IJsonVirtualFieldOptions,
+//   NYALC_JSON_VIRTUAL_FIELD_META_KEY,
+// } from './json.entity';
 
 export type FindAndCountResult<Entity> = [Entity[], number];
 type GetOneResult<Entity> = Entity | undefined;
@@ -286,6 +291,14 @@ export class QueryBuilderHelper {
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): string {
+    /**
+     * Do not apply alias for JSON fields
+     * @todo: improve logic
+     */
+    if (isJsonSQLRaw(key)) {
+      return key;
+    }
+
     //If the name is of a joined resource we take the joined table name
     if (key.includes('.')) {
       const splitted = key.split('.');

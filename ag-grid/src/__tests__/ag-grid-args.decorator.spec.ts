@@ -17,7 +17,7 @@ import {
   BaseEntity,
 } from 'typeorm';
 import { IAgQueryParams } from '../ag-grid.args';
-import { ExtraArgsStrategy, GeneralFilters } from '../ag-grid.enum';
+import { ExtraArgsStrategy, FilterType, GeneralFilters } from '../ag-grid.enum';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
   mockedExecutionContext,
@@ -279,7 +279,7 @@ describe('Ag-grid args decorator', () => {
 
   it('Check inDate filter functionality', async () => {
     const testGetStringFilter = agGridArgsDecorator.getDateFilter(
-      GeneralFilters.IN_DATE,
+      GeneralFilters.INDATE,
       firstDateParameter,
       firstDateParameterPlus1Day,
     );
@@ -291,7 +291,7 @@ describe('Ag-grid args decorator', () => {
 
   it('Check inDate filter functionality whith only 1 date', async () => {
     const testGetStringFilter = agGridArgsDecorator.getDateFilter(
-      GeneralFilters.IN_DATE,
+      GeneralFilters.INDATE,
       firstDateParameter,
     );
     expect(testGetStringFilter).toBeDefined();
@@ -400,6 +400,25 @@ describe('Ag-grid args decorator', () => {
 
       params.extraArgsStrategy = ExtraArgsStrategy.DEFAULT;
       expect(resultFn(params)()).toBeDefined();
+    });
+
+    it('Should add extraArgs with VIRTUAL filter in extra field of findManyOptions', () => {
+      const params: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        extraArgs: {
+          virtualArg: {
+            filterType: FilterType.TEXT,
+            filterCondition: GeneralFilters.VIRTUAL,
+            options: {
+              defaultValue: 'defaultValue',
+            },
+          },
+        },
+      };
+      const findManyOptions = resultFn(params)();
+      expect(findManyOptions).toBeDefined();
+      const argsKeys = Object.keys(findManyOptions.extra.args);
+      expect(argsKeys).toContain('virtualArg');
     });
 
     it('Check mapAgGridParams functionality with fieldType defined', async () => {
@@ -561,6 +580,7 @@ describe('Ag-grid args decorator', () => {
     const testData = agGridArgsDecorator.removeSymbolicSelection(
       [`second_${fixedKey}`, `third_${fixedKey}`],
       fixedIFieldMapper,
+      '',
     );
 
     expect(testData).toEqual([`second_${fixedKey}`]);
@@ -577,6 +597,7 @@ describe('Ag-grid args decorator', () => {
         fixedJoinOptionsAndOrObject,
         fixedIFieldMapper,
         'alias',
+        { childExpressions: [], filters: {} },
       );
 
       expect(testData).toBeDefined();
@@ -592,25 +613,38 @@ describe('Ag-grid args decorator', () => {
           },
         ],
       };
-      const func = (badFilter) => () =>
-        agGridArgsDecorator.createWhere(badFilter, fixedIFieldMapper);
 
-      expect(func(badFilter)).toThrowError();
+      expect(() =>
+        agGridArgsDecorator.createWhere(badFilter, fixedIFieldMapper),
+      ).toThrowError(
+        `Field can't use more than one expression type on same expression: text,number`,
+      );
 
-      badFilter.expressions = [
-        {
-          nothing: undefined,
-        } as any,
-      ];
+      const badFilter2 = {
+        ...badFilter,
+        expressions: [
+          {
+            nothing: undefined,
+          } as any,
+        ],
+      };
 
-      expect(func(badFilter)).toThrowError();
+      expect(() =>
+        agGridArgsDecorator.createWhere(badFilter2, fixedIFieldMapper),
+      ).toThrowError('Expression not found! It should never happen');
 
-      badFilter.expressions = [
-        {
-          nothing: 'test',
-        } as any,
-      ];
-      expect(func(badFilter)).toThrowError(AgGridFilterNotSupportedError);
+      const badFilter3: FilterInput = {
+        ...badFilter,
+        expressions: [
+          {
+            text: { field: 'ok' },
+          } as any,
+        ],
+      };
+
+      expect(() =>
+        agGridArgsDecorator.createWhere(badFilter3, fixedIFieldMapper),
+      ).toThrowError(AgGridFilterNotSupportedError);
     });
   });
 
@@ -761,7 +795,10 @@ describe('Ag-grid args decorator', () => {
     );
 
     beforeEach(() => {
-      qqlAgGridFieldsMapper.mockReturnValueOnce(['field']);
+      qqlAgGridFieldsMapper.mockReturnValueOnce({
+        keys: ['field'],
+        keysMeta: { field: {} },
+      });
       objectToFieldMapper.mockReturnValueOnce({ field: {} });
     });
 
@@ -898,7 +935,7 @@ describe('Ag-grid args decorator', () => {
       },
       {
         type: fixedSetFilter.filterType,
-        name: GeneralFilters.IS_NULL,
+        name: GeneralFilters.ISNULL,
         arg1: undefined,
         arg2: undefined,
       },

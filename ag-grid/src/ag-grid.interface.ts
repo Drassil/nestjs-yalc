@@ -13,6 +13,7 @@ import {
   Operators,
 } from './ag-grid.enum';
 import { IWhereCondition } from './ag-grid.type';
+import type { IKeyMeta } from './gqlfields.decorator';
 import { IFieldAndFilterMapper } from './object.decorator';
 
 export interface IBaseFilterModel {
@@ -116,6 +117,24 @@ export type IFilterInputOld = {
     | undefined;
 } & IMultiColumnProperty;
 
+export interface ITextFilter {
+  [FilterType.TEXT]: ITextFilterModel;
+}
+
+export interface INumberFilter {
+  [FilterType.NUMBER]: INumberFilterModel;
+}
+
+export interface IDateFilter {
+  [FilterType.DATE]: DateFilterModel;
+}
+
+export interface ISetFilter {
+  [FilterType.SET]: ISetFilterModel;
+}
+
+// we should consider to implement the @oneOf
+// when it will be available: https://github.com/graphql/graphql-spec/pull/825
 export interface IFilterExpressionsProperty {
   [FilterType.TEXT]?: ITextFilterModel;
   [FilterType.NUMBER]?: INumberFilterModel;
@@ -123,6 +142,12 @@ export interface IFilterExpressionsProperty {
   [FilterType.SET]?: ISetFilterModel;
   [FilterType.MULTI]?: never;
 }
+
+export type FilterExpressionType =
+  | ITextFilter
+  | INumberFilter
+  | IDateFilter
+  | ISetFilter;
 
 export interface FilterInput {
   operator?: Operators;
@@ -141,6 +166,20 @@ export interface IAgGridFindExtraOptions {
    * count operation, for instance: when the user is not asking the field
    */
   skipCount?: boolean;
+
+  /**
+   * Extra args
+   */
+  args?: {
+    [index: string]: any;
+  };
+
+  /**
+   * Internally used
+   */
+  _fieldMapper?: IFieldMapper;
+  _keysMeta?: { [key: string]: IKeyMeta };
+  _aliasType?: string;
 }
 
 export interface AgGridFindManyOptions<T = any> extends FindManyOptions<T> {

@@ -1,10 +1,18 @@
 import * as aws from 'aws-sdk';
 import * as localEncryption from '@nestjs-yalc/utils/encryption.helper';
 
-// Used for everything locally, must still be passed since sometimes we want to use other keys
-// (think encryptionKey on for example user identity document)
+/**
+ *  Used for everything locally, must still be passed since sometimes we want to use other keys
+ * (think encryptionKey on for example user identity document)
+ * @todo put this in a config file
+ */
 export const staticKey =
   'be088f8bb64166cc2938b1dd0c9db8fa223edd975f48462858a41f70ebee1c5f';
+
+export enum EncryptMode {
+  AWS,
+  LOCAL,
+}
 
 export const decryptCallback = (resolve: any, reject: any) => {
   return (err: any, data: any) => {
@@ -69,13 +77,16 @@ export const asyncEncrypt = async (toEncrypt: string): Promise<string> => {
  */
 export const decryptString = async (
   toDecrypt: any,
+  encryptMode: EncryptMode,
   encryptionKey = staticKey,
 ): Promise<string> => {
-  if (process.env.IS_AWS_ENV) {
-    const decryptionResult: string = await asyncDecrypt(toDecrypt);
-    return decryptionResult.toString();
-  } else {
-    return localEncryption.decryptAes(toDecrypt, encryptionKey);
+  switch (encryptMode) {
+    case EncryptMode.AWS:
+      const decryptionResult: string = await asyncDecrypt(toDecrypt);
+      return decryptionResult.toString();
+    case EncryptMode.LOCAL:
+    default:
+      return localEncryption.decryptAes(toDecrypt, encryptionKey);
   }
 };
 
@@ -87,13 +98,16 @@ export const decryptString = async (
  */
 export const encryptString = async (
   toEncrypt: any,
+  encryptMode: EncryptMode,
   encryptionKey = staticKey,
 ): Promise<string> => {
-  if (process.env.IS_AWS_ENV) {
-    const encryptionResult: string = await asyncEncrypt(toEncrypt);
-    return encryptionResult;
-  } else {
-    return localEncryption.encryptAes(toEncrypt, encryptionKey);
+  switch (encryptMode) {
+    case EncryptMode.AWS:
+      const encryptionResult: string = await asyncEncrypt(toEncrypt);
+      return encryptionResult;
+    case EncryptMode.LOCAL:
+    default:
+      return localEncryption.encryptAes(toEncrypt, encryptionKey);
   }
 };
 

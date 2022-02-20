@@ -37,4 +37,12 @@ describe('entityFieldsEnumFactory', () => {
     expect(mockedGetMappedTypeProperties).toHaveBeenCalledTimes(0);
     expect(cachedFildsEnum).toStrictEqual(fieldsEnum);
   });
+
+  it('should work with entityModel as a function', () => {
+    function objectFunction() {
+      this.value = 'value';
+    }
+    const result = entityFieldsEnumFactory(objectFunction);
+    expect(result).toBeDefined();
+  });
 });

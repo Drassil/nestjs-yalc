@@ -2,7 +2,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
-import { FilterType, Operators } from '../ag-grid.enum';
+import { FilterType, GeneralFilters, Operators } from '../ag-grid.enum';
 import {
   AgGridConditionNotSupportedError,
   AgGridNotPossibleError,
@@ -26,6 +26,10 @@ import {
   getFieldMapperSrcByDst,
   getProviderToken,
   getMappedTypeProperties,
+  getTypeProperties,
+  applySelectOnFind,
+  formatRawSelection,
+  getDestinationFieldName,
 } from '../ag-grid.helpers';
 import { JoinArgOptions, JoinTypes } from '../ag-grid.input';
 import { IWhereCondition } from '../ag-grid.type';
@@ -35,9 +39,17 @@ import * as AgGridHelpers from '../ag-grid.helpers';
 import {
   FilterOption,
   FilterOptionType,
+  IAgGridFieldMetadata,
   IFieldAndFilterMapper,
 } from '../object.decorator';
-import { TestEntity } from '../__mocks__/entity.mock';
+import {
+  TestEntity,
+  TestEntityDto,
+  TestEntityRelation,
+} from '../__mocks__/entity.mock';
+import { GenericService } from '../generic-service.service';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
+import { Resolver } from '@nestjs/graphql';
 
 const fixedKey = 'passed';
 const dbName = 'original';
@@ -136,6 +148,11 @@ const fixedFieldMetaData = {
     dst: 'propertyName',
     src: 'customPropertyName',
   },
+  ['propertyName2']: {
+    dst: 'propertyName2',
+    src: 'propertyName2',
+    gqlType: () => String,
+  },
 };
 
 describe('Ag-grid helpers', () => {
@@ -152,10 +169,10 @@ describe('Ag-grid helpers', () => {
   it('Check column conversion', async () => {
     let testColumnConversion: string | number;
     for (const test of columnConversionTests) {
-      testColumnConversion = columnConversion(test.data, fixedKey);
+      testColumnConversion = columnConversion(fixedKey, test.data);
       expect(testColumnConversion).toBeDefined();
     }
-    testColumnConversion = columnConversion(undefined, fixedKey);
+    testColumnConversion = columnConversion(fixedKey, undefined);
     expect(testColumnConversion).toBeDefined();
     expect(testColumnConversion).toEqual(fixedKey);
   });
@@ -167,6 +184,15 @@ describe('Ag-grid helpers', () => {
     );
 
     expect(forceFilterTest).toEqual(true);
+  });
+
+  it('should be able to use getDestinationFieldName', () => {
+    const name = getDestinationFieldName({
+      name: 'test',
+      transformer: (dst, src) => {},
+    });
+
+    expect(name).toEqual('test');
   });
 
   it('should return false when isSymbolic is not defined', () => {
@@ -189,6 +215,19 @@ describe('Ag-grid helpers', () => {
 
   it('should be able to use the force filter on void where', () => {
     const forceFilterTest = forceFilterWorker(undefined, 'id', 'id');
+
+    expect(forceFilterTest).toEqual({
+      filters: {
+        ['id']: Equal('id'),
+      },
+    });
+  });
+
+  it('should be able to use the force filter on void where with descriptors', () => {
+    const forceFilterTest = forceFilterWorker(undefined, 'id', 'id', {
+      filterCondition: GeneralFilters.EQUAL,
+      filterType: FilterType.TEXT,
+    });
 
     expect(forceFilterTest).toEqual({
       filters: {
@@ -457,30 +496,41 @@ describe('Ag-grid helpers', () => {
       expect(fieldMapper).toBeDefined();
     });
 
-    it('Should throw an error with a bad object to convert', () => {
-      const fieldMapper = () =>
-        objectToFieldMapper({
-          badFiled: {},
-        } as any);
-      expect(fieldMapper).toThrowError();
-    });
+    // it('Should throw an error with a bad object to convert', () => {
+    //   const fieldMapper = () =>
+    //     objectToFieldMapper({
+    //       badFiled: {},
+    //     } as any);
+    //   expect(fieldMapper).toThrowError();
+    // });
   });
 
   describe('AgGridDependencyFactory', () => {
+    // Object with override on provider
     const fixedAgGridDependencyFactoryOptions: IAgGridDependencyFactoryOptions<TestEntity> =
       {
         entityModel: TestEntity,
         dataloader: {
           databaseKey: 'id',
-          providerClass: TestEntity,
+          provider: {
+            provide: GQLDataLoader,
+            useClass: GQLDataLoader,
+          },
           entityModel: TestEntity,
         },
         service: {
-          providerClass: TestEntity,
+          dbConnection: 'id',
+          provider: {
+            provide: () => GenericService,
+            useClass: GenericService,
+          },
           entityModel: TestEntity,
         },
         resolver: {
-          providerClass: TestEntity,
+          provider: {
+            provide: Resolver,
+            useClass: TestEntity,
+          },
         },
         repository: {} as any,
       };
@@ -493,39 +543,17 @@ describe('Ag-grid helpers', () => {
       expect(dependecyObject).toBeDefined();
     });
 
-    it('Should throw an error if service e dataloader are not defined when using custom ones', () => {
-      let customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
-        ...fixedAgGridDependencyFactoryOptions,
-        service: {
-          providerClass: undefined,
-        },
-      };
-
-      let dependecyObject = () =>
-        AgGridDependencyFactory<TestEntity>(customOptions);
-      expect(dependecyObject).toThrowError();
-
-      customOptions = {
-        ...fixedAgGridDependencyFactoryOptions,
-        dataloader: {
-          providerClass: undefined,
-        },
-      };
-      dependecyObject = () =>
-        AgGridDependencyFactory<TestEntity>(customOptions);
-      expect(dependecyObject).toThrowError();
-    });
-
     it('Should create a dependencyObject properly with no override', () => {
       const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
         ...fixedAgGridDependencyFactoryOptions,
         service: {
-          entityModel: TestEntity,
-          providerClass: undefined,
+          dbConnection: 'id',
+          entityModel: undefined,
+          providerClass: GenericService,
         },
         dataloader: {
-          entityModel: TestEntity,
-          providerClass: undefined,
+          entityModel: undefined,
+          databaseKey: 'id',
         },
       };
       const dependecyObject =
@@ -542,6 +570,25 @@ describe('Ag-grid helpers', () => {
         repository: undefined,
       };
 
+      const dependecyObject =
+        AgGridDependencyFactory<TestEntity>(customOptions);
+
+      expect(dependecyObject).toBeDefined();
+    });
+
+    it('Should create a dependencyObject properly with defined entityModel', () => {
+      const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
+        ...fixedAgGridDependencyFactoryOptions,
+        service: {
+          dbConnection: 'id',
+          entityModel: TestEntity,
+          providerClass: GenericService,
+        },
+        dataloader: {
+          entityModel: TestEntity,
+          databaseKey: 'id',
+        },
+      };
       const dependecyObject =
         AgGridDependencyFactory<TestEntity>(customOptions);
 
@@ -590,7 +637,10 @@ describe('Ag-grid helpers', () => {
     };
 
     const findManyOptions = {};
-    applyJoinArguments(findManyOptions as any, 'alias', joinOptions, {});
+    applyJoinArguments(findManyOptions as any, 'alias', joinOptions, {
+      innerJoinKey: { gqlType: () => String },
+      leftJoinKey: {},
+    });
     expect(Object.getOwnPropertyNames(findManyOptions)).toContain('join');
   });
 
@@ -629,5 +679,157 @@ describe('Ag-grid helpers', () => {
 
     const result = getMappedTypeProperties(TestEntity);
     expect(result[0]).toBe('id');
+  });
+
+  it('Should get the column properties from an ag-grid field with mode derived', () => {
+    const spiedgetAgGridFieldMetadataList = jest.spyOn(
+      ObjectDecorator,
+      'getAgGridFieldMetadataList',
+    );
+
+    const fieldMetadataList: { [key: string]: IAgGridFieldMetadata } = {
+      propertyName: {
+        mode: 'derived',
+      },
+      propertyNameRegular: {
+        mode: 'regular',
+      },
+    };
+    spiedgetAgGridFieldMetadataList.mockReturnValue(fieldMetadataList);
+    const columns = getTypeProperties(TestEntity);
+
+    const result = columns.find((e) => e.propertyName === 'propertyName');
+    expect(result).toBeDefined();
+  });
+
+  it('Should check applySelectOnFinds', () => {
+    const fieldMapper = {
+      field1: {
+        dst: '`data` -> "$.field1"',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        mode: 'derived',
+        isRequired: true,
+        _propertyName: 'field1',
+      },
+      field2: {
+        dst: 'field2',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        _propertyName: 'field2',
+      },
+      field3: {
+        dst: '`data` -> "$.field3"',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        mode: 'derived',
+        isRequired: true,
+        _propertyName: 'field3',
+      },
+      field4: {
+        dst: 'field4',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        _propertyName: 'field4',
+      },
+    };
+    const findOptionsTest1 = {};
+
+    ['field1', 'field2', 'field3', 'field5'].forEach((field) =>
+      applySelectOnFind(findOptionsTest1, field, fieldMapper),
+    );
+  });
+
+  it('Should check applySelectOnFinds with path not endsWith dot', () => {
+    const fieldMapper = {
+      field1: {
+        dst: '`data` -> "$.field1"',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        mode: 'derived',
+        isRequired: true,
+        _propertyName: 'field1',
+      },
+    };
+    const findOptionsTest1 = {};
+
+    applySelectOnFind(findOptionsTest1, 'field1', fieldMapper, 'alias', 'path');
+  });
+
+  it('Should check applySelectOnFinds with non empty findOptions', () => {
+    const fieldMapper = {
+      field1: {
+        dst: '`data` -> "$.field1"',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        mode: 'derived',
+        isRequired: true,
+        _propertyName: 'field1',
+      },
+      field2: {
+        dst: 'field2',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        _propertyName: 'field2',
+      },
+    };
+    const findOptionsTest1 = {
+      select: [],
+      extra: {
+        _keysMeta: undefined,
+      },
+    };
+
+    ['field1', 'field2'].forEach((field) =>
+      applySelectOnFind(findOptionsTest1, field, fieldMapper),
+    );
+
+    expect(findOptionsTest1.select).toEqual(['field2']);
+  });
+
+  it('Should check applySelectOnFinds that non apply two keyMeta on same field', () => {
+    const fieldMapper = {
+      field1: {
+        dst: '`data` -> "$.field1"',
+        gqlType: undefined,
+        gqlOptions: undefined,
+        mode: 'derived',
+        isRequired: true,
+        _propertyName: 'field1',
+      },
+    };
+    const findOptionsTest1 = {};
+
+    ['field1'].forEach((field) =>
+      applySelectOnFind(findOptionsTest1, field, fieldMapper),
+    );
+
+    expect(Object.keys(findOptionsTest1.extra).length).toBe(1);
+
+    ['field1'].forEach((field) =>
+      applySelectOnFind(findOptionsTest1, field, fieldMapper),
+    );
+
+    expect(Object.keys(findOptionsTest1.extra).length).toBe(1);
+  });
+
+  it('Should check formatRawSelection with onlyAlias true', () => {
+    const result = formatRawSelection('', '', 'prefix', true);
+    expect(result).toBe('prefix_');
+  });
+
+  it('Should getEntityRelations properly with DTO', () => {
+    const res = AgGridHelpers.getEntityRelations(
+      TestEntityRelation,
+      TestEntityDto,
+    );
+
+    expect(res.join).not.toBeUndefined();
+  });
+
+  it('Should getEntityRelations properly without DTO', () => {
+    const res = AgGridHelpers.getEntityRelations(TestEntityRelation);
+
+    expect(res.join).not.toBeUndefined();
   });
 });

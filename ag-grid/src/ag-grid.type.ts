@@ -89,3 +89,9 @@ export interface IFilterArg {
   value: findOperatorTypes;
   descriptors?: IExtraArg;
 }
+
+export interface ISelect {
+  field: string;
+  isRaw?: boolean;
+  isNested?: boolean;
+}

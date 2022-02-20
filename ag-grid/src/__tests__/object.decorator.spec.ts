@@ -8,6 +8,7 @@ import {
   hasAgGridObjectMetadata,
   IAgGridFieldMetadata,
 } from '../object.decorator';
+import { TestEntityDto } from '../__mocks__/entity.mock';
 import { fixedIncludefilterOption } from '../__mocks__/filter.mocks';
 import * as ObjectDecorator from '../object.decorator';
 
@@ -76,25 +77,11 @@ describe('ObjectDecorator', () => {
   });
 
   it('Should decorate properly a property with a custom gqlOptions', () => {
-    jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
-      .mockReturnValueOnce({});
-
-    class TestObject {
-      @AgGridField({
-        ...fixedAgGridFieldMetadata,
-        gqlOptions: { name: 'propertyDecorated' },
-      })
-      decoratedProperty = {};
-    }
-
-    const metadata = getAgGridFieldMetadata(TestObject, 'decoratedProperty');
+    const metadata = getAgGridFieldMetadata(TestEntityDto, 'id');
     expect([metadata.dst, metadata.src]).toEqual(
-      expect.arrayContaining(['decoratedProperty', 'propertyDecorated']),
+      expect.arrayContaining(['id']),
     );
-    expect(
-      hasAgGridFieldMetadata(TestObject, 'decoratedProperty'),
-    ).toBeTruthy();
+    expect(hasAgGridFieldMetadata(TestEntityDto, 'id')).toBeTruthy();
   });
 
   it('Should AgGridField work properly with default values', () => {

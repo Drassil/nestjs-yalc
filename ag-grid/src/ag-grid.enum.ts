@@ -1,37 +1,41 @@
-import { ClassType } from '@nestjs-yalc/types';
+import { AnyFunction, ClassType } from '@nestjs-yalc/types';
+import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { registerEnumType } from '@nestjs/graphql';
 import { getMappedTypeProperties } from './ag-grid.helpers';
 
 export enum GeneralFilters {
   NOT = 'not',
   CONTAINS = 'contains',
-  NOT_CONTAINS = 'notContains',
+  NOTCONTAINS = 'notContains',
   EQUALS = 'equals',
   EQUAL = 'equal',
-  NOT_EQUAL = 'notEqual',
+  NOTEQUAL = 'notEqual',
   LIKE = 'like',
-  NOT_LIKE = 'notLike',
+  NOTLIKE = 'notLike',
   BETWEEN = 'between',
-  NOT_BETWEEN = 'notBetween',
+  NOTBETWEEN = 'notBetween',
   IN = 'in',
-  NOT_IN = 'notIn',
-  STARTS_WITH = 'startsWith',
-  NOT_STARTS_WITH = 'notStartsWith',
-  ENDS_WITH = 'endsWith',
-  NOT_ENDS_WITH = 'notEndsWith',
-  LESS_THAN = 'lessThan',
-  NOT_LESS_THAN = 'notLessThan',
-  LESS_THAN_OR_EQUAL = 'lessThanOrEqual',
-  NOT_LESS_THAN_OR_EQUAL = 'notLessThanOrEqual',
-  MORE_THAN = 'greaterThan',
-  NOT_MORE_THAN = 'notGreaterThan',
-  MORE_THAN_OR_EQUAL = 'greaterThanOrEqual',
-  NOT_MORE_THAN_OR_EQUAL = 'notGreaterThanOrEqual',
+  NOTIN = 'notIn',
+  STARTSWITH = 'startsWith',
+  NOTSTARTSWITH = 'notStartsWith',
+  ENDSWITH = 'endsWith',
+  NOTENDSWITH = 'notEndsWith',
+  LESSTHAN = 'lessThan',
+  NOTLESSTHAN = 'notLessThan',
+  LESSTHANOREQUAL = 'lessThanOrEqual',
+  NOTLESSTHANOREQUAL = 'notLessThanOrEqual',
+  GREATERTHAN = 'greaterThan',
+  NOTGREATERTHAN = 'notGreaterThan',
+  GREATERTHANOREQUAL = 'greaterThanOrEqual',
+  NOTGREATERTHANOREQUAL = 'notGreaterThanOrEqual',
   // This is only used for dates
-  IN_RANGE = 'inRange',
-  IN_DATE = 'inDate',
-  IS_NULL = 'isNull',
-  NOT_IS_NULL = 'notIsNull',
+  INRANGE = 'inRange',
+  INDATE = 'inDate',
+  ISNULL = 'isNull',
+  NOTISNULL = 'notIsNull',
+
+  //VIRTUAL
+  VIRTUAL = 'virtual',
 }
 
 registerEnumType(GeneralFilters, {
@@ -98,23 +102,24 @@ export enum RowDefaultValues {
 
 const fieldsEnumCache = new WeakMap();
 export function entityFieldsEnumFactory<Entity>(
-  entityModel: ClassType<Entity>,
+  entityModel: ClassType<Entity> | AnyFunction,
 ): { [index: string]: string } {
   let cached;
-  if ((cached = fieldsEnumCache.get(entityModel))) return cached;
+  const prototype = !isClass(entityModel) ? entityModel.prototype : entityModel;
+  if ((cached = fieldsEnumCache.get(prototype))) return cached;
 
   const properties: { [x in string | number]: any } = {};
 
-  getMappedTypeProperties(entityModel).map((v) => (properties[v] = v));
+  getMappedTypeProperties(prototype).map((v) => (properties[v] = v));
 
   type FieldsEnumType = keyof typeof properties;
   const FieldsEnum: { [P in FieldsEnumType]: P } = { ...properties };
 
   registerEnumType(FieldsEnum, {
-    name: `${entityModel.name}FieldEnum`,
+    name: `${prototype.name}FieldEnum`,
   });
 
-  fieldsEnumCache.set(entityModel, FieldsEnum);
+  fieldsEnumCache.set(prototype, FieldsEnum);
 
   return FieldsEnum;
 }

@@ -87,9 +87,9 @@ export function getTextFilter(filter: string, firstParameter: string) {
     //NOT_EQUAL should use the EQUALS condition, but the name is a little bit different
     case GeneralFilters.EQUAL.toLowerCase():
       return Equal(firstParameter);
-    case GeneralFilters.STARTS_WITH.toLowerCase():
+    case GeneralFilters.STARTSWITH.toLowerCase():
       return Like(`${firstParameter}%`);
-    case GeneralFilters.ENDS_WITH.toLowerCase():
+    case GeneralFilters.ENDSWITH.toLowerCase():
       return Like(`%${firstParameter}`);
     case GeneralFilters.CONTAINS.toLowerCase():
     case GeneralFilters.LIKE.toLowerCase():
@@ -109,15 +109,15 @@ export function getNumberFilter(
       return Equal(firstParameter);
     case GeneralFilters.EQUAL.toLowerCase():
       return Equal(firstParameter);
-    case GeneralFilters.LESS_THAN.toLowerCase():
+    case GeneralFilters.LESSTHAN.toLowerCase():
       return LessThan(firstParameter);
-    case GeneralFilters.LESS_THAN_OR_EQUAL.toLowerCase():
+    case GeneralFilters.LESSTHANOREQUAL.toLowerCase():
       return LessThanOrEqual(firstParameter);
-    case GeneralFilters.MORE_THAN.toLowerCase():
+    case GeneralFilters.GREATERTHAN.toLowerCase():
       return MoreThan(firstParameter);
-    case GeneralFilters.MORE_THAN_OR_EQUAL.toLowerCase():
+    case GeneralFilters.GREATERTHANOREQUAL.toLowerCase():
       return MoreThanOrEqual(firstParameter);
-    case GeneralFilters.IN_RANGE.toLowerCase():
+    case GeneralFilters.INRANGE.toLowerCase():
       return Between(firstParameter, secondParameter) as FindOperator<number>;
     default:
       throw new AgGridFilterNotSupportedError(`filter: ${filter} type: NUMBER`);
@@ -134,13 +134,13 @@ export function getDateFilter(
       return Equal(firstParameter);
     case GeneralFilters.EQUAL.toLowerCase():
       return Equal(firstParameter);
-    case GeneralFilters.LESS_THAN.toLowerCase():
+    case GeneralFilters.LESSTHAN.toLowerCase():
       return LessThan(firstParameter);
-    case GeneralFilters.MORE_THAN.toLowerCase():
+    case GeneralFilters.GREATERTHAN.toLowerCase():
       return MoreThan(firstParameter);
-    case GeneralFilters.IN_RANGE.toLowerCase():
+    case GeneralFilters.INRANGE.toLowerCase():
       return Between(firstParameter, secondParameter) as FindOperator<string>;
-    case GeneralFilters.IN_DATE.toLowerCase():
+    case GeneralFilters.INDATE.toLowerCase():
       const dateFrom = new Date(firstParameter).setHours(0, 0, 0, 0);
       const dateTo = new Date(secondParameter ?? firstParameter).setHours(
         23,
@@ -194,7 +194,7 @@ export function getFindOperator(
   arg1: any,
   arg2?: any,
 ): FindOperator<number | string | Date | null> {
-  if (filterName.toLowerCase() === GeneralFilters.IS_NULL.toLowerCase()) {
+  if (filterName.toLowerCase() === GeneralFilters.ISNULL.toLowerCase()) {
     return IsNull();
   }
   switch (filterType) {
@@ -298,10 +298,10 @@ export function createWhere(
 
       const expr = field[exprType];
 
-      if (!expr)
+      if (!expr || !expr.field)
         throw new Error('Expression not found! It should never happen');
 
-      const dbFieldName = columnConversion(fieldMapper, expr.field);
+      const dbFieldName = columnConversion(expr.field, fieldMapper);
 
       const filterName = `${prefix}${dbFieldName}`;
 
@@ -317,7 +317,7 @@ export function createWhere(
 
   // we skip the "filters" property of the first level and use the childExpressions
   // directly in order to be able processing conditions on same column name
-  const childExpressions: IWhereCondition[] = [];
+  const childExpressions: IWhereCondition[] = where.childExpressions ?? [];
   for (const expr of filtersObjectCleared) {
     // for every property in the mapper or in the query we're checking if the relative filter exist
     const key = expr.field;
@@ -347,9 +347,10 @@ export function createWhere(
 export function removeSymbolicSelection(
   select: string[],
   data: IFieldMapper | undefined,
+  path: string,
 ): string[] {
   for (let i = 0; i < select.length; i++) {
-    if (isSymbolic(data, select[i])) {
+    if (isSymbolic(data, path + select[i])) {
       select.splice(i, 1);
       i--;
     }
@@ -397,11 +398,10 @@ export function mapAgGridParams(
 
   const defaultSorting = params?.defaultValue?.sorting;
   // MAP query fields -> select
-  const select = GqlAgGridFieldsMapper(fieldMapper, ctx.getInfo());
-  // Remove the symbolic parameters
-  if (select) {
-    removeSymbolicSelection(select, fieldMapper);
-  }
+  const { keys, keysMeta } = GqlAgGridFieldsMapper(
+    fieldType ?? {},
+    ctx.getInfo(),
+  );
 
   // MAP filter -> where
   let where = args.filters
@@ -421,8 +421,8 @@ export function mapAgGridParams(
   if (sorting) {
     sorting.forEach((sortParams) => {
       const colName = columnConversion(
-        fieldMapper,
         sortParams.colId.toString(),
+        fieldMapper,
       );
       const val = sortParams.sort?.toUpperCase();
       const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
@@ -449,6 +449,7 @@ export function mapAgGridParams(
 
   const skipCount = !isAskingForCount(ctx.getInfo());
 
+  const extraParameter: { [key: string]: any } = {};
   if (params?.extraArgs) {
     const extraArgsKeys = Object.keys(params.extraArgs);
     switch (params.extraArgsStrategy) {
@@ -474,6 +475,12 @@ export function mapAgGridParams(
 
     const forcedFilters: IFilterArg[] = [];
     for (const argName of Object.keys(params.extraArgs)) {
+      if (
+        params.extraArgs[argName].filterCondition === GeneralFilters.VIRTUAL
+      ) {
+        extraParameter[argName] = args[argName];
+        continue;
+      }
       forcedFilters.push({
         key: argName, // the column name mapping is executed internally
         value: args[argName],
@@ -488,14 +495,16 @@ export function mapAgGridParams(
     skip,
     take,
     order,
-    select,
+    select: keys,
     where,
     info,
     extra: {
       skipCount,
+      args: extraParameter,
+      _fieldMapper: fieldMapper,
+      _keysMeta: keysMeta,
     },
   };
-
   if (params?.entityType && args.join) {
     applyJoinArguments(
       findManyOptions,
@@ -605,9 +614,14 @@ export function AgGridArgsSingleDecoratorMapper<T>(
   if (params) {
     const fieldType = params.fieldType ?? params.entityType;
     if (fieldType) {
-      findManyOptions.select = GqlAgGridFieldsMapper(fieldType, info);
-
       const fieldMapper = objectToFieldMapper(fieldType);
+
+      const { keys, keysMeta } = GqlAgGridFieldsMapper(fieldType, info);
+      findManyOptions.select = keys;
+      findManyOptions.extra = {
+        _keysMeta: keysMeta,
+        _fieldMapper: fieldMapper.field,
+      };
 
       if (params.entityType && args.join) {
         applyJoinArguments(

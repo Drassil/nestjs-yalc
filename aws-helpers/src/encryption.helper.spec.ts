@@ -83,32 +83,38 @@ describe('Encryption helper test', () => {
 
   it('should be able to decrypt simply locally', async () => {
     const toEncrypt = 'should be able to decrypt simply locally';
-    const decoded = await $.decryptString(encrypted, encryptionKey);
+    const decoded = await $.decryptString(
+      encrypted,
+      $.EncryptMode.LOCAL,
+      encryptionKey,
+    );
     expect(decoded).toEqual(toEncrypt);
   });
 
   it('should be able to encrypt simply locally', async () => {
     const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-    const encoded = await $.encryptString(toEncrypt, encryptionKey);
+    const encoded = await $.encryptString(
+      toEncrypt,
+      $.EncryptMode.LOCAL,
+      encryptionKey,
+    );
     expect(encoded).toEqual(encrypted);
   });
 
   it('should be able to encrypt remotely', async () => {
-    process.env.IS_AWS_ENV = 'true';
     process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
     process.env.NODE_ENV = 'production';
     const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-    const encoded = await $.encryptString(toEncrypt);
+    const encoded = await $.encryptString(toEncrypt, $.EncryptMode.AWS);
     expect(encoded).toEqual(toEncrypt); // change toEncrypt to encrypted
   });
 
   it('should return an error when KMS returns error', async () => {
     try {
-      process.env.IS_AWS_ENV = 'true';
       process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
       process.env.NODE_ENV = 'production';
       const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt);
+      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
     } catch (error) {
       expect(error).toEqual('some error message');
     }
@@ -116,11 +122,10 @@ describe('Encryption helper test', () => {
 
   it('should return an error when KMS returns object which is missing CiphertextBlob', async () => {
     try {
-      process.env.IS_AWS_ENV = 'true';
       process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
       process.env.NODE_ENV = 'production';
       const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt);
+      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
     } catch (error) {
       expect(error).toEqual(
         'Error CiphertextBlob coming from kms encrypt is undefined',
@@ -130,10 +135,9 @@ describe('Encryption helper test', () => {
 
   it('should return an error when AWS_REMOTE_KEYID is missing', async () => {
     try {
-      process.env.IS_AWS_ENV = 'true';
       process.env.NODE_ENV = 'production';
       const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt);
+      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
     } catch (error) {
       expect(error).toEqual(
         new Error(
@@ -154,15 +158,14 @@ describe('Encryption helper test', () => {
 
   it('should callback after the decrypt with an error', async () => {
     const err = new Error('unexpected error');
-    try {
+
+    await expect(async () => {
       await new Promise((resolve, reject) => {
         $.decryptCallback(resolve, reject)(err, {
           Plaintext: 'someString',
         });
       });
-    } catch (error) {
-      expect(error).toEqual(err);
-    }
+    }).rejects.toEqual(err);
   });
 
   it('should callback after the decrypt with empty string if plaintext is undefined', async () => {
@@ -178,9 +181,8 @@ describe('Encryption helper test', () => {
 
   it('should be able to decrypt remotely on aws', async () => {
     jest.spyOn($, 'asyncDecrypt').mockResolvedValue('someString');
-    process.env.IS_AWS_ENV = 'true';
     process.env.NODE_ENV = 'production';
-    const result = await $.decryptString(encrypted);
+    const result = await $.decryptString(encrypted, $.EncryptMode.AWS);
     delete process.env.IS_AWS_ENV;
     expect(result).toEqual('someString');
   });

@@ -48,13 +48,8 @@ const queriesName = {
 
 const fixedMetadataList: { [key: string]: IAgGridFieldMetadata } = {
   [propertyRelationName]: {
-    dst: propertyRelationName,
-    src: propertyRelationName,
-    dataLoader: {
-      searchKey: propertyRelationName,
-      relationType: 'one-to-many',
-      type: () => TestEntityRelation2,
-    },
+    //dst: propertyRelationName,
+    //src: propertyRelationName,
     gqlType: () => TestEntityDto,
   },
 };
@@ -76,11 +71,6 @@ const customResolverInfo: IRelationInfo = {
   agField: {
     dst: 'TestEntityRelation2',
     src: 'TestEntityRelation2',
-    dataLoader: {
-      searchKey: 'TestEntityRelation2',
-      relationType: 'many-to-many',
-      type: () => TestEntityRelation2,
-    },
     gqlType: () => undefined,
     gqlOptions: {
       nullable: true,
@@ -123,6 +113,11 @@ const baseResolverOption: IGenericResolverOptions<TestEntityRelation> = {
     },
   },
   //readonly: true,
+};
+
+const baseResolverOptionNoPrefix = {
+  ...baseResolverOption,
+  prefix: undefined,
 };
 
 describe('Generic Resolver', () => {
@@ -195,7 +190,7 @@ describe('Generic Resolver', () => {
   });
 
   afterEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
   it('Should create a resolver with a proper execution of the queries', async () => {
@@ -209,6 +204,14 @@ describe('Generic Resolver', () => {
     expect(await queries.create()).toBeInstanceOf(TestEntityRelation);
     expect(await queries.update()).toBeInstanceOf(TestEntityRelation);
     expect(await queries.delete()).toBe(true);
+  });
+
+  it('Should create a resolver with a proper execution of the queries (without prefix)', async () => {
+    const resolver = generateResolver(
+      fixedMetadataList,
+      baseResolverOptionNoPrefix,
+    );
+    expect(resolver).toBeDefined();
   });
 
   it('Should create a resolver with the default options', async () => {
@@ -234,19 +237,54 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-many relationship', () => {
-    let customMetadatList;
-
+    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    let mockedResolverInfoList: jest.SpyInstance;
+    const oneToManyResolverInfo: IRelationInfo = {
+      ...customResolverInfo,
+      relation: {
+        ...customResolverInfo.relation,
+        relationType: 'one-to-many',
+      },
+    };
     beforeEach(() => {
       customMetadatList = { ...fixedMetadataList };
-      customMetadatList[propertyRelationName].dataLoader.relationType =
-        'one-to-many';
+      customMetadatList[propertyRelationName].relation = {
+        relationType: 'one-to-many',
+        sourceKey: {
+          dst: 'sourceKey',
+          alias: 'sourceKey',
+        },
+        targetKey: {
+          dst: 'targetKey',
+          alias: 'targetKey',
+        },
+        type: () => String,
+      };
+      mockedResolverInfoList = jest.spyOn(AgGridHelpers, 'getEntityRelations');
     });
 
     afterEach(() => {
-      jest.resetAllMocks();
+      jest.clearAllMocks();
+      mockedResolverInfoList.mockClear();
+    });
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+      mockedResolverInfoList.mockRestore();
     });
 
     it('Should load the entity relationship', async () => {
+      const resolveInfo: IRelationInfo = {
+        ...oneToManyResolverInfo,
+        relation: {
+          ...oneToManyResolverInfo.relation,
+          relationType: 'one-to-many',
+        },
+        agField: undefined,
+        join: undefined,
+      };
+
+      mockedResolverInfoList.mockReturnValue([resolveInfo]);
       const resolver = generateResolver(customMetadatList, baseResolverOption);
 
       const result = await resolver[propertyRelationName](
@@ -273,15 +311,44 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-one relationship', () => {
-    let customMetadatList;
+    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    const oneToOneResolverInfo: IRelationInfo = {
+      ...customResolverInfo,
+      relation: {
+        ...customResolverInfo.relation,
+        relationType: 'one-to-one',
+      },
+    };
+    let mockedResolverInfoList: jest.SpyInstance;
 
     beforeEach(() => {
       customMetadatList = { ...fixedMetadataList };
-      customMetadatList[propertyRelationName].dataLoader.relationType =
-        'one-to-one';
+      customMetadatList[propertyRelationName].relation = {
+        relationType: 'one-to-one',
+        sourceKey: {
+          dst: 'sourceKey',
+          alias: 'sourceKey',
+        },
+        targetKey: {
+          dst: 'targetKey',
+          alias: 'targetKey',
+        },
+        type: () => String,
+      };
+      mockedResolverInfoList = jest.spyOn(AgGridHelpers, 'getEntityRelations');
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+      mockedResolverInfoList.mockClear();
+    });
+
+    afterAll(() => {
+      mockedResolverInfoList.mockRestore();
     });
 
     it('Should load the entity relationship with a one-to-one relationtype', async () => {
+      mockedResolverInfoList.mockReturnValueOnce([oneToOneResolverInfo]);
       const resolver = generateResolver(customMetadatList, baseResolverOption);
 
       const result = await resolver[propertyRelationName](
@@ -292,6 +359,7 @@ describe('Generic Resolver', () => {
     });
 
     it('Should return nested field if it is already loaded', async () => {
+      mockedResolverInfoList.mockReturnValueOnce([oneToOneResolverInfo]);
       const resolver = generateResolver(customMetadatList, baseResolverOption);
 
       const customEntity = {
@@ -304,29 +372,21 @@ describe('Generic Resolver', () => {
 
     it('Should load entity relationship with custom values', async () => {
       const resolveInfo: IRelationInfo = {
-        ...customResolverInfo,
-        relation: {
-          ...customResolverInfo.relation,
-          relationType: 'one-to-one',
-        },
+        ...oneToOneResolverInfo,
         agField: undefined,
         join: undefined,
       };
 
-      const mockedGetEntityRelations = jest
-        .spyOn(AgGridHelpers, 'getEntityRelations')
-        .mockReturnValue([resolveInfo]);
+      mockedResolverInfoList.mockReturnValueOnce([resolveInfo]);
 
-      const resolver = generateResolver(fixedMetadataList, baseResolverOption);
-      const result = await resolver[propertyRelationName](
-        TestEntityRelation2,
-        {},
-      );
-      expect(result).toBeDefined();
-      mockedGetEntityRelations.mockRestore();
+      const resolver = generateResolver(undefined, baseResolverOption);
+      await expect(
+        resolver[propertyRelationName](TestEntityRelation2, {}),
+      ).resolves.toBeDefined();
     });
 
     it('Should throw an error if we try to load a resolveField with join and resolver specified', async () => {
+      mockedResolverInfoList.mockReturnValueOnce([oneToOneResolverInfo]);
       const resolver = generateResolver(customMetadatList, baseResolverOption);
       const customTestEntity = {
         [propertyRelationName]: {},
@@ -338,27 +398,55 @@ describe('Generic Resolver', () => {
           },
         },
       };
-      try {
-        await resolver[propertyRelationName](
-          customTestEntity as any,
-          findOptions,
-        );
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+
+      await expect(
+        resolver[propertyRelationName](customTestEntity as any, findOptions),
+      ).rejects.toBeDefined();
     });
   });
 
   describe('Check dataloader many-to-many relationship', () => {
-    let customMetadatList;
+    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    const manyToManyResolverInfo: IRelationInfo = {
+      ...customResolverInfo,
+      relation: {
+        ...customResolverInfo.relation,
+        relationType: 'many-to-many',
+      },
+    };
+    const mockedResolverInfoList = jest.spyOn(
+      AgGridHelpers,
+      'getEntityRelations',
+    );
 
     beforeEach(() => {
       customMetadatList = { ...fixedMetadataList };
-      customMetadatList[propertyRelationName].dataLoader.relationType =
-        'many-to-many';
+      customMetadatList[propertyRelationName].relation = {
+        relationType: 'many-to-many',
+        sourceKey: {
+          dst: 'sourceKey',
+          alias: 'sourceKey',
+        },
+        targetKey: {
+          dst: 'targetKey',
+          alias: 'targetKey',
+        },
+        type: () => String,
+      };
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+      mockedResolverInfoList.mockClear();
+    });
+
+    afterAll(() => {
+      jest.restoreAllMocks();
+      mockedResolverInfoList.mockRestore();
     });
 
     it('Should load the entity relationship with a many-to-many relationtype', async () => {
+      mockedResolverInfoList.mockReturnValueOnce([manyToManyResolverInfo]);
       const resolver = generateResolver(customMetadatList, baseResolverOption);
 
       const result = await resolver[propertyRelationName](
@@ -370,6 +458,8 @@ describe('Generic Resolver', () => {
     });
 
     it('Should return nested field if it is already loaded', async () => {
+      mockedResolverInfoList.mockReturnValueOnce([manyToManyResolverInfo]);
+
       const resolver = generateResolver(customMetadatList, baseResolverOption);
 
       const customEntity = {
@@ -381,22 +471,17 @@ describe('Generic Resolver', () => {
     });
     it('Should load entity relationship with default values', async () => {
       const resolveInfo: IRelationInfo = {
-        ...customResolverInfo,
+        ...manyToManyResolverInfo,
         join: undefined,
       };
 
-      const mockedGetEntityRelations = jest
-        .spyOn(AgGridHelpers, 'getEntityRelations')
-        .mockReturnValue([resolveInfo]);
-
+      mockedResolverInfoList.mockReturnValueOnce([resolveInfo]);
       const resolver = generateResolver({}, baseResolverOption);
       const result = await resolver[propertyRelationName](
         TestEntityRelation2,
         {},
       );
       expect(result).toBeDefined();
-
-      mockedGetEntityRelations.mockRestore();
     });
 
     it('Should throw an error if we try to load a resolveField with join and resolver specified', async () => {
@@ -545,18 +630,17 @@ describe('Generic Resolver', () => {
   });
 
   it('Should not override resolverInfo', async () => {
-    const resolveInfo: IRelationInfo = {
-      ...customResolverInfo,
-      join: undefined,
-    };
+    const resolveInfo: IRelationInfo[] = [
+      {
+        ...customResolverInfo,
+        join: undefined,
+      },
+    ];
+    resolveInfo.findIndex = jest.fn().mockReturnValue(-1);
 
     const mockedGetEntityRelations = jest
       .spyOn(AgGridHelpers, 'getEntityRelations')
-      .mockImplementation(() => {
-        const resolveInfoList: IRelationInfo[] = [resolveInfo];
-        resolveInfoList.findIndex = jest.fn().mockReturnValue(-1);
-        return resolveInfoList;
-      });
+      .mockReturnValueOnce(resolveInfo);
 
     const resolver = generateResolver(customResolverInfo, baseResolverOption);
     const result = await resolver[propertyRelationName](

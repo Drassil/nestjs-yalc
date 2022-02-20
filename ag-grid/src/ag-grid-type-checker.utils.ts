@@ -139,7 +139,7 @@ export function isFindOperator<T = findOperatorTypes>(
     casted.type !== undefined &&
     (casted.value !== undefined ||
       casted.child !== undefined ||
-      casted.type.toLowerCase() === GeneralFilters.IS_NULL.toLowerCase())
+      casted.type.toLowerCase() === GeneralFilters.ISNULL.toLowerCase())
   );
 }
 

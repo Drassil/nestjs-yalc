@@ -100,12 +100,12 @@ export const fixedSimpleBadFilter: ISimpleFilterModel = {
 
 export const fixedNotTextFilter: ITextFilterModel = {
   ...fixedSimpleTextFilter,
-  type: GeneralFilters.NOT_CONTAINS,
+  type: GeneralFilters.NOTCONTAINS,
 };
 
 export const fixedSimpleNumberFilter: INumberFilterModel = {
   filterType: FilterType.NUMBER,
-  type: GeneralFilters.LESS_THAN,
+  type: GeneralFilters.LESSTHAN,
   filter: 0,
   field: fixedKey,
 };
@@ -118,7 +118,7 @@ export const fixedSetFilter: ISetFilterModel = {
 
 export const fixedSimpleDateFilter: DateFilterModel = {
   filterType: FilterType.DATE,
-  type: GeneralFilters.LESS_THAN,
+  type: GeneralFilters.LESSTHAN,
   dateTo: '2019',
   dateFrom: '2020',
   field: fixedKey,
@@ -126,7 +126,7 @@ export const fixedSimpleDateFilter: DateFilterModel = {
 
 const fixedFilterNotContains: ITextFilterModel = {
   filterType: FilterType.TEXT,
-  type: GeneralFilters.NOT_CONTAINS,
+  type: GeneralFilters.NOTCONTAINS,
   filter: '_',
   field: fixedKey,
 };

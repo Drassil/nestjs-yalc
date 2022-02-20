@@ -4,4 +4,8 @@ export enum GqlErrorMsgs {
   CIRCULAR_DEPENDENCY_FOUND = 'The request has a circular dependency.',
 }
 
-export class GqlError extends Error {}
+export class GqlError extends Error {
+  constructor(message?: string, public systemMessage?: string) {
+    super(message);
+  }
+}
