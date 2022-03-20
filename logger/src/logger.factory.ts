@@ -18,8 +18,11 @@ export const AppLoggerFactory = (
       break;
     case LoggerTypeEnum.NEST:
     default:
-      logger = new NestLogger(context);
-      logger.setLogLevels?.(loggerLevels);
+      logger = new NestLogger(context, {
+        timestamp: true,
+      });
+      NestLogger.overrideLogger(loggerLevels);
+      logger.setLogLevels?.(loggerLevels); // not available on default NEST logger
       break;
   }
 

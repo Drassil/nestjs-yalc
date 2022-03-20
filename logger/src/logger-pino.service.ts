@@ -1,5 +1,5 @@
 import { LogLevel } from '@nestjs/common';
-import { default as pino } from 'pino';
+import { default as pino, stdTimeFunctions } from 'pino';
 import { LoggerAbstractService } from './logger-abstract.service';
 
 const dest = pino.destination({ sync: false });
@@ -18,6 +18,7 @@ export const logger = pino(
         return { level: label };
       },
     },
+    timestamp: stdTimeFunctions.isoTime,
   },
   dest,
 );

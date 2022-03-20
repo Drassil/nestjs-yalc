@@ -1,3 +1,4 @@
+import { DateHelper } from '@nestjs-yalc/utils/date.helper';
 import { belongsToEnum } from '@nestjs-yalc/utils/enum.helper';
 import { ValueTransformer } from 'typeorm';
 
@@ -14,5 +15,20 @@ export const enumTransformer = <T>(enumName: T): ValueTransformer => {
   return {
     to: (value) => value, // no transformation for writing
     from: transformer,
+  };
+};
+
+export const defaultDateTransformer = () => {
+  const transform = (value?: Date) => {
+    if (!value) {
+      return DateHelper.dateToSQLDateTime(new Date());
+    }
+
+    return value;
+  };
+
+  return {
+    from: (value: Date) => value,
+    to: transform,
   };
 };
