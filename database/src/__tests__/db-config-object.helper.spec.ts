@@ -56,6 +56,7 @@ describe('buildDbConfigObject()', () => {
         entities: ['ENTITY_TEST'],
         sourceDir: 'TEST_SOURCE_DIR',
         migrationsDir: 'TEST_MIGRATIONS_DIR',
+        extraMigrationDirs: ['test'],
         connectionName: 'CONNECTION_TEST',
       })();
 
@@ -64,7 +65,10 @@ describe('buildDbConfigObject()', () => {
     expect(entities).toStrictEqual(['ENTITY_TEST']);
     expect(seeds).toBe(undefined);
     expect(factories).toStrictEqual([`TEST_SOURCE_DIR/**/*.factory.{ts,js}`]);
-    expect(migrations).toStrictEqual([`TEST_MIGRATIONS_DIR/**/*.{ts,js}`]);
+    expect(migrations).toStrictEqual([
+      `TEST_MIGRATIONS_DIR/**/*.{ts,js}`,
+      'test',
+    ]);
     expect(cli).toEqual({
       migrationsDir: 'TEST_MIGRATIONS_DIR',
     });

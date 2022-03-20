@@ -1,4 +1,4 @@
-import { enumTransformer } from '../transformer.helper';
+import { defaultDateTransformer, enumTransformer } from '../transformer.helper';
 
 enum TestEnum {
   TEST = 'test',
@@ -24,5 +24,15 @@ describe('Transformer helper', () => {
     expect(transformer.from).toBeDefined();
 
     expect(transformer.from('')).toBeNull();
+  });
+
+  it('defaultDateTransformer work', () => {
+    const transformer = defaultDateTransformer();
+
+    expect(transformer.from(new Date())).toBeDefined();
+    expect(transformer.to(undefined)).toBeDefined();
+
+    const fixedDate = new Date('01 01 01');
+    expect(transformer.to(fixedDate)).toEqual(fixedDate);
   });
 });

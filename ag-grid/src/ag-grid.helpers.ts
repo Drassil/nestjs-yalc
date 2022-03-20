@@ -110,7 +110,6 @@ export const forceFilters = (
   if (typeof where === 'string') {
     throw new AgGridStringWhereError();
   }
-
   for (const property of properties) {
     if (property.value) {
       where = forceFilterWorker(

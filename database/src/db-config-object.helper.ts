@@ -19,6 +19,7 @@ type DbConfigObjectParams = {
   seeds?: { new (): Seeder }[];
   sourceDir?: string;
   migrationsDir?: string;
+  extraMigrationDirs?: string[];
   connectionName?: string;
 };
 
@@ -28,6 +29,7 @@ export function buildDbConfigObject({
   seeds,
   sourceDir,
   migrationsDir,
+  extraMigrationDirs,
   connectionName,
 }: DbConfigObjectParams): IDbConfObject {
   let connNameTemp = connectionName;
@@ -48,6 +50,16 @@ export function buildDbConfigObject({
       envIsTrue(process.env.TYPEORM_LOAD_MIGRATIONS) ||
       process.env.NODE_ENV !== 'production';
 
+    const migrationDirs = [];
+
+    if (migrationsDir) {
+      migrationDirs.push(`${migrationsDir}/**/*.{ts,js}`);
+    }
+
+    if (extraMigrationDirs) {
+      migrationDirs.push(...extraMigrationDirs);
+    }
+
     return {
       ..._getDefaultDbConnectionConfig(dbName),
       name: connName,
@@ -59,9 +71,7 @@ export function buildDbConfigObject({
           ? [`${sourceDir}/**/*.factory.{ts,js}`]
           : undefined,
       migrations:
-        migrationsDir && canLoad
-          ? [`${migrationsDir}/**/*.{ts,js}`]
-          : undefined,
+        migrationDirs.length > 0 && canLoad ? migrationDirs : undefined,
       cli: {
         migrationsDir: canLoad ? migrationsDir : undefined,
       },

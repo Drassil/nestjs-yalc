@@ -1,5 +1,6 @@
 class NestLogger {
   setLogLevels: jest.Mock<any, any>;
+  static overrideLogger = jest.fn();
 }
 
 jest.mock('@nestjs/common', () => ({
