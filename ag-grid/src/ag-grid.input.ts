@@ -119,6 +119,7 @@ export function filterExpressionInputFactory<Entity>(
     )
     field: string;
     filter: number;
+    filterTo?: number;
   }
 
   @InputType(`${entityModel.name}FilterDateInput`)
@@ -131,7 +132,8 @@ export function filterExpressionInputFactory<Entity>(
       () => FieldEnum,
     )
     field: string;
-    filter: number;
+    dateFrom: string;
+    dateTo?: string;
   }
 
   @InputType(`${entityModel.name}FilterSetInput`)
@@ -236,7 +238,7 @@ export function agJoinArgFactory<Entity>(
   }
 
   registerEnumType(JoinTypes, {
-    name: `${entityModel.name}JoinTypes`,
+    name: `JoinTypes`,
   });
 
   @InputType(`${entityModel.name}JoinOptionsInputType`)

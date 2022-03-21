@@ -28,7 +28,7 @@ import { IAgGridFieldMetadata } from '../object.decorator';
 import { BaseEntity } from 'typeorm';
 import { AgGridFindManyOptions } from '../ag-grid.interface';
 import { FilterType } from '../ag-grid.enum';
-import { Query } from '@nestjs/graphql';
+import { Query, Resolver } from '@nestjs/graphql';
 import { IRelationInfo } from '../ag-grid.helpers';
 
 class TestEntityDto extends TestEntityRelation {}
@@ -506,6 +506,7 @@ describe('Generic Resolver', () => {
       }
     });
   });
+
   it('Should not create mutation if it is a read-only resolver', () => {
     const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> =
       {
@@ -589,6 +590,7 @@ describe('Generic Resolver', () => {
     findManyOptions.order = undefined;
     expect(hasFilters(findManyOptions)).toBeFalsy();
   });
+
   it('Should generate decorators properly', () => {
     const result = generateDecorators(Query, 'defaultName', () => BaseEntity, {
       decorators: [],
@@ -664,8 +666,47 @@ describe('Generic Resolver', () => {
     const ResolverClass =
       resolverFactory<TestEntityRelation>(baseResolverOption);
 
-    Object.defineProperty = jest.fn().mockImplementation(() => jest.fn());
     defineFieldResolver([resolverInfo], ResolverClass);
+  });
+
+  it('Should check if defineFieldResolver handles the relation gqlType withour errors', () => {
+    const resolverInfo: IRelationInfo = {
+      ...customResolverInfo,
+      agField: {
+        gqlType: () => [TestEntityRelation2],
+      },
+      relation: {
+        ...customResolverInfo.relation,
+        relationType: 'one-to-one',
+        type: undefined,
+      },
+    };
+
+    spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
+
+    defineFieldResolver([resolverInfo], ResolverClass);
+  });
+
+  it('Should throw an error if relType is undefined', () => {
+    const resolverInfo: IRelationInfo = {
+      ...customResolverInfo,
+      agField: undefined,
+      relation: {
+        ...customResolverInfo.relation,
+        relationType: 'one-to-one',
+        type: undefined,
+      },
+    };
+
+    spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
+
+    expect(() =>
+      defineFieldResolver([resolverInfo], ResolverClass),
+    ).toThrowError();
   });
 
   it('Should throw an error if descriptor is not definded in defineFieldResolver', () => {
@@ -674,9 +715,6 @@ describe('Generic Resolver', () => {
       'getOwnPropertyDescriptor',
     );
     spiedGetPropertyDescriptor.mockReturnValue(undefined);
-    const mockefDefineProperty = jest.fn().mockImplementation(() => jest.fn());
-
-    Object.defineProperty = mockefDefineProperty;
 
     const resolverInfo: IRelationInfo = {
       ...customResolverInfo,
@@ -686,7 +724,11 @@ describe('Generic Resolver', () => {
         type: 'RelationType',
       },
     };
-    const testFn = () => defineFieldResolver([resolverInfo], {} as any);
+
+    const testFn = () =>
+      defineFieldResolver([resolverInfo], {
+        prototype: {},
+      });
     expect(testFn).toThrowError(
       new ReferenceError(
         `GenericResolver.${propertyRelationName} must have a descriptor`,
@@ -701,13 +743,12 @@ describe('Generic Resolver', () => {
       },
     };
     expect(() =>
-      defineFieldResolver([resolverInfoOneToOne], {} as any),
+      defineFieldResolver([resolverInfoOneToOne], { prototype: {} }),
     ).toThrowError(
       new ReferenceError(
         `GenericResolver.${propertyRelationName} must have a descriptor`,
       ),
     );
     spiedGetPropertyDescriptor.mockRestore();
-    mockefDefineProperty.mockRestore();
   });
 });

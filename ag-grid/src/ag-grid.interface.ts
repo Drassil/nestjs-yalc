@@ -210,6 +210,14 @@ export interface IExtraArg {
   options?: ArgsOptions;
   filterType: FilterType;
   filterCondition: GeneralFilters;
+  /**
+   *
+   */
+  filterMiddleware?: { (filterValue?: any): any };
+  /**
+   *
+   */
+  hidden?: boolean;
 }
 
 export interface IAgGridArgsSingleOptions {

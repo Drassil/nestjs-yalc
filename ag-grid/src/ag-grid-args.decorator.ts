@@ -481,9 +481,17 @@ export function mapAgGridParams(
         extraParameter[argName] = args[argName];
         continue;
       }
+
+      let value = args[argName];
+      const filterMiddleware = params.extraArgs[argName].filterMiddleware;
+
+      if (filterMiddleware) {
+        value = filterMiddleware(value);
+      }
+
       forcedFilters.push({
         key: argName, // the column name mapping is executed internally
-        value: args[argName],
+        value,
         descriptors: params.extraArgs[argName],
       });
     }
@@ -542,6 +550,8 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
   const argDecorators: ParameterDecorator[] = [];
   if (params.extraArgs) {
     for (const argName of Object.keys(params.extraArgs)) {
+      if (params.extraArgs[argName].hidden) continue;
+
       argDecorators.push(
         Args(argName, params.extraArgs[argName].options ?? {}),
       );

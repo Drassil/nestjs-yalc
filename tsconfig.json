@@ -40,7 +40,9 @@
       "@nestjs-yalc/jest": ["jest/src"],
       "@nestjs-yalc/jest/*": ["jest/src/*"],
       "@nestjs-yalc/types": ["types/src"],
-      "@nestjs-yalc/types/*": ["types/src/*"]
+      "@nestjs-yalc/types/*": ["types/src/*"],
+      "@nestjs-yalc/kafka": ["kafka/src"],
+      "@nestjs-yalc/kafka/*": ["kafka/src/*"]
     }
   },
   "include": ["**/src/**/*.ts"],

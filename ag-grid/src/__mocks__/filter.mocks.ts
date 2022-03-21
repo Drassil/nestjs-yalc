@@ -200,6 +200,12 @@ export const fixedArgsOptions: IAgGridArgsOptions = {
   },
   extraArgs: {
     ...genExtraArgs('default'),
+    testExtra: {
+      hidden: true,
+      filterMiddleware: () => 'test',
+      filterType: FilterType.TEXT,
+      filterCondition: GeneralFilters.EQUAL,
+    },
   },
   extraArgsStrategy: null,
   defaultValue: {},

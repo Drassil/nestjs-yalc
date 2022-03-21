@@ -167,11 +167,17 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
   resolver: ClassType<IGenericResolver>,
 ) {
   for (const resolverInfo of resolverInfoList) {
-    const relType =
-      resolverInfo.agField?.gqlType?.() ??
+    let relType =
       (typeof resolverInfo.relation.type === 'function'
         ? resolverInfo.relation.type()
-        : resolverInfo.relation.type);
+        : resolverInfo.relation.type) ?? resolverInfo.agField?.gqlType?.();
+
+    if (Array.isArray(relType)) {
+      relType = relType[0];
+    } else if (!relType) {
+      throw new AgGridError('relation type indefined');
+    }
+
     if (
       resolverInfo.relation.relationType === 'one-to-many' ||
       resolverInfo.relation.relationType === 'many-to-many'
@@ -447,7 +453,7 @@ export function defineGetGridResource<Entity>(
       ? fieldType()
       : fieldType;
 
-  let extraArgTypes: any[] = [];
+  const extraArgTypes: any[] = [];
   if (hasExtraArgs(methodOptions)) {
     AgGridArgs({
       fieldType,
@@ -458,9 +464,9 @@ export function defineGetGridResource<Entity>(
     })(resolver.prototype, queryName, 0);
 
     if (methodOptions.extraArgs) {
-      extraArgTypes = Object.values(methodOptions.extraArgs).map((a) =>
-        filterTypeToNativeType(a.filterType),
-      );
+      Object.values(methodOptions.extraArgs).map((a) => {
+        if (!a.hidden) extraArgTypes.push(filterTypeToNativeType(a.filterType));
+      });
     }
   } else {
     AgGridArgs({
@@ -469,10 +475,10 @@ export function defineGetGridResource<Entity>(
     })(resolver.prototype, queryName, 0);
   }
 
-  Reflect.metadata(
-    'design:paramtypes',
-    extraArgTypes.length ? [...extraArgTypes, Object] : [Object],
-  )(resolver.prototype, queryName);
+  Reflect.metadata('design:paramtypes', [Object])(
+    resolver.prototype,
+    queryName,
+  );
 }
 
 export function defineCreateMutation<Entity>(
