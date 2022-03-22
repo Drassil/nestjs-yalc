@@ -6,6 +6,13 @@ export enum LogLevelEnum {
   VERBOSE = 'verbose',
 }
 
+export const LOG_LEVEL_DEFAULT = [
+  LogLevelEnum.DEBUG,
+  LogLevelEnum.ERROR,
+  LogLevelEnum.LOG,
+  LogLevelEnum.WARN,
+];
+
 export const LOG_LEVEL_ALL = [
   LogLevelEnum.DEBUG,
   LogLevelEnum.ERROR,

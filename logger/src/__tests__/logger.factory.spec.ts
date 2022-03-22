@@ -45,7 +45,7 @@ describe('AppLoggerFactory', () => {
   });
 
   it('No configuration test', async () => {
-    logger = AppLoggerFactory('test', [LogLevelEnum.DEBUG]);
+    logger = AppLoggerFactory('test');
     expect(logger).toBeDefined();
 
     NestLogger.prototype.setLogLevels = jest.fn();
