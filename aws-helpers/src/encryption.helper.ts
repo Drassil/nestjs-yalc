@@ -26,7 +26,9 @@ export const decryptCallback = (resolve: any, reject: any) => {
 };
 
 export const asyncDecrypt = async (toDecrypt: any): Promise<string> => {
-  const kms = new aws.KMS();
+  const kms = new aws.KMS({
+    region: process.env.KMS_REGION,
+  });
   return new Promise((resolve, reject) => {
     kms.decrypt(
       { CiphertextBlob: Buffer.from(toDecrypt, 'base64') },
@@ -38,7 +40,9 @@ export const asyncDecrypt = async (toDecrypt: any): Promise<string> => {
 // return reject to prevent further func execution (although promise result won't change after reject/resolve)
 // also guarantees typescript safety
 export const asyncEncrypt = async (toEncrypt: string): Promise<string> => {
-  const kms = new aws.KMS();
+  const kms = new aws.KMS({
+    region: process.env.KMS_REGION,
+  });
   const encryptionResult: aws.KMS.CiphertextType = await new Promise(
     (resolve, reject) => {
       // This should never occur, as this function is only called remotely. Throw Error just in case of bad remote env.
