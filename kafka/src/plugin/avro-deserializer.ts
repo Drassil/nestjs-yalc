@@ -26,7 +26,7 @@ export class KafkaAvroDeserializer
    * @param _options
    * @returns
    */
-  async deserialize(message: any, _options?: Record<string, any>) {
+  async deserialize(message: any) {
     try {
       message.key =
         message.key?.length > 0
