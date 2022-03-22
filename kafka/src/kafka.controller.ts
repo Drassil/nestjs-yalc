@@ -33,6 +33,13 @@ export class KafkaController<Entity> {
     return this.repository.insert(entity);
   }
 
+  /**
+   * Save the entity or Update in case of confitColumn
+   * @param entity
+   * @param overWrite
+   * @param conflitTarget
+   * @returns
+   */
   saveEntityOrUpdate(
     entity: DeepPartial<Entity>,
     overWrite: string[],
@@ -46,6 +53,11 @@ export class KafkaController<Entity> {
       .execute();
   }
 
+  /**
+   * Delete the entity
+   * @param conditions
+   * @returns
+   */
   deleteEntity(conditions: FindConditions<Entity>) {
     return this.repository.delete(conditions);
     /**

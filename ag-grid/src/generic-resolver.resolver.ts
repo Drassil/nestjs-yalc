@@ -175,7 +175,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
     if (Array.isArray(relType)) {
       relType = relType[0];
     } else if (!relType) {
-      throw new AgGridError('relation type indefined');
+      throw new AgGridError('relation type undefined');
     }
 
     if (
