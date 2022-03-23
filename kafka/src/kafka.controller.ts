@@ -5,10 +5,6 @@ import { DeepPartial, FindConditions, Repository } from 'typeorm';
 export class KafkaController<Entity> {
   constructor(protected repository: Repository<Entity>) {}
 
-  protected setRepository(repository: Repository<Entity>): void {
-    this.repository = repository;
-  }
-
   /**
    * Check function for filtering target with specific value on a key
    * @param target Entity
@@ -29,7 +25,7 @@ export class KafkaController<Entity> {
    * @param entity
    * @returns
    */
-  saveEntity(entity: DeepPartial<Entity>) {
+  async saveEntity(entity: DeepPartial<Entity>) {
     return this.repository.insert(entity);
   }
 
@@ -40,7 +36,7 @@ export class KafkaController<Entity> {
    * @param conflitTarget
    * @returns
    */
-  saveEntityOrUpdate(
+  async saveEntityOrUpdate(
     entity: DeepPartial<Entity>,
     overWrite: string[],
     conflitTarget?: string | string[],
@@ -58,10 +54,7 @@ export class KafkaController<Entity> {
    * @param conditions
    * @returns
    */
-  deleteEntity(conditions: FindConditions<Entity>) {
+  async deleteEntity(conditions: FindConditions<Entity>) {
     return this.repository.delete(conditions);
-    /**
-     * Place repository for deleting the entity
-     */
   }
 }

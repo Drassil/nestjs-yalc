@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { Deserializer, ReadPacket } from '@nestjs/microservices';
 import { SchemaRegistry } from '@kafkajs/confluent-schema-registry';
 import { SchemaRegistryAPIClientArgs } from '@kafkajs/confluent-schema-registry/dist/api';
@@ -26,16 +27,16 @@ export class KafkaAvroDeserializer
    * @param _options
    * @returns
    */
-  async deserialize(message: any) {
+  async deserialize(message: any): Promise<ReadPacket> {
     try {
-      message.key =
-        message.key?.length > 0
-          ? await this.registry.decode(message.key)
-          : null;
+      message.key = message.key
+        ? await this.registry.decode(message.key)
+        : message.key;
       message.value = message.value
         ? await this.registry.decode(message.value)
         : message.value;
     } catch (e) {
+      /* istanbul ignore next */
       console.error('Deserialization error', e);
     }
 
