@@ -31,7 +31,10 @@ export const asyncDecrypt = async (toDecrypt: any): Promise<string> => {
   });
   return new Promise((resolve, reject) => {
     kms.decrypt(
-      { CiphertextBlob: Buffer.from(toDecrypt, 'base64') },
+      {
+        KeyId: process.env.AWS_REMOTE_KEYID,
+        CiphertextBlob: Buffer.from(toDecrypt, 'base64'),
+      },
       decryptCallback(resolve, reject),
     );
   });
