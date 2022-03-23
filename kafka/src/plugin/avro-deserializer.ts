@@ -37,6 +37,7 @@ export class KafkaAvroDeserializer
         : message.value;
     } catch (e) {
       /* istanbul ignore next */
+      // eslint-disable-next-line no-console
       console.error('Deserialization error', e);
     }
 
