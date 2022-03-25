@@ -1,7 +1,10 @@
 import * as aws from 'aws-sdk';
 
 const URL_EXPIRATION_TIME = 60;
-export const getFileFromS3 = async (filePath: string): Promise<string> => {
+export const getFileFromS3 = async (
+  filePath: string,
+  bucket: string,
+): Promise<string> => {
   const s3 = new aws.S3({
     region: process.env.S3_REGION,
   });
@@ -10,7 +13,7 @@ export const getFileFromS3 = async (filePath: string): Promise<string> => {
       'getObject',
       {
         Key: filePath,
-        Bucket: process.env.S3_BUCKET,
+        Bucket: bucket,
         Expires: URL_EXPIRATION_TIME,
       },
       (err: Error, url: string) => {
