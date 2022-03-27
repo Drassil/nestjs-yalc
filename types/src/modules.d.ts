@@ -4,3 +4,5 @@ declare module 'google-libphonenumber';
 declare module 'decimal.js';
 declare module '@nestjs-yalc';
 declare module 'fastify-xml-body-parser';
+declare module 'kafkajs-snappy';
+declare module 'kafkajs';

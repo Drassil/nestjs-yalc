@@ -120,7 +120,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * Switches this Service database connection to a new specified database
    * @param dbName The database name
    */
-  protected switchDatabaseConnection(dbName: string): void {
+  public switchDatabaseConnection(dbName: string): void {
     const connectionName = getConnectionName(dbName);
     const connection = getConnection(connectionName);
     this.setRepositoryRead(

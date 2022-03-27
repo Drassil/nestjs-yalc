@@ -402,6 +402,27 @@ describe('Ag-grid args decorator', () => {
       expect(resultFn(params)()).toBeDefined();
     });
 
+    it('Should work properly with extraArgs property with middleware ', () => {
+      const params: IAgGridArgsOptions = {
+        ...fixedArgsOptions,
+        extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
+        extraArgs: {
+          ...genExtraArgs('groupKeys'),
+        },
+      };
+
+      expect(resultFn(params)()).toBeDefined();
+      params.extraArgsStrategy = ExtraArgsStrategy.ONLY_ONE;
+      params.extraArgs = {
+        ...genExtraArgs('rowGroups'),
+      };
+
+      expect(resultFn(params)()).toBeDefined();
+
+      params.extraArgsStrategy = ExtraArgsStrategy.DEFAULT;
+      expect(resultFn(params)()).toBeDefined();
+    });
+
     it('Should add extraArgs with VIRTUAL filter in extra field of findManyOptions', () => {
       const params: IAgGridArgsOptions = {
         ...fixedArgsOptions,
