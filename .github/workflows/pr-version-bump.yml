@@ -1,6 +1,6 @@
 name: GH PR Version bump
 on:
-  pull_request:
+  pull_request_target:
     types:
       - labeled
 env:
@@ -13,7 +13,6 @@ jobs:
       - name: Bump version and changelog
         uses: Drassil/action-package-version-bump@main
         with:
-          repository: https://github.com/drassil/nestjs-yalc
           user_name: "drassil-bot"
           user_email: "git-bot@drassil.org"
           ref_branch: "master"
@@ -26,7 +25,6 @@ jobs:
       - name: Bump version and changelog
         uses: Drassil/action-package-version-bump@main
         with:
-          repository: https://github.com/drassil/nestjs-yalc
           user_name: "drassil-bot"
           user_email: "git-bot@drassil.org"
           ref_branch: "master"
