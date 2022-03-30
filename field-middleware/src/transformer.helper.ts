@@ -18,7 +18,22 @@ export const enumTransformer = <T>(enumName: T): ValueTransformer => {
   };
 };
 
-export const defaultDateTransformer = () => {
+export const dateTransformer = () => {
+  const transform = (value?: Date) => {
+    if (!value) {
+      return;
+    }
+
+    return DateHelper.dateToSQLDateTime(value);
+  };
+
+  return {
+    from: (value: Date) => value,
+    to: transform,
+  };
+};
+
+export const defaultNowDateTransformer = () => {
   const transform = (value?: Date) => {
     if (!value) {
       return DateHelper.dateToSQLDateTime(new Date());
