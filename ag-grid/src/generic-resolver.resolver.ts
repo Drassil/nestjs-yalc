@@ -1,5 +1,6 @@
 import {
   Args,
+  GqlExecutionContext,
   MutationOptions,
   Parent,
   Query,
@@ -13,12 +14,18 @@ import {
   AgGridArgsSingle,
 } from '@nestjs-yalc/ag-grid/ag-grid-args.decorator';
 
-import { applyDecorators, Inject, UseInterceptors } from '@nestjs/common';
+import {
+  applyDecorators,
+  ExecutionContext,
+  Inject,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AgGridInterceptor } from '@nestjs-yalc/ag-grid/ag-grid.interceptor';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import {
   IExtraArg,
   AgGridFindManyOptions,
+  IIDArg,
 } from '@nestjs-yalc/ag-grid/ag-grid.interface';
 import {
   GenericService,
@@ -44,6 +51,7 @@ import { ExtraArgsStrategy } from './ag-grid.enum';
 import { IAgQueryParams } from './ag-grid.args';
 import { InputArgs } from '@nestjs-yalc/ag-grid/gqlmapper.decorator';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
+import { GetContext } from '@nestjs-yalc/utils/nest.decorator';
 export interface IGenericResolver {
   [index: string]: any; //index signature
 }
@@ -67,10 +75,18 @@ export interface IGenericResolverMethodOptions {
   };
 }
 
+/**
+ * @property idName - if `undefined` will be used ID as value,
+ *  if `null` it will be disabled
+ */
 export interface IGenericResolverQueryOptions
   extends IGenericResolverMethodOptions {
-  idName?: string;
+  idName?: string | IIDArg;
   throwOnNotFound?: boolean;
+}
+
+export function isIDArg(arg: string | IIDArg): arg is IIDArg {
+  return !!(<IIDArg>arg).name;
 }
 
 // export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
@@ -341,6 +357,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
     }
   }
 }
+
 export function defineGetSingleResource<Entity>(
   queryName: string,
   returnType: ClassType,
@@ -351,13 +368,29 @@ export function defineGetSingleResource<Entity>(
     configurable: true,
     writable: true,
     value: async function (
-      id: string,
       findOptions: AgGridFindManyOptions<Entity>,
+      ctx: ExecutionContext,
+      id?: string,
     ): Promise<Entity | null> {
       const dataLoader: GQLDataLoader<Entity> = this.dataLoader;
 
+      const gqlCtx = GqlExecutionContext.create(ctx);
+
+      let finalId;
+      if (methodOptions.idName && isIDArg(methodOptions.idName)) {
+        finalId = methodOptions.idName.filterMiddleware
+          ? methodOptions.idName.filterMiddleware(gqlCtx, id)
+          : id;
+      } else {
+        finalId = id;
+      }
+
+      if (typeof finalId === 'undefined') {
+        throw new Error("Can't have an undefined ID");
+      }
+
       return dataLoader.loadOne(
-        [dataLoader.getSearchKey(), id],
+        [dataLoader.getSearchKey(), finalId],
         findOptions,
         methodOptions.throwOnNotFound ?? false,
       );
@@ -390,14 +423,26 @@ export function defineGetSingleResource<Entity>(
       ? fieldType()
       : fieldType;
 
-  Args(methodOptions.idName ?? 'ID', {
-    nullable: false,
-    type: returnValue(String),
-  })(resolver.prototype, queryName, 0);
   AgGridArgsSingle({
     fieldType,
     entityType,
-  })(resolver.prototype, queryName, 1);
+  })(resolver.prototype, queryName, 0);
+
+  GetContext()(resolver.prototype, queryName, 1);
+
+  if (methodOptions.idName && isIDArg(methodOptions.idName)) {
+    if (!methodOptions.idName.hidden) {
+      Args(methodOptions.idName.name ?? 'ID', {
+        nullable: false,
+        type: returnValue(String),
+      })(resolver.prototype, queryName, 2);
+    }
+  } else {
+    Args(methodOptions.idName ?? 'ID', {
+      nullable: false,
+      type: returnValue(String),
+    })(resolver.prototype, queryName, 2);
+  }
 
   Reflect.metadata('design:paramtypes', [Object, Array])(
     resolver.prototype,

@@ -2,7 +2,11 @@
 
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
-import { ArgsOptions, ReturnTypeFuncValue } from '@nestjs/graphql';
+import {
+  ArgsOptions,
+  GqlExecutionContext,
+  ReturnTypeFuncValue,
+} from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
 import { FindManyOptions, FindOperator } from 'typeorm';
 import { IAgQueryParams } from './ag-grid.args';
@@ -206,18 +210,25 @@ export interface ICombinedWhereModel {
   filter_2: FindOperator<string | number | Date | null> | ICombinedWhereModel;
 }
 
-export interface IExtraArg {
-  options?: ArgsOptions;
-  filterType: FilterType;
-  filterCondition: GeneralFilters;
+export interface IBaseArg {
   /**
    *
    */
-  filterMiddleware?: { (filterValue?: any): any };
+  filterMiddleware?: { (ctx: GqlExecutionContext, filterValue?: any): any };
   /**
    *
    */
   hidden?: boolean;
+}
+
+export interface IIDArg extends IBaseArg {
+  name: string;
+}
+
+export interface IExtraArg extends IBaseArg {
+  options?: ArgsOptions;
+  filterType: FilterType;
+  filterCondition: GeneralFilters;
 }
 
 export interface IAgGridArgsSingleOptions {
