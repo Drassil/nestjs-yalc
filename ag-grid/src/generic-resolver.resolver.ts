@@ -74,10 +74,22 @@ export interface IGenericResolverMethodOptions {
     [index: string]: IExtraArg;
   };
 }
+export interface IExtraInput<Entity> {
+  inputName: keyof Entity;
+  callback: { (ctx: GqlExecutionContext, filterValue?: any): any };
+}
+/**
+ * @property idName - if `not undefined` will be used as a key,
+ * and the guid as value in the input object
+ */
+export interface IGenericResolverMutationCreateOptions<Entity>
+  extends IGenericResolverMethodOptions {
+  extraInput?: IExtraInput<Entity>;
+}
 
 /**
  * @property idName - if `undefined` will be used ID as value,
- *  if `null` it will be disabled
+ *  if the type is IIDArg the guid will be used as id
  */
 export interface IGenericResolverQueryOptions
   extends IGenericResolverMethodOptions {
@@ -87,6 +99,13 @@ export interface IGenericResolverQueryOptions
 
 export function isIDArg(arg: string | IIDArg): arg is IIDArg {
   return !!(<IIDArg>arg).name;
+}
+
+export function isExtraInput<Entity>(
+  input: undefined | IExtraInput<Entity>,
+): input is IExtraInput<Entity> {
+  const casted = input as IExtraInput<Entity>;
+  return !!casted.inputName && !!casted.callback;
 }
 
 // export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
@@ -141,7 +160,7 @@ export interface IGenericResolverOptions<Entity> {
     [index: string]: IGenericResolverQueryOptions | ICustomSingleQueryOptions;
   };
   mutations?: {
-    createResource: IGenericResolverMethodOptions;
+    createResource: IGenericResolverMutationCreateOptions<Entity>;
     deleteResource: IGenericResolverMethodOptions;
     updateResource: IGenericResolverMethodOptions;
   };
@@ -531,7 +550,7 @@ export function defineCreateMutation<Entity>(
   returnType: ClassType,
   resolver: ClassType<IGenericResolver>,
   options: IGenericResolverOptions<Entity>,
-  methodOptions: IGenericResolverQueryOptions,
+  methodOptions: IGenericResolverMutationCreateOptions<Entity>,
 ) {
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
@@ -539,7 +558,16 @@ export function defineCreateMutation<Entity>(
     value: async function (
       input: Entity,
       findOptions: AgGridFindManyOptions<Entity>,
+      ctx: ExecutionContext,
     ): Promise<Entity | null> {
+      if (
+        methodOptions.extraInput &&
+        isExtraInput<Entity>(methodOptions.extraInput)
+      ) {
+        const gqlCtx = GqlExecutionContext.create(ctx);
+        input[methodOptions.extraInput.inputName] =
+          methodOptions.extraInput.callback(gqlCtx);
+      }
       return this.service.createEntity(input, findOptions);
     },
   });
@@ -583,6 +611,8 @@ export function defineCreateMutation<Entity>(
     fieldType,
     entityType,
   })(resolver.prototype, queryName, 1);
+
+  GetContext()(resolver.prototype, queryName, 2);
 
   Reflect.metadata('design:paramtypes', [Object])(
     resolver.prototype,
