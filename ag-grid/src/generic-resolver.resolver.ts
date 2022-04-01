@@ -1,5 +1,6 @@
 import {
   Args,
+  ArgsOptions,
   GqlExecutionContext,
   MutationOptions,
   Parent,
@@ -74,17 +75,19 @@ export interface IGenericResolverMethodOptions {
     [index: string]: IExtraArg;
   };
 }
-export interface IExtraInput<Entity> {
-  inputName: keyof Entity;
-  callback: { (ctx: GqlExecutionContext, filterValue?: any): any };
+export interface IExtraInput<Type> {
+  middleware?: {
+    (ctx: GqlExecutionContext, input: Type, filterValue?: any): any;
+  };
+  gqlOptions?: ArgsOptions;
 }
 /**
  * @property idName - if `not undefined` will be used as a key,
  * and the guid as value in the input object
  */
-export interface IGenericResolverMutationCreateOptions<Entity>
+export interface IGenericResolverMutationCreateOptions<Type>
   extends IGenericResolverMethodOptions {
-  extraInput?: IExtraInput<Entity>;
+  extraInputs?: { [key: string]: IExtraInput<Type> };
 }
 
 /**
@@ -105,7 +108,7 @@ export function isExtraInput<Entity>(
   input: undefined | IExtraInput<Entity>,
 ): input is IExtraInput<Entity> {
   const casted = input as IExtraInput<Entity>;
-  return !!casted.inputName && !!casted.callback;
+  return !!casted.middleware;
 }
 
 // export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
@@ -552,6 +555,8 @@ export function defineCreateMutation<Entity>(
   options: IGenericResolverOptions<Entity>,
   methodOptions: IGenericResolverMutationCreateOptions<Entity>,
 ) {
+  const extraInputs = methodOptions.extraInputs;
+
   Object.defineProperty(resolver.prototype, queryName, {
     configurable: true,
     writable: true,
@@ -559,15 +564,30 @@ export function defineCreateMutation<Entity>(
       input: Entity,
       findOptions: AgGridFindManyOptions<Entity>,
       ctx: ExecutionContext,
+      extraInputsArgs?: { [key: string]: IExtraInput<Entity> },
     ): Promise<Entity | null> {
-      if (
-        methodOptions.extraInput &&
-        isExtraInput<Entity>(methodOptions.extraInput)
-      ) {
-        const gqlCtx = GqlExecutionContext.create(ctx);
-        input[methodOptions.extraInput.inputName] =
-          methodOptions.extraInput.callback(gqlCtx);
-      }
+      const gqlCtx = GqlExecutionContext.create(ctx);
+
+      console.log(extraInputsArgs);
+
+      if (extraInputs)
+        Object.keys(extraInputs).forEach((k) => {
+          const extraInputObj = extraInputs[k];
+          if (isExtraInput<Entity>(extraInputObj)) {
+            if (!extraInputObj.middleware) return;
+
+            if (!extraInputsArgs) {
+              extraInputsArgs = {};
+            }
+
+            extraInputsArgs[k] = extraInputObj.middleware(
+              gqlCtx,
+              input,
+              extraInputsArgs?.[k],
+            );
+          }
+        });
+
       return this.service.createEntity(input, findOptions);
     },
   });
@@ -613,6 +633,20 @@ export function defineCreateMutation<Entity>(
   })(resolver.prototype, queryName, 1);
 
   GetContext()(resolver.prototype, queryName, 2);
+
+  if (extraInputs) {
+    Object.keys(extraInputs).forEach((k, i) => {
+      const extraInputObj = extraInputs[k];
+
+      if (!extraInputObj.gqlOptions) return;
+
+      InputArgs({
+        gql: extraInputObj.gqlOptions,
+        fieldType: extraInputObj.gqlOptions.type,
+        _name: k,
+      })(resolver.prototype, queryName, 3 + i);
+    });
+  }
 
   Reflect.metadata('design:paramtypes', [Object])(
     resolver.prototype,
