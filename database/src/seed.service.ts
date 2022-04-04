@@ -36,21 +36,26 @@ export class SeedService {
     this.resetConnection();
 
     this.loggerService.debug?.(
-      `Reseeding ${name} on connection: ${connection.name}...`,
+      `Clear ${name} on connection: ${connection.name}...`,
     );
-    const queryRunner = connection.createQueryRunner();
-    this.loggerService.debug?.('Clear tables');
-    for (const meta of connection.entityMetadatas) {
-      const skipTable = await queryRunner.hasTable(meta.tableName);
 
-      if (meta.tableType === 'view' || !skipTable) {
-        this.loggerService.debug?.(`Skip truncating ${meta.tableName}`);
-        continue;
-      }
-      this.loggerService.debug?.(`Truncating ${meta.tableName}`);
-      await queryRunner.clearTable(meta.tableName);
-    }
-    this.loggerService.debug?.('Database cleared!');
+    const queryRunner = connection.createQueryRunner();
+    this.loggerService.debug?.(`Clear ${name} tables`);
+    await Promise.all(
+      connection.entityMetadatas.map(async (meta) => {
+        const skipTable = await queryRunner.hasTable(meta.tableName);
+
+        if (meta.tableType === 'view' || !skipTable) {
+          this.loggerService.debug?.(
+            `Skip truncating ${name}.${meta.tableName}`,
+          );
+          return;
+        }
+        this.loggerService.debug?.(`Truncating ${name}.${meta.tableName}`);
+        await queryRunner.clearTable(meta.tableName);
+      }),
+    );
+    this.loggerService.debug?.(`Database ${name} cleared!`);
   }
 
   private async seedDatabase(connection: Connection, name: string) {
@@ -70,17 +75,16 @@ export class SeedService {
 
     this.resetConnection();
 
-    this.loggerService.debug?.('Use seeding');
     await useSeeding(option);
 
     this.setConnection(connection);
 
     const seeders = dbConf?.seeds;
     for (const seeder of seeders) {
-      const label = `${seeder.name} execution time:`;
+      const label = `${name}.${seeder.name} execution time:`;
       // eslint-disable-next-line no-console
       console.time(label);
-      this.loggerService.debug?.(`Running seeder ${seeder.name}`);
+      this.loggerService.debug?.(`Running seeder ${seeder.name} on ${name}`);
       await new seeder().run(factory, connection);
       // eslint-disable-next-line no-console
       console.timeEnd(label);
@@ -93,22 +97,38 @@ export class SeedService {
     this.loggerService.debug?.('Seeding db...');
 
     if (reseed) {
-      for (const connection of this.dbConnections) {
+      await Promise.all(
+        this.dbConnections.map(async (connection) => {
+          if (!connection.options.database) return;
+          await this.clearDatabase(
+            connection,
+            connection.options.database.toString(),
+          );
+        }),
+      );
+    }
+
+    const promiseList: { (): Promise<void> }[] = [];
+    for (const connection of this.dbConnections) {
+      if ((connection.options as any).__seedAsync) {
+        promiseList.push(async () => {
+          if (!connection.options.database) return;
+
+          await this.seedDatabase(
+            connection,
+            connection.options.database.toString(),
+          );
+        });
+      } else {
         if (!connection.options.database) continue;
-        await this.clearDatabase(
+        await this.seedDatabase(
           connection,
           connection.options.database.toString(),
         );
       }
     }
 
-    for (const connection of this.dbConnections) {
-      if (!connection.options.database) continue;
-      await this.seedDatabase(
-        connection,
-        connection.options.database.toString(),
-      );
-    }
+    await Promise.all(promiseList.map((fn) => fn()));
 
     this.loggerService.debug?.('Seeding completed!');
   }
