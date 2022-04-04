@@ -15,8 +15,10 @@ test('belongsToEnum should check if a value belongs to a specific Enum', () => {
 
 test('mergeEnums should merge 2 enums', () => {
   const result = mergeEnums(TestEnum1, TestEnum2);
+  const compareWith = {
+    ...TestEnum1,
+    ...TestEnum2,
+  };
 
-  // jest is not able to produce enum properly
-  // TODO: find a better way to expect a proper value
-  expect(result).toBeDefined();
+  expect(result).toMatchObject(compareWith);
 });

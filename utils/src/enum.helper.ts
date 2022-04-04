@@ -19,7 +19,7 @@ type Merge<T extends readonly any[]> = T extends readonly [infer H, ...infer R]
     {};
 
 export const mergeEnums = <T extends any[]>(...enums: T) => {
-  return {
-    ...enums,
-  } as any as Merge<T>;
+  let merged = {};
+  enums.forEach((e) => (merged = { ...merged, ...e }));
+  return merged as any as Merge<T>;
 };

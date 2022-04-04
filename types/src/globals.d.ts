@@ -23,16 +23,17 @@ export declare type AnyConstructor<A = Record<string, unknown>> = new (
 
 export declare type Mixin<T extends AnyFunction> = InstanceType<ReturnType<T>>;
 
+// Names of properties in T with types that include undefined
 type OptionalPropertyNames<T> = {
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  [K in keyof T]-?: {} extends Pick<T, K> ? K : never;
+  [K in keyof T]: undefined extends T[K] ? K : never;
 }[keyof T];
 
+// Common properties from L and R with undefined in R[K] replaced by type in L[K]
 type SpreadProperties<L, R, K extends keyof L & keyof R> = {
   [P in K]: L[P] | Exclude<R[P], undefined>;
 };
 
-type Id<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
+type Id<T> = T extends infer U ? { [K in keyof U]: U[K] } : never; // see note at bottom*
 
 // Type of { ...L, ...R }
 type Spread<L, R> = Id<
