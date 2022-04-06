@@ -21,6 +21,8 @@ type DbConfigObjectParams = {
   migrationsDir?: string;
   extraMigrationDirs?: string[];
   connectionName?: string;
+  /** used by the seeding service to do not seed this database sequentially (the order is not guaranteed) */
+  __seedAsync?: boolean;
 };
 
 export function buildDbConfigObject({
@@ -31,6 +33,7 @@ export function buildDbConfigObject({
   migrationsDir,
   extraMigrationDirs,
   connectionName,
+  __seedAsync,
 }: DbConfigObjectParams): IDbConfObject {
   let connNameTemp = connectionName;
   if (!connNameTemp && dbName) {
@@ -75,6 +78,7 @@ export function buildDbConfigObject({
       cli: {
         migrationsDir: canLoad ? migrationsDir : undefined,
       },
+      __seedAsync,
     };
   };
 
