@@ -49,7 +49,7 @@ describe('Graphql decorator test', () => {
       mockedExecutionContext,
     );
 
-    expect(testData).toEqual({ data: 'noData' });
+    expect(testData).toEqual({ original: 'thisIsAString' });
   });
 
   it('Check GqlArgsGenerator with data and parameters', async () => {
@@ -61,7 +61,7 @@ describe('Graphql decorator test', () => {
       mockedExecutionContext,
     );
 
-    expect(testData).toEqual({ data: 'noData' });
+    expect(testData).toEqual({ original: 'thisIsAString' });
   });
 
   it('Check GqlArgsGenerator without data', async () => {
@@ -92,5 +92,21 @@ describe('Graphql decorator test', () => {
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
+  });
+
+  it('Check GqlArgsGenerator with Obj as arg', async () => {
+    const fixedArg = { original: new Object() };
+    mockCreate.mockImplementation(() => ({
+      getArgs: jest.fn().mockReturnValue(fixedArg),
+    }));
+    jest
+      .spyOn(gqlMapper, 'GqlFieldsAsArgsWorker')
+      .mockReturnValue({ data: 'noData' });
+    const testData = gqlMapper.GqlArgsGenerator(
+      { fieldType: DummyType, _name: 'original', gql: { name: 'original' } },
+      mockedExecutionContext,
+    );
+
+    expect(testData).toEqual({ data: 'noData' });
   });
 });
