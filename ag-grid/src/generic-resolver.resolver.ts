@@ -81,6 +81,12 @@ export interface IExtraInput<Type> {
   };
   gqlOptions?: ArgsOptions;
 }
+export interface IExtraInputStrict<Type> {
+  middleware: {
+    (ctx: GqlExecutionContext, input: Type, filterValue?: any): any;
+  };
+  gqlOptions?: ArgsOptions;
+}
 /**
  * @property idName - if `not undefined` will be used as a key,
  * and the guid as value in the input object
@@ -104,13 +110,18 @@ export function isIDArg(arg: string | IIDArg): arg is IIDArg {
   return !!(<IIDArg>arg).name;
 }
 
-export function isExtraInput<Entity>(
+export function isExtraInputStrict<Entity>(
   input: undefined | IExtraInput<Entity>,
-): input is IExtraInput<Entity> {
-  const casted = input as IExtraInput<Entity>;
+): input is IExtraInputStrict<Entity> {
+  const casted = input as IExtraInputStrict<Entity>;
   return !!casted.middleware;
 }
 
+export function checkFinalId(finalId: string | undefined) {
+  if (typeof finalId === 'undefined') {
+    throw new Error("Can't have an undefined ID");
+  }
+}
 // export interface ICustomQueryOptions extends IGenericResolverMethodOptions {
 //   /**
 //    * Filters with direct arguments
@@ -407,9 +418,7 @@ export function defineGetSingleResource<Entity>(
         finalId = id;
       }
 
-      if (typeof finalId === 'undefined') {
-        throw new Error("Can't have an undefined ID");
-      }
+      checkFinalId(finalId);
 
       return dataLoader.loadOne(
         [dataLoader.getSearchKey(), finalId],
@@ -454,7 +463,7 @@ export function defineGetSingleResource<Entity>(
 
   if (methodOptions.idName && isIDArg(methodOptions.idName)) {
     if (!methodOptions.idName.hidden) {
-      Args(methodOptions.idName.name ?? 'ID', {
+      Args(methodOptions.idName.name, {
         nullable: false,
         type: returnValue(String),
       })(resolver.prototype, queryName, 2);
@@ -568,14 +577,10 @@ export function defineCreateMutation<Entity>(
     ): Promise<Entity | null> {
       const gqlCtx = GqlExecutionContext.create(ctx);
 
-      console.log(extraInputsArgs);
-
       if (extraInputs)
         Object.keys(extraInputs).forEach((k) => {
           const extraInputObj = extraInputs[k];
-          if (isExtraInput<Entity>(extraInputObj)) {
-            if (!extraInputObj.middleware) return;
-
+          if (isExtraInputStrict<Entity>(extraInputObj)) {
             if (!extraInputsArgs) {
               extraInputsArgs = {};
             }
@@ -583,7 +588,7 @@ export function defineCreateMutation<Entity>(
             extraInputsArgs[k] = extraInputObj.middleware(
               gqlCtx,
               input,
-              extraInputsArgs?.[k],
+              extraInputsArgs[k],
             );
           }
         });
