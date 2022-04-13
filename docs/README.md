@@ -1,9 +1,17 @@
 # Nestjs-yalc library
 
-This is the layer of the nestjs-yalc libraries which are distributed
-open-source under the AGPL3 license
+Nest-yalc stands for Nestjs - Yet Another Library Collection
 
-Nest-yalc stands for Nstjs - Yet Another Library Collection
+## Features
+
+- Support of the [AgGrid](https://www.ag-grid.com/) filters for the GraphQL endpoints
+- Automatic runtime generation of CRUD endpoints using the NestJS dependency factory method
+- Parametized the generation of: Resolver, Service, Dataloader, TypeORM repository based on ORM entities and DTOs.
+- Implemented JSON support for TypeORM entities by using decorators
+- Possibility to handle MySQL views (read) and their relative table (write) via the same repository
+- Custom decorators to extend the NestJS GraphQL library with features such as: field middlewares, graphql-typeorm field mapping, nested field resolver with dataloader or join etc.
+- Helper methods for jest to be integrated in a monorepo solution
+- Utils classes and methods
 
 ## NPM package.json and Workspace
 
