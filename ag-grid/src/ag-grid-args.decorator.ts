@@ -486,7 +486,7 @@ export function mapAgGridParams(
       const filterMiddleware = params.extraArgs[argName].filterMiddleware;
 
       if (filterMiddleware) {
-        value = filterMiddleware(value);
+        value = filterMiddleware(ctx, value);
       }
 
       forcedFilters.push({

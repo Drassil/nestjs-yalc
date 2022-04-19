@@ -54,13 +54,12 @@ export const GqlArgsGenerator = (
 
   const fieldType = data.fieldType ?? data.fieldMap;
 
-  if (fieldType) {
+  const arg = args[data.gql?.name ?? data._name ?? 'input'];
+
+  if (fieldType && typeof arg === 'object') {
     const fieldMapperAndFilter = objectToFieldMapper(fieldType);
 
-    return GqlFieldsAsArgsWorker(
-      fieldMapperAndFilter.field,
-      args[data.gql?.name ?? data._name ?? 'input'],
-    );
+    return GqlFieldsAsArgsWorker(fieldMapperAndFilter.field, arg);
   }
 
   return args;
