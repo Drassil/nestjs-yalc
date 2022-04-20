@@ -30,6 +30,12 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar')
   lastName: string;
 
+  @Column('varchar')
+  email: string;
+
+  @Column('varchar')
+  password: string;
+
   @OneToMany(
     /* istanbul ignore next */
     () => SkeletonPhone,

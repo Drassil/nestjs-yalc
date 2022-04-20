@@ -11,6 +11,7 @@ import {
 } from '@nestjs-yalc/ag-grid/object.decorator';
 import { SkeletonUser } from '../persistance/skeleton-user.entity';
 import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
+import returnValue from '@nestjs-yalc/utils/returnValue';
 
 @ObjectType()
 @AgGridObject()
@@ -24,7 +25,23 @@ export class SkeletonUserType extends SkeletonUser {
   SkeletonPhone?: SkeletonPhone[];
 
   @HideField()
+  password: string;
+
+  @AgGridField({
+    isRequired: true,
+  })
   guid: string;
+
+  @AgGridField({
+    gqlType: returnValue(String),
+    gqlOptions: {
+      name: 'fullName',
+    },
+    dst: `CONCAT(firstName,' ', lastName)`,
+    mode: 'derived',
+    isSymbolic: true,
+  })
+  fullName: string;
 }
 
 /**

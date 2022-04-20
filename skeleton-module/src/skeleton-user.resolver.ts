@@ -1,4 +1,5 @@
 import { AgGridDependencyFactory } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { UseGuards } from '@nestjs/common';
 import {
   SkeletonUserType,
   SkeletonUserCreateInput,
@@ -6,6 +7,7 @@ import {
   SkeletonUserCondition,
 } from './dto/skeleton-user.type';
 import { SkeletonUser } from './persistance/skeleton-user.entity';
+import { RoleAuth, RoleEnum } from './role.guard';
 
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
   AgGridDependencyFactory<SkeletonUser>({
@@ -22,47 +24,41 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
       queries: {
         // SkeletonModule_getSkeletonUser
         getResource: {
-          // decorators: [Auth([RoleEnum.ADMIN])],
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
           idName: 'guid',
           queryParams: {
             // name: 'getSkeletonUser',
-            description: 'Role: admin. Get a specific user',
+            description: 'Role: user. Get a specific user',
           },
         },
         getResourceGrid: {
-          // decorators: [Auth([RoleEnum.ADMIN])],
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
           queryParams: {
             // name: 'getSkeletonUserGrid',
-            description: 'Role: admin. Get a list of users',
+            description: 'Role: user. Get a list of users',
           },
         },
       },
       mutations: {
         createResource: {
-          decorators: [
-            // Auth([RoleEnum.ADMIN]),
-          ],
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
           queryParams: {
             // name: 'createSkeletonUser',
-            description: 'Role: admin. Create a new user',
+            description: 'Role: user. Create a new user',
           },
         },
         updateResource: {
-          decorators: [
-            // Auth([RoleEnum.ADMIN]),
-          ],
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
           queryParams: {
             // name: 'updateSkeletonUser',
-            description: 'Role: admin. Update an existing user',
+            description: 'Role: user. Update an existing user',
           },
         },
         deleteResource: {
-          decorators: [
-            // Auth([RoleEnum.ADMIN]),
-          ],
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
           queryParams: {
             // name: 'deleteSkeletonUser',
-            description: 'Role: admin. Delete an existing user',
+            description: 'Role: user. Delete an existing user',
           },
         },
       },

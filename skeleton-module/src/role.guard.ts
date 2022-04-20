@@ -1,36 +1,32 @@
+import { ClassType } from '@nestjs-yalc/types';
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
 export enum RoleEnum {
-  USER = 'user',
+  PUBLIC,
+  USER,
+  ADMIN,
 }
 
-export const RoleAuth = () => {
+export function RoleAuth(requiredRoles: RoleEnum[]): ClassType<CanActivate> {
   @Injectable()
-  export class RolesGuard implements CanActivate {
-    public roles: Role[] = [];
+  class RolesGuard implements CanActivate {
+    public roles: RoleEnum[] = [];
     public userId = '';
 
-    constructor(
-      private reflector: Reflector,
-      private authService: AuthService,
-    ) {}
-
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-      const requiredRoles = this.reflector.getAllAndOverride<RoleEnum[]>(
-        ROLES_KEY,
-        [context.getHandler(), context.getClass()],
-      );
-      if (!requiredRoles || requiredRoles.length === 0) {
-        return true;
-      }
+    canActivate(context: ExecutionContext): boolean {
       const ctx = GqlExecutionContext.create(context);
       const role = ctx.getContext().req.role;
 
-      return requiredRoles.some(
-        (requiredRole) => requiredRole.toLowerCase() === role.toLowerCase(),
+      return (
+        !requiredRoles.length ||
+        requiredRoles.some(
+          (requiredRole) =>
+            requiredRole === RoleEnum.PUBLIC || requiredRole === role,
+        )
       );
     }
   }
-};
+
+  return RolesGuard;
+}
