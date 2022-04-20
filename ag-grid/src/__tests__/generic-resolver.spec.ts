@@ -2,6 +2,7 @@ import { createMock } from '@golevelup/ts-jest';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import { ModuleRef } from '@nestjs/core';
 import {
+  checkFinalId,
   defineCreateMutation,
   defineDeleteMutation,
   defineFieldResolver,
@@ -15,6 +16,7 @@ import {
   IGenericResolverOptions,
   resolverFactory,
 } from '../generic-resolver.resolver';
+import returnValue from '@nestjs-yalc/utils/returnValue';
 
 import { GenericService } from '../generic-service.service';
 import {
@@ -28,8 +30,10 @@ import { IAgGridFieldMetadata } from '../object.decorator';
 import { BaseEntity } from 'typeorm';
 import { AgGridFindManyOptions } from '../ag-grid.interface';
 import { FilterType } from '../ag-grid.enum';
-import { Query, Resolver } from '@nestjs/graphql';
+import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
 import { IRelationInfo } from '../ag-grid.helpers';
+
+jest.mock('@nestjs/graphql');
 
 class TestEntityDto extends TestEntityRelation {}
 class TestEntityInput extends TestEntityDto {}
@@ -120,6 +124,121 @@ const baseResolverOptionNoPrefix = {
   prefix: undefined,
 };
 
+let extraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
+  ...baseResolverOption,
+  queries: {
+    ...baseResolverOption.queries,
+    getResource: {
+      ...baseResolverOption.queries.getResourceGrid,
+      idName: {
+        name: 'guid',
+        hidden: true,
+        filterMiddleware: () => {
+          return 'ID';
+        },
+      },
+    },
+  },
+  mutations: {
+    ...baseResolverOption.mutations,
+    createResource: {
+      ...baseResolverOption.mutations.createResource,
+      extraInputs: {
+        guid: {
+          gqlOptions: {
+            type: returnValue(String),
+            name: 'guid',
+            nullable: true,
+          },
+          middleware: (_ctx, input) => {
+            input.id = 1;
+          },
+        },
+      },
+    },
+  },
+};
+
+let partialExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
+  ...baseResolverOption,
+  queries: {
+    ...baseResolverOption.queries,
+    getResource: {
+      ...baseResolverOption.queries.getResourceGrid,
+      idName: {
+        name: 'guid',
+        hidden: true,
+      },
+    },
+  },
+  mutations: {
+    ...baseResolverOption.mutations,
+    createResource: {
+      ...baseResolverOption.mutations.createResource,
+      extraInputs: {
+        guid: {
+          gqlOptions: {
+            type: returnValue(String),
+            name: 'guid',
+            nullable: true,
+          },
+        },
+      },
+    },
+  },
+};
+
+let missingExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
+  ...baseResolverOption,
+  queries: {
+    ...baseResolverOption.queries,
+    getResource: {
+      ...baseResolverOption.queries.getResourceGrid,
+      idName: {
+        name: 'guid',
+        hidden: false,
+        filterMiddleware: () => {
+          return undefined;
+        },
+      },
+    },
+  },
+  mutations: {
+    ...baseResolverOption.mutations,
+    createResource: {
+      ...baseResolverOption.mutations.createResource,
+      extraInputs: {
+        guid: {},
+      },
+    },
+  },
+};
+
+let undefinedExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> =
+  {
+    ...baseResolverOption,
+    queries: {
+      ...baseResolverOption.queries,
+      getResource: {
+        ...baseResolverOption.queries.getResourceGrid,
+        idName: {
+          hidden: true,
+        },
+      },
+    },
+    mutations: {
+      ...baseResolverOption.mutations,
+      createResource: {
+        ...baseResolverOption.mutations.createResource,
+        extraInputs: {
+          guid: {},
+        },
+      },
+    },
+  };
+
+const mockedResponse = {};
+
 describe('Generic Resolver', () => {
   const mockedGenericService = createMock<GenericService<TestEntityRelation>>();
   const mockedTestEntityRelationDL =
@@ -147,7 +266,7 @@ describe('Generic Resolver', () => {
 
   const getQueriesFromResolver = (resolver) => {
     return {
-      getSingleRes: () => resolver[queriesName.getSingleResource]('id', {}),
+      getSingleRes: () => resolver[queriesName.getSingleResource]({}, {}, 'id'),
       getGridResource: () => resolver[queriesName.getGridResource]({}),
       create: () => resolver[queriesName.create](TestEntityRelation),
       update: () =>
@@ -193,17 +312,38 @@ describe('Generic Resolver', () => {
     jest.clearAllMocks();
   });
 
+  it.each([
+    baseResolverOption,
+    extraResolverOptions,
+    partialExtraResolverOptions,
+    undefinedExtraResolverOptions,
+  ])(
+    'Should create a resolver with a proper execution of the queries',
+    async (resolverOption) => {
+      GqlExecutionContext.create = jest.fn().mockImplementation(() => ({
+        getContext: jest.fn().mockReturnValue({ response: mockedResponse }),
+      }));
+      const resolver = generateResolver(fixedMetadataList, resolverOption);
+      expect(resolver).toBeDefined();
+      const queries = getQueriesFromResolver(resolver);
+      expect(await queries.getSingleRes()).toBeInstanceOf(TestEntityRelation);
+      expect((await queries.getGridResource())[0][0]).toBeInstanceOf(
+        TestEntityRelation,
+      );
+      expect(await queries.create()).toBeInstanceOf(TestEntityRelation);
+      expect(await queries.update()).toBeInstanceOf(TestEntityRelation);
+      expect(await queries.delete()).toBe(true);
+    },
+  );
+
   it('Should create a resolver with a proper execution of the queries', async () => {
-    const resolver = generateResolver(fixedMetadataList, baseResolverOption);
+    const resolver = generateResolver(
+      fixedMetadataList,
+      missingExtraResolverOptions,
+    );
     expect(resolver).toBeDefined();
     const queries = getQueriesFromResolver(resolver);
-    expect(await queries.getSingleRes()).toBeInstanceOf(TestEntityRelation);
-    expect((await queries.getGridResource())[0][0]).toBeInstanceOf(
-      TestEntityRelation,
-    );
-    expect(await queries.create()).toBeInstanceOf(TestEntityRelation);
-    expect(await queries.update()).toBeInstanceOf(TestEntityRelation);
-    expect(await queries.delete()).toBe(true);
+    expect(() => queries.getSingleRes()).rejects.toThrowError();
   });
 
   it('Should create a resolver with a proper execution of the queries (without prefix)', async () => {
@@ -215,6 +355,9 @@ describe('Generic Resolver', () => {
   });
 
   it('Should create a resolver with the default options', async () => {
+    GqlExecutionContext.create = jest.fn().mockImplementation(() => ({
+      getContext: jest.fn().mockReturnValue({ response: mockedResponse }),
+    }));
     const defaultResolverOption: IGenericResolverOptions<TestEntityRelation> = {
       ...baseResolverOption,
       dto: undefined,
@@ -750,5 +893,9 @@ describe('Generic Resolver', () => {
       ),
     );
     spiedGetPropertyDescriptor.mockRestore();
+  });
+
+  it('should throw an error if receive an undefined', () => {
+    expect(() => checkFinalId(undefined)).toThrowError();
   });
 });
