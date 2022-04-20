@@ -1,4 +1,3 @@
-import { AgGridObject } from '@nestjs-yalc/ag-grid/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
 import { ObjectType } from '@nestjs/graphql';
 import {
@@ -14,8 +13,7 @@ import { SkeletonUser } from './skeleton-user.entity';
 
 @Entity('skeleton-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
-@ObjectType()
-@AgGridObject()
+@ObjectType({ isAbstract: true })
 export class SkeletonPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specifiec elsewhere
   // ID field name will be used by default from the single

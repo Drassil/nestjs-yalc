@@ -1,10 +1,4 @@
-import {
-  AgGridField,
-  AgGridObject,
-} from '@nestjs-yalc/ag-grid/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
-import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
-import returnValue from '@nestjs-yalc/utils/returnValue';
 import { ObjectType } from '@nestjs/graphql';
 import {
   BaseEntity,
@@ -17,10 +11,8 @@ import {
 import { SkeletonPhone } from './skeleton-phone.entity';
 
 @Entity('skeleton-user')
-@ObjectType()
-@AgGridObject()
+@ObjectType({ isAbstract: true })
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
-  @AgGridField({ gqlType: returnValue(UUIDScalar) })
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
   guid: string;
 

@@ -3,21 +3,21 @@ import {
   AgGridField,
   AgGridObject,
 } from '@nestjs-yalc/ag-grid/object.decorator';
-import { SkeletonUser } from '../persistance/skeleton-user.entity';
 import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';
+import { SkeletonUserType } from './skeleton-user.type';
 
 @ObjectType()
 @AgGridObject()
 export class SkeletonPhoneType extends SkeletonPhone {
   @AgGridField({
-    gqlType: /* istanbul ignore next */ () => SkeletonUser,
+    gqlType: /* istanbul ignore next */ () => SkeletonUserType,
     // relation: {
     //   relationType: 'one-to-many',
     // },
   })
-  SkeletonUser?: SkeletonUser;
+  SkeletonUser?: SkeletonUserType;
 
   @AgGridField({ gqlType: returnValue(UUIDScalar) })
   userId: string;
