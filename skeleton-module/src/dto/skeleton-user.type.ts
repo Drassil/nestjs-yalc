@@ -43,9 +43,10 @@ export class SkeletonUserType extends SkeletonUser {
   guid: string;
 
   @AgGridField({
-    dst: `CONCAT(firstName,' ', lastName)`,
-    mode: 'derived',
-    isSymbolic: true,
+    gqlOptions: {
+      description: "It's the combination of firstName and lastName",
+    },
+    denyFilter: true,
   })
   fullName: string;
 }
@@ -57,7 +58,7 @@ export class SkeletonUserType extends SkeletonUser {
 @AgGridObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
-  ['SkeletonPhone'] as const,
+  ['SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
   InputType,
 ) {}
 
@@ -72,6 +73,6 @@ export class SkeletonUserCondition extends PartialType(
 @AgGridObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
-  ['guid', 'SkeletonPhone'] as const,
+  ['guid', 'SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
   InputType,
 ) {}

@@ -1,5 +1,10 @@
 import { AgGridDependencyFactory } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { resolverFactory } from '@nestjs-yalc/ag-grid/generic-resolver.resolver';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
+import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UseGuards } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { Mutation, Resolver } from '@nestjs/graphql';
 import {
   SkeletonUserType,
   SkeletonUserCreateInput,
@@ -8,62 +13,141 @@ import {
 } from './dto/skeleton-user.type';
 import { SkeletonUser } from './persistance/skeleton-user.entity';
 import { RoleAuth, RoleEnum } from './role.guard';
+import {
+  skeletonUserServiceFactory,
+  SkeletonUserService,
+} from './skeleton-user.service';
+import { InputArgs } from '@nestjs-yalc/ag-grid/gqlmapper.decorator';
+import {
+  ExtraArgsStrategy,
+  FilterType,
+  GeneralFilters,
+} from '@nestjs-yalc/ag-grid/ag-grid.enum';
+
+@Resolver(returnValue(SkeletonUserType))
+export class SkeletonUserResolver extends resolverFactory({
+  entityModel: SkeletonUser,
+  dto: SkeletonUserType,
+  input: {
+    create: SkeletonUserCreateInput,
+    update: SkeletonUserUpdateInput,
+    conditions: SkeletonUserCondition,
+  },
+  prefix: 'SkeletonModule_',
+  queries: {
+    // SkeletonModule_getSkeletonUser
+    getResource: {
+      decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
+      idName: 'guid',
+      queryParams: {
+        // name: 'getSkeletonUser',
+        description: 'Get a specific user',
+      },
+    },
+    getResourceGrid: {
+      decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
+      extraArgs: {
+        firstName: {
+          filterCondition: GeneralFilters.CONTAINS,
+          filterType: FilterType.TEXT,
+          options: {
+            type: returnValue(String),
+            nullable: true,
+          },
+        },
+        lastName: {
+          filterCondition: GeneralFilters.CONTAINS,
+          filterType: FilterType.TEXT,
+          options: {
+            type: returnValue(String),
+            nullable: true,
+          },
+        },
+      },
+      extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
+      queryParams: {
+        // name: 'getSkeletonUserGrid',
+        description: 'Get a list of users',
+      },
+    },
+  },
+  mutations: {
+    createResource: {
+      decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
+      extraInputs: {
+        lowerCaseEmail: {
+          gqlOptions: {
+            description: 'Force the email to be in lowercase',
+            type: returnValue(Boolean),
+            defaultValue: true,
+            nullable: true,
+          },
+          middleware: (_ctx, input: SkeletonUserType, value: boolean) => {
+            if (value === true) {
+              input.email = input.email.toLowerCase();
+            }
+          },
+        },
+      },
+      queryParams: {
+        // name: 'createSkeletonUser',
+        description: 'Create a new user',
+      },
+    },
+    updateResource: {
+      decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
+      queryParams: {
+        // name: 'updateSkeletonUser',
+        description: 'Update an existing user',
+      },
+    },
+    deleteResource: {
+      decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
+      queryParams: {
+        // name: 'deleteSkeletonUser',
+        description: 'Delete an existing user',
+      },
+    },
+  },
+}) {
+  constructor(
+    protected service: SkeletonUserService,
+    protected dataloader: GQLDataLoader,
+    protected moduleRef: ModuleRef,
+  ) {
+    super(service, dataloader, moduleRef);
+  }
+
+  @UseGuards(RoleAuth([RoleEnum.PUBLIC]))
+  @Mutation(returnValue(String), {
+    description:
+      'Reset user password with a random one and send the new value back.',
+  })
+  public async generateRandomPassword(
+    @InputArgs({
+      _name: 'ID',
+    })
+    ID: string,
+  ): Promise<string> {
+    return this.service.resetPassword(ID);
+  }
+}
 
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
   AgGridDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {
-      dto: SkeletonUserType,
-      input: {
-        create: SkeletonUserCreateInput,
-        update: SkeletonUserUpdateInput,
-        conditions: SkeletonUserCondition,
-      },
-      prefix: 'SkeletonModule_',
-      queries: {
-        // SkeletonModule_getSkeletonUser
-        getResource: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          idName: 'guid',
-          queryParams: {
-            // name: 'getSkeletonUser',
-            description: 'Role: user. Get a specific user',
-          },
-        },
-        getResourceGrid: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          queryParams: {
-            // name: 'getSkeletonUserGrid',
-            description: 'Role: user. Get a list of users',
-          },
-        },
-      },
-      mutations: {
-        createResource: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          queryParams: {
-            // name: 'createSkeletonUser',
-            description: 'Role: user. Create a new user',
-          },
-        },
-        updateResource: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          queryParams: {
-            // name: 'updateSkeletonUser',
-            description: 'Role: user. Update an existing user',
-          },
-        },
-        deleteResource: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          queryParams: {
-            // name: 'deleteSkeletonUser',
-            description: 'Role: user. Delete an existing user',
-          },
-        },
-      },
+      provider: SkeletonUserResolver,
     },
 
-    service: { dbConnection },
+    service: {
+      dbConnection: dbConnection,
+      entityModel: SkeletonUser,
+      provider: {
+        provide: 'SkeletonUserGenericService',
+        useClass: skeletonUserServiceFactory(dbConnection),
+      },
+    },
     dataloader: { databaseKey: 'guid' },
   });

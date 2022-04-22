@@ -1,3 +1,4 @@
+import { AgGridField } from '@nestjs-yalc/ag-grid/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
 import { ObjectType } from '@nestjs/graphql';
 import {
@@ -22,11 +23,29 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar')
   lastName: string;
 
-  @Column('varchar')
+  @Column('varchar', { unique: true })
   email: string;
 
   @Column('varchar')
   password: string;
+
+  // This configuration can't be moved in DTO
+  // because it instructs TypeORM on how to select
+  // the resource
+  @AgGridField({
+    dst: `CONCAT(firstName,' ', lastName)`,
+    mode: 'derived',
+    isSymbolic: true,
+  })
+  // virtual column, not selectable
+  // handled by the @AgGridField
+  @Column({
+    select: false,
+    insert: false,
+    update: false,
+    type: 'varchar',
+  })
+  fullName: string;
 
   @OneToMany(
     /* istanbul ignore next */

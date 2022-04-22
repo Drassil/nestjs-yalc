@@ -95,8 +95,11 @@ export const AgGridField = <T = any>({
     // create new object reference to avoid this issue: https://github.com/rbuckton/reflect-metadata/issues/62
     const newMetadata: any = { ...metadata };
 
+    const previousValues = metadata[propertyName];
+
     newMetadata[propertyName] = {
-      dst: propertyName,
+      ...previousValues,
+      dst: previousValues?.dst ?? propertyName,
       src: gqlOptions?.name ?? propertyName,
       gqlType,
       gqlOptions,
