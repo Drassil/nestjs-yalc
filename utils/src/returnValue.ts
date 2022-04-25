@@ -1,6 +1,6 @@
-import { ObjectType } from 'typeorm';
+// import { ObjectType } from 'typeorm';
 
-export const returnValue = <T>(value: any): { (): ObjectType<T> } => {
+export const returnValue = <T>(value: any): { (): T } => {
   return () => value;
 };
 

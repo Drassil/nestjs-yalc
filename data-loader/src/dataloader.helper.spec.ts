@@ -74,6 +74,8 @@ describe('GQLDataLoader class', () => {
       ...findOptions,
       order: { anotherField: SortDirection.ASC },
       where: { filters: { something: {} } },
+      take: 1,
+      skip: 2,
       info: {
         ...findOptions.info,
         path: { ...findOptions.info.path, key: 'thisPath' },

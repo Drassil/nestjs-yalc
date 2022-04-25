@@ -7,5 +7,11 @@
     "noImplicitReturns": false
   },
   "include": ["**/src/**/*.ts"],
-  "exclude": ["**/node_modules", "**/*spec.ts", "**/.webpack"]
+  "exclude": [
+    "**/node_modules",
+    "**/*spec.ts",
+    "**/__tests__",
+    "**/__mocks__",
+    "**/.webpack"
+  ]
 }

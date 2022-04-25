@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
+import returnValue from '@nestjs-yalc/utils/returnValue';
 
 export interface SkeletonUserService extends GenericService<SkeletonUser> {
   resetPassword(guid: string): Promise<string>;
@@ -13,7 +14,7 @@ export interface SkeletonUserService extends GenericService<SkeletonUser> {
 // We are using a factory function to be able to pass the connection name dynamically
 export const skeletonUserServiceFactory = (
   dbConnection: string,
-): ClassType<GenericService<SkeletonUser>> => {
+): ClassType<SkeletonUserService> => {
   @Injectable()
   class SkeletonUserService
     extends GenericService<SkeletonUser>
@@ -38,7 +39,7 @@ export const skeletonUserServiceFactory = (
       // update the selected user with the new password
       await this.getRepositoryWrite().update(
         { guid },
-        { password: () => newPass },
+        { password: returnValue<string>(newPass) },
       );
 
       // send it back to the client

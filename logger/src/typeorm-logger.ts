@@ -24,6 +24,7 @@ export class TypeORMLogger implements Logger {
     if (!this.isLoggerEnabled) return;
 
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_LOG, query);
+    /* istanbul ignore next */
     this.logger.debug?.(`query: ${query}, parameters: ${parameters}`);
   }
   /**
@@ -38,6 +39,7 @@ export class TypeORMLogger implements Logger {
     if (!this.isLoggerEnabled) return;
 
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_ERROR, query, error);
+    /* istanbul ignore next */
     this.logger.error?.(
       `error: ${error}, query: ${query}, parameters: ${parameters}`,
     );
@@ -54,6 +56,7 @@ export class TypeORMLogger implements Logger {
     if (!this.isLoggerEnabled) return;
 
     this.eventEmitter.emitAsync(LoggerEvent.QUERY_SLOW, query, time);
+    /* istanbul ignore next */
     this.logger.warn?.(
       `SLOW QUERY!!!! time: ${time}, query: ${query}, parameters: ${parameters}`,
     );
@@ -64,6 +67,7 @@ export class TypeORMLogger implements Logger {
   logSchemaBuild(message: string /* , queryRunner?: QueryRunner */): any {
     if (!this.isLoggerEnabled) return;
 
+    /* istanbul ignore next */
     this.logger.debug?.(message);
   }
   /**
@@ -72,6 +76,7 @@ export class TypeORMLogger implements Logger {
   logMigration(message: string /* , queryRunner?: QueryRunner */): any {
     if (!this.isLoggerEnabled) return;
 
+    /* istanbul ignore next */
     this.logger.debug?.(message);
   }
   /**
@@ -87,12 +92,15 @@ export class TypeORMLogger implements Logger {
 
     switch (level) {
       case 'log':
+        /* istanbul ignore next */
         this.logger.log?.(message);
         break;
       case 'info':
+        /* istanbul ignore next */
         this.logger.verbose?.(message);
         break;
       case 'warn':
+        /* istanbul ignore next */
         this.logger.warn?.(message);
         break;
     }

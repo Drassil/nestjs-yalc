@@ -1,20 +1,17 @@
 import 'reflect-metadata';
 import { SkeletonModule } from '../index';
 
-jest.mock('@nestjs-yalc/ag-grid/ag-grid.helpers', () => {
-  return {
-    AgGridDependencyFactory: jest.fn(() => ({
-      repository: {},
-      providers: [],
-    })),
-  };
-});
-
-// jest.mock('typeorm');
+import * as helpers from '@nestjs-yalc/ag-grid/ag-grid.helpers';
 
 describe('Test skeleton module', () => {
   it('should register the module', () => {
+    const spiedAgGridDependencyFactory = jest.spyOn(
+      helpers,
+      'AgGridDependencyFactory',
+    );
+
     const module = SkeletonModule.register('test');
     expect(module).toBeDefined();
+    expect(spiedAgGridDependencyFactory).toHaveBeenCalledTimes(2); // user and phone
   });
 });

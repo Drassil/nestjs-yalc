@@ -4,7 +4,7 @@ import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UseGuards } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
-import { Mutation, Resolver } from '@nestjs/graphql';
+import { GqlExecutionContext, Mutation, Resolver } from '@nestjs/graphql';
 import {
   SkeletonUserType,
   SkeletonUserCreateInput,
@@ -23,6 +23,16 @@ import {
   FilterType,
   GeneralFilters,
 } from '@nestjs-yalc/ag-grid/ag-grid.enum';
+
+export const lowerCaseEmailMiddleware = (
+  _ctx: GqlExecutionContext,
+  input: SkeletonUserType,
+  value: boolean,
+) => {
+  if (value === true) {
+    input.email = input.email.toLowerCase();
+  }
+};
 
 @Resolver(returnValue(SkeletonUserType))
 export class SkeletonUserResolver extends resolverFactory({
@@ -82,11 +92,7 @@ export class SkeletonUserResolver extends resolverFactory({
             defaultValue: true,
             nullable: true,
           },
-          middleware: (_ctx, input: SkeletonUserType, value: boolean) => {
-            if (value === true) {
-              input.email = input.email.toLowerCase();
-            }
-          },
+          middleware: lowerCaseEmailMiddleware,
         },
       },
       queryParams: {

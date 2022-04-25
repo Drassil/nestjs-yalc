@@ -123,11 +123,12 @@ describe('getDefaultDbConnectionConfig for single or replicas db', () => {
     } = buildDbConfigObject({
       dbName: 'TEST_REPLICATION_DATABASE_NAME',
       entities: [],
+      synchronize: false,
     })();
 
     expect(database).toBe('TEST_REPLICATION_DATABASE_NAME');
     expect(host).toBe('HOST_TEST');
-    expect(logging).toBe(false);
+    expect(logging).toBe(true);
     expect(password).toBe('PWD_TEST');
     expect(port).toBe(123);
     expect(synchronize).toBe(false);

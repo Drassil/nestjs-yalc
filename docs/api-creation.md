@@ -1,6 +1,6 @@
-# Endpoint Creation with AgGrid system
+# API Creation with AgGrid system
 
-This project is backed by NestJS therefore the creation of a REST endpoint and a GraphQL one can be generally done by following the NestJS documentation creating the providers and injecting them into the related app (this is also explained in our legacy endpoint creation guide).
+This project is backed by NestJS therefore the creation of a REST endpoint and GraphQL operations can be generally done by following the NestJS documentation creating the providers and injecting them into the related app (this is also explained in our legacy endpoint creation guide).
 Generally speaking, a CRUD endpoint is always composed by the following components:
 
 - Resolver (GraphQL API layer)
@@ -8,7 +8,7 @@ Generally speaking, a CRUD endpoint is always composed by the following componen
   - DTO (The Data Transfer Object that defines the structure of what you expose)
   - Dataloader
 - Service (where the business logic resides)
-- Repository (where to handle the connection with the datastorage)
+- Repository (where to handle the connection with the datastores)
 - Entity (The class used for your ORM)
 
 **However**, since most of the time the codebase of the providers mentioned above is similar between all the CRUD endpoints, we have created
@@ -20,7 +20,7 @@ For more insights about this concept you can have a look at this slides:
 
 https://drive.google.com/file/d/1h2Te2SZhuIp-PxElkW99YquYa_VChfH3/view?usp=sharing
 
-## Creation of a CRUD endpoint with our Resolver factory function
+## Creation of CRUD operations with our Resolver factory function
 
 ### Getting started
 
@@ -33,7 +33,7 @@ https://drive.google.com/file/d/1h2Te2SZhuIp-PxElkW99YquYa_VChfH3/view?usp=shari
 
 - The code below needs the `@nestjs/graphql` plugin installed with the following configurations:
 
-This is used to avoid defining graphql @Field decorators on property types that can be detected automatically (read the NestJS doc to know more about it)
+This is used to avoid defining graphql `@Field` decorators on property types that can be detected automatically (read the NestJS doc to know more about it)
 
 ```Json
 "plugins": [
@@ -64,7 +64,7 @@ First create the entity `user-phone.entity.ts`
 @ObjectType()
 @AgGridObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
-  // if not specifiec elsewhere
+  // if not specified elsewhere
   // ID field name will be used by default from the single
   // resource get query as argument to use to select the resource
   @PrimaryGeneratedColumn('increment')
@@ -186,7 +186,7 @@ To define a field as a relationship and enable the 2 features above, we should u
 Example (`skeleton-user.entity.ts`):
 
 ```Typescript
-@Entity('skeleton-user')
+@Entity('user')
 @ObjectType()
 @AgGridObject()
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
@@ -202,11 +202,30 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar')
   lastName: string;
 
-  @Column('varchar')
+  @Column('varchar', { unique: true })
   email: string;
 
   @Column('varchar')
   password: string;
+
+  @AgGridField({
+    dst: `CONCAT(firstName,' ', lastName)`,
+    mode: 'derived',
+    isSymbolic: true,
+    gqlOptions: {
+      description: "It's the combination of firstName and lastName",
+    },
+    denyFilter: true,
+  })
+  // virtual column, not selectable
+  // handled by the @AgGridField
+  @Column({
+    select: false,
+    insert: false,
+    update: false,
+    type: 'varchar',
+  })
+  fullName: string;
 
   @AgGridField<UserPhone>({
     relation: {
@@ -312,9 +331,10 @@ export class SkeletonUserType extends SkeletonUser {
   guid: string;
 
   @AgGridField({
-    dst: `CONCAT(firstName,' ', lastName)`,
-    mode: 'derived',
-    isSymbolic: true,
+    gqlOptions: {
+      description: "It's the combination of firstName and lastName",
+    },
+    denyFilter: true,
   })
   fullName: string;
 }
@@ -348,11 +368,10 @@ export class SkeletonUserUpdateInput extends OmitType(
 
 In the example above we've achieved the following:
 
-1. We've moved the `@AgGridField` into the DTO, since they are decorators related to GraphQL.
+1. We've moved most of the `@AgGridField` into the DTO, since they are decorators related to GraphQL. Only the configurations related to TypeORM remained in the entity.
 2. We're hiding the information about the user `password` because we do not want to expose such information to the final user.
-3. We're creating a `derived` field that combines the `firstName` and the `lastName` together
-4. We're exposing the `guid` database field as `ID` in GraphQL and added the description for the graphql playground. Our system will automatically map it.
-5. We're creating some input types that will be used to define the parameters needed for our mutations, notice that we use PartialType/OmitType from the
+3. We're exposing the `guid` database field as `ID` in GraphQL and added the description for the graphql playground. Our system will automatically map it.
+4. We're creating some input types that will be used to define the parameters needed for our mutations, notice that we use PartialType/OmitType from the
    nestjs/graphql library to remove properties from the extended type that we do not need
 
 There are many other features available NestJS-Yalc/ag-grid, including JSON field handling, middlewares, default values and many other. Please, refer
@@ -747,4 +766,4 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
   });
 ```
 
-As you can see, the `AgGridDependencyFactory` is very extensible and allows you to fulfill any needs.
+As you've noticed, the `AgGridDependencyFactory` is very extensible and allows you to fulfill any needs.
