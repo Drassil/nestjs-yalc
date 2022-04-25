@@ -31,12 +31,12 @@ export type FieldMapperProperty = {
   /**
    * if true, this property will be used to add the field to the list of
    * the required fields even though the client do not ask for it
-   * It is particulary useful when you need to use foreign keys
+   * It is particularly useful when you need to use foreign keys
    */
   isRequired?: boolean;
   /**
-   * if true, this property will be ignored by the aggrid filters
-   * It is particulary useful when you need to use special data in your endpoint
+   * if true, this property will be ignored from the database find conditions (but still included in the graphql filters)
+   * It is particularly useful when you need to use special data in your endpoint
    */
   isSymbolic?: boolean;
   /**

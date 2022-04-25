@@ -42,17 +42,13 @@
       "@nestjs-yalc/types": ["types/src"],
       "@nestjs-yalc/types/*": ["types/src/*"],
       "@nestjs-yalc/kafka": ["kafka/src"],
-      "@nestjs-yalc/kafka/*": ["kafka/src/*"]
+      "@nestjs-yalc/kafka/*": ["kafka/src/*"],
+      "@nestjs-yalc/skeleton-module": ["skeleton-module/src"],
+      "@nestjs-yalc/skeleton-module/*": ["skeleton-module/src/*"]
     }
   },
   "include": ["**/src/**/*.ts"],
-  "exclude": [
-    "**/node_modules",
-    "**/*spec.ts",
-    "**/__tests__",
-    "**/__mocks__",
-    "**/.webpack"
-  ],
+  "exclude": ["**/node_modules", "**/.webpack"],
   "ts-node": {
     "transpileOnly": true,
     "files": true

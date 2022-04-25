@@ -16,10 +16,16 @@ import { TypeORMLogger } from '../typeorm-logger';
 describe('TypeORMLogger with a valid logger', () => {
   const mockedLoggerService = createMock<LoggerService>();
   const mockedEventEmitter2 = createMock<EventEmitter2>();
-  const testLogger = new TypeORMLogger(
-    mockedLoggerService,
-    mockedEventEmitter2,
-  );
+  let testLogger: TypeORMLogger;
+
+  beforeAll(() => {
+    process.env.TYPEORM_LOGGING = 'true';
+    testLogger = new TypeORMLogger(mockedLoggerService, mockedEventEmitter2);
+  });
+
+  afterAll(() => {
+    delete process.env.TYPEORM_LOGGING;
+  });
 
   it('logQuery ', async () => {
     const spiedLoggerServiceFn = jest.spyOn(mockedLoggerService, 'debug');

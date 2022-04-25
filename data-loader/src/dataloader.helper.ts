@@ -139,15 +139,21 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
     options?: _DataLoader.Options<string, Entity[], string>,
   ) {
     this.batchFn = async (findManyOptions: AgGridFindManyOptions<Entity>) => {
+      const randomId = Math.random();
+
       this.eventEmitter?.emitAsync(
         EventAgGrid.START_TRANSACTION,
         findManyOptions.info?.fieldName,
+        randomId,
       );
+
       const data = await getFn(findManyOptions);
       this.eventEmitter?.emitAsync(
         EventAgGrid.END_TRANSACTION,
         findManyOptions.info?.fieldName,
+        randomId,
       );
+
       return data;
     };
     this.searchKey = searchKey;
@@ -171,6 +177,8 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
         findOptions.where ?? { filters: {} },
       )}|${JSON.stringify(findOptions.subQueryFilters)}|${JSON.stringify(
         findOptions.order ?? {},
+      )}|${JSON.stringify(findOptions.take ?? {})}|${JSON.stringify(
+        findOptions.skip ?? {},
       )}|${searchKey}`;
 
       this.keyMap.set(findOptions, DLKey);

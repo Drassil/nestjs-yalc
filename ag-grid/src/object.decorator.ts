@@ -46,13 +46,23 @@ export interface IAgGridFieldMetadata<T = any>
    */
   relation?: {
     defaultValue?: IAgQueryParams<T>;
-    sourceKey: { dst: string; alias: string };
+    sourceKey: {
+      /** the mysql field name */
+      dst: string;
+      /** the graphql field name */
+      alias: string;
+    };
     /**
      * this is the field that will be used for both the dataloader and the join
      * For join: If the JoinColumn decorator exists on the same column, this key will be added
      * to the SQL `ON` condition
      */
-    targetKey: { dst: string; alias: string };
+    targetKey: {
+      /** the mysql field name */
+      dst: string;
+      /** the graphql field name */
+      alias: string;
+    };
     relationType: RelationType;
     type: { (): ClassType };
   };
@@ -85,8 +95,11 @@ export const AgGridField = <T = any>({
     // create new object reference to avoid this issue: https://github.com/rbuckton/reflect-metadata/issues/62
     const newMetadata: any = { ...metadata };
 
+    const previousValues = metadata[propertyName];
+
     newMetadata[propertyName] = {
-      dst: propertyName,
+      ...previousValues,
+      dst: previousValues?.dst ?? propertyName,
       src: gqlOptions?.name ?? propertyName,
       gqlType,
       gqlOptions,

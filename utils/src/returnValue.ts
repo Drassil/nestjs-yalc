@@ -1,8 +1,12 @@
 import { ObjectType } from 'typeorm';
 
-export const returnValue = <T>(value: any): { (): ObjectType<T> } => {
-  return () => value;
+export function returnValue<T>(value: string | boolean | number): {
+  (): T;
 };
+export function returnValue<T>(value: T): { (): ObjectType<T> };
+export function returnValue<T>(value: T): { (): T | ObjectType<T> } {
+  return () => value;
+}
 
 /**
  * Helper function for typeorm decorators

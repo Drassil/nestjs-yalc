@@ -21,6 +21,7 @@ type DbConfigObjectParams = {
   migrationsDir?: string;
   extraMigrationDirs?: string[];
   connectionName?: string;
+  synchronize?: boolean;
   /** used by the seeding service to do not seed this database sequentially (the order is not guaranteed) */
   __seedAsync?: boolean;
 };
@@ -33,6 +34,7 @@ export function buildDbConfigObject({
   migrationsDir,
   extraMigrationDirs,
   connectionName,
+  synchronize,
   __seedAsync,
 }: DbConfigObjectParams): IDbConfObject {
   let connNameTemp = connectionName;
@@ -79,6 +81,7 @@ export function buildDbConfigObject({
         migrationsDir: canLoad ? migrationsDir : undefined,
       },
       __seedAsync,
+      synchronize,
     };
   };
 
@@ -103,7 +106,7 @@ interface MysqlReplicationConnectionCredentialsOptions {
 function _getDefaultDbConnectionConfig(
   dbName?: string,
 ): MysqlConnectionOptions {
-  const { TYPEORM_SYNCHRONIZE, TYPEORM_LOGGING } = process.env;
+  const { TYPEORM_SYNCHRONIZE } = process.env;
   const dbConfigParams = _makeDbConfigParams(dbName);
 
   return {
@@ -112,7 +115,7 @@ function _getDefaultDbConnectionConfig(
     supportBigNumbers: true,
     bigNumberStrings: false,
     synchronize: envIsTrue(TYPEORM_SYNCHRONIZE || 'false'),
-    logging: envIsTrue(TYPEORM_LOGGING || 'false'),
+    logging: true,
   };
 }
 

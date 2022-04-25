@@ -66,7 +66,7 @@ export interface IGenericResolverMethodOptions {
    */
   fieldMap?: IFieldMapper;
   decorators?: IDecoratorType[];
-  defaultValue?: IAgQueryParams | any;
+  defaultValue?: IAgQueryParams;
   /**
    * Filters with direct arguments
    */
@@ -493,7 +493,10 @@ export function defineGetGridResource<Entity>(
     value: async function (
       findOptions: AgGridFindManyOptions,
     ): Promise<[Entity[], number]> {
-      return this.service.getEntityListAgGrid(findOptions, true);
+      return (<GenericService<Entity>>this.service).getEntityListAgGrid(
+        findOptions,
+        true,
+      );
     },
   });
 
@@ -593,7 +596,10 @@ export function defineCreateMutation<Entity>(
           }
         });
 
-      return this.service.createEntity(input, findOptions);
+      return (<GenericService<Entity>>this.service).createEntity(
+        input,
+        findOptions,
+      );
     },
   });
 
@@ -674,7 +680,11 @@ export function defineUpdateMutation<Entity>(
       input: Entity,
       findOptions: AgGridFindManyOptions<Entity>,
     ): Promise<Entity | null> {
-      return this.service.updateEntity(conditions, input, findOptions);
+      return (<GenericService<Entity>>this.service).updateEntity(
+        conditions,
+        input,
+        findOptions,
+      );
     },
   });
 
@@ -745,7 +755,7 @@ export function defineDeleteMutation<Entity>(
     configurable: true,
     writable: true,
     value: async function (conditions: Entity): Promise<boolean> {
-      return this.service.deleteEntity(conditions);
+      return (<GenericService<Entity>>this.service).deleteEntity(conditions);
     },
   });
 
