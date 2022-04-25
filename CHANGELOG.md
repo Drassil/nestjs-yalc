@@ -1,3 +1,22 @@
+Rev: 1.2.0
+=============
+ 
+## Additions
+
+* Created documentation for API
+
+## Changes
+
+* Improved generic-resolver type hinting
+* Improved code documentation
+* Fixed issue with Dataloader where it returned the same result with different parameters
+* Add possibility to enable synchronize options for specific db connections
+* Change the way we disable typeorm logging to completely avoid logs when TYPEORM_LOGGING is false
+* Improved returnValue type-hinting
+* Fix tsconfig for dev
+
+
+
 Rev: 1.1.0
 =============
  ## Added
@@ -13,8 +32,3 @@ Rev: 1.1.0
 - DateType  graphql scalar
 - Fixed filterConditions problem with some filter on Date type
 - Fixed One-to-many relationship problem with nested resource as aggrid type
-
-
-
-
-
