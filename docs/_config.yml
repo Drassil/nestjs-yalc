@@ -3,7 +3,7 @@ remote_theme: Drassil/git-wiki-theme@master
 doc_version: 1.0.1
 # (string) Title of your wiki
 title: 'NestJS-YALC'
-disable_edit: true
+disable_edit: false
 # (string) if you've installed your wiki in subfolder, you must change this configuration
 # with your folder name, otherwise leave it empty
 baseurl: '/'
