@@ -41,7 +41,7 @@ describe('Test skeleton user resolver', () => {
       mockedModuleRef,
     );
 
-    const randomPass = resolver.generateRandomPassword('TEST');
+    const randomPass = resolver.SkeletonModule_generateRandomPassword('TEST');
 
     expect(randomPass).toBeDefined();
   });
