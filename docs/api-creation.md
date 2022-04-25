@@ -33,9 +33,11 @@ https://drive.google.com/file/d/1h2Te2SZhuIp-PxElkW99YquYa_VChfH3/view?usp=shari
 
 - The code below needs the `@nestjs/graphql` plugin installed with the following configurations:
 
+- **All the examples below are contained in `skeleton-module` folder available in this repo.** It's a fully working module that you can import in your system to test it.
+
 This is used to avoid defining graphql `@Field` decorators on property types that can be detected automatically (read the NestJS doc to know more about it)
 
-```Json
+```json
 "plugins": [
       {
         "name": "@nestjs/graphql",
@@ -58,7 +60,7 @@ So if we want to implement a CRUD API to manage a collection of phone numbers we
 
 First create the entity `user-phone.entity.ts`
 
-```Typescript
+```typescript
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
@@ -81,7 +83,7 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
 
 Then create the related resolver `user-phone.resolver.ts`
 
-```Typescript
+```typescript
 export const userPhoneProvidersDeps =
   AgGridDependencyFactory<UserPhone>({
     // if DTOs are not configured, the entity will be used to
@@ -98,7 +100,7 @@ export const userPhoneProvidersDeps =
 The `AgGridDependencyFactory` will generate at runtime the Resolver, the Service, the Dataloader, the Repository and, in this case,
 the DTOs injecting them within the `userPhoneProvidersDeps`variable that has this interface:
 
-```Typescript
+```typescript
 export interface IDependencyObject<Entity> {
   providers: Array<FactoryProvider | Provider>;
   repository: ClassType<AgGridRepository<Entity>>;
@@ -109,7 +111,7 @@ These 2 properties should eventually added to your `TypeORM.forFeature` method a
 
 Example:
 
-```Typescript
+```typescript
 import { userPhoneProvidersDeps } from "./user-phone.resolver.ts"
 
 @Module({})
@@ -185,7 +187,7 @@ To define a field as a relationship and enable the 2 features above, we should u
 
 Example (`skeleton-user.entity.ts`):
 
-```Typescript
+```typescript
 @Entity('user')
 @ObjectType()
 @AgGridObject()
@@ -246,7 +248,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
 
 while in the `UserPhone` entity (`user-phone.entity.ts`):
 
-```Typescript
+```typescript
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
@@ -301,7 +303,7 @@ Also we have to change the `@ObjectType` decorator on our entity to this: `@Obje
 
 Example:
 
-```Typescript
+```typescript
 @ObjectType()
 @AgGridObject()
 export class SkeletonUserType extends SkeletonUser {
@@ -379,7 +381,7 @@ to the documentation of the `@AgGridField` and `@AgGridObject` decorator to know
 
 As last step, we have to define our DTO and the entity within the `AgGridDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
 
-```Typescript
+```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
   AgGridDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
@@ -405,7 +407,7 @@ You can implement a NestJS [Role Guard](https://docs.nestjs.com/guards#role-base
 
 This is an example of how to implement a basic Role Guard assuming that you pass the role of the user within the request context
 
-```Typescript
+```typescript
 export enum RoleEnum {
   PUBLIC,
   USER,
@@ -441,7 +443,7 @@ resolver file.
 
 Example on how to apply the RoleAuth on the query:
 
-```Typescript
+```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
   AgGridDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
@@ -487,7 +489,7 @@ By using the same properties you can define graphql parameters and many other op
 
 For instance:
 
-```Typescript
+```typescript
     updateResource: {
       queryParams: {
         name: 'editUser', // instead of `updateSkeletonUser`
@@ -526,7 +528,7 @@ the extraArgs option is used to define extra filters for every query based on a 
 Let's say for example that we want to force to filter the list of the users by `firstName` or `lastName` (but not without any of them), we can configure
 the `getResourceGrid` in this way:
 
-```Typescript
+```typescript
 getResourceGrid: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
       extraArgs: {
@@ -569,7 +571,7 @@ as well to manipulate the default `input`
 
 Example:
 
-```Typescript
+```typescript
     createResource: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
       extraInputs: {
@@ -619,7 +621,7 @@ In the following example, we will create:
 
 Example:
 
-```Typescript
+```typescript
 export interface SkeletonUserService extends GenericService<SkeletonUser> {
   resetPassword(guid: string): Promise<string>;
 }
@@ -666,7 +668,7 @@ export const skeletonUserServiceFactory = (
 
 and then the resolver:
 
-```Typescript
+```typescript
 @Resolver(returnValue(SkeletonUserType))
 export class SkeletonUserResolver extends resolverFactory({
   entityModel: SkeletonUser,
@@ -745,7 +747,7 @@ export class SkeletonUserResolver extends resolverFactory({
 
 lastly, we need to update the `AgGridDependencyFactory` in this way to inject the newly created service and resolver:
 
-```Typescript
+```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
   AgGridDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
