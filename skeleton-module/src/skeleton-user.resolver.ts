@@ -129,7 +129,7 @@ export class SkeletonUserResolver extends resolverFactory({
     description:
       'Reset user password with a random one and send the new value back.',
   })
-  public async generateRandomPassword(
+  public async SkeletonModule_generateRandomPassword(
     @InputArgs({
       _name: 'ID',
     })
