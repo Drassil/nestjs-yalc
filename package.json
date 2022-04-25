@@ -1,6 +1,6 @@
 {
   "name": "@nestjs-yalc/framework",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "NestJS - Yet Another Library Collection",
   "scripts": {
     "lint": "npm run lint:no-fix -- --fix",
