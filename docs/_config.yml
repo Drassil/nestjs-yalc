@@ -64,11 +64,9 @@ site_root:
 # git-wiki includes some internal themes that you can choose
 # check _layouts folder
 #
-markdown: kramdown
+markdown: GFM
 highlighter: rouge
-kramdown:
-  input: GFM
-  syntax_highlighter: rouge
+encoding: UTF-8
 
 defaults:
   - scope:
@@ -78,12 +76,12 @@ defaults:
   - scope:
       path: '' # an empty string here means all files in the project
     values:
-      layout: 'git-wiki-default'
+      layout: 'git-wiki-bs-github'
   - scope:
       path: ''
       type: 'pages'
     values:
-      layout: 'git-wiki-default'
+      layout: 'git-wiki-bs-github'
   - scope:
       path: ''
       type: 'posts'
