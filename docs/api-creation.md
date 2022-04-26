@@ -12,7 +12,7 @@ Generally speaking, a CRUD endpoint is always composed by the following componen
 - Entity (The class used for your ORM)
 
 **However**, since most of the time the codebase of the providers mentioned above is similar between all the CRUD endpoints, we have created
-a collection of libraries called NestJS-Yalc (which resides in our libs/common folder) that allows us to generate the generic logic of a CRUD endpoint
+a collection of libraries called NestJS-Yalc that allows us to generate the generic logic of a CRUD endpoint
 by using a factory pattern. It helps to reduce the boilerplate code exponentially and avoid to unit test the same code multiple time, allowing you to
 focus only on the specific business logic that shouldn't/can't be generalized.
 
