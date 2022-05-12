@@ -37,22 +37,22 @@ export const globals = (tsConfPath = '') => {
   };
 };
 
-export const coverageThreshold = (projects: any[] = []) => {
+export const coverageThreshold = (
+  projects: any[] = [],
+  defaultCoverageThreshold = {
+    branches: 100,
+    functions: 100,
+    lines: 100,
+    statements: 100,
+  },
+) => {
   const coverage: Record<string, any> = {
     global: {
-      branches: 100,
-      functions: 100,
-      lines: 100,
-      statements: 100,
+      ...defaultCoverageThreshold,
     },
   };
 
   projects.map((project) => {
-    const branches = 100;
-    const functions = 100;
-    const lines = 100;
-    const statements = 100;
-
     // /**
     //  * @todo  should be removed and be set to 100% asap
     //  */
@@ -69,11 +69,15 @@ export const coverageThreshold = (projects: any[] = []) => {
     // }
 
     coverage[project.rootDir] = {
-      branches,
-      functions,
-      lines,
-      statements,
+      ...defaultCoverageThreshold,
     };
+
+    if (project?.coverageThreshold) {
+      coverage[project.rootDir] = {
+        ...coverage[project.rootDir],
+        ...project?.coverageThreshold,
+      };
+    }
   });
 
   return coverage;

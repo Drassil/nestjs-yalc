@@ -19,7 +19,18 @@ export interface IAppProjSetting {
 }
 
 export interface IOptions {
-  skipProjects: string[];
+  skipProjects?: string[];
+  /**
+   * key: project name
+   * value: jest configurations
+   */
+  confOverrides?: { [key: string]: any };
+  defaultCoverageThreshold?: {
+    branches: number;
+    functions: number;
+    lines: number;
+    statements: number;
+  };
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -69,14 +80,28 @@ export function jestConfGenerator(
     maxWorkers,
     setupFiles: [`${__dirname}/jest.setup.ts`],
     coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
-    coverageThreshold: coverageThreshold(projects),
+    coverageThreshold: coverageThreshold(
+      projects,
+      options.defaultCoverageThreshold,
+    ),
     coveragePathIgnorePatterns,
   });
 
   for (const projName of Object.keys(projectList)) {
     const proj = projectList[projName];
-    if (!options.skipProjects.includes(proj))
-      projects.push(confFactory(projName, proj));
+    if (!options.skipProjects?.includes(proj)) {
+      let conf = confFactory(projName, proj);
+
+      if (appProjectsSettings[projName]?.confOverride) {
+        conf = { ...conf, ...appProjectsSettings[projName].confOverride };
+      }
+
+      if (options.confOverrides?.[projName]) {
+        conf = { ...conf, ...options.confOverrides[projName] };
+      }
+
+      projects.push(conf);
+    }
   }
 
   const projectSets: { [key: string]: any } = createProjectSets(projects);
@@ -135,6 +160,7 @@ export function jestConfGenerator(
       projects.filter((v: any) =>
         v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
       ),
+      options.defaultCoverageThreshold,
     ),
     coverageDirectory: path.join(
       rootPath,
