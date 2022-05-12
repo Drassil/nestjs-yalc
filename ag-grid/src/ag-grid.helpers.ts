@@ -165,20 +165,6 @@ export function whereObjectToSqlString<Entity>(
 
   const operator = (where.operator ?? Operators.AND).toUpperCase(); // first level is always AND
 
-  if (Array.isArray(where.childExpressions)) {
-    where.childExpressions.forEach((childExpression) => {
-      const generatedSql = whereObjectToSqlString(
-        queryBuilder,
-        childExpression,
-        alias,
-      );
-
-      if (!generatedSql) return;
-
-      sql += `(${generatedSql}) ${operator} `;
-    });
-  }
-
   if (!where.filters) return sql;
 
   for (const key of Object.keys(where.filters)) {
@@ -227,6 +213,20 @@ export function whereObjectToSqlString<Entity>(
     } else {
       throw new AgGridConditionNotSupportedError(JSON.stringify(operation));
     }
+  }
+
+  if (Array.isArray(where.childExpressions)) {
+    where.childExpressions.forEach((childExpression) => {
+      const generatedSql = whereObjectToSqlString(
+        queryBuilder,
+        childExpression,
+        alias,
+      );
+
+      if (!generatedSql) return;
+
+      sql += `(${generatedSql}) ${operator} `;
+    });
   }
   //At the end of the cycle we will have an operator and an excess space, and we remove them
   sql = sql.substring(0, sql.lastIndexOf(operator));
