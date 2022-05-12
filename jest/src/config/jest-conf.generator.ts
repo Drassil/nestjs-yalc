@@ -96,8 +96,17 @@ export function jestConfGenerator(
         conf = { ...conf, ...appProjectsSettings[projName].confOverride };
       }
 
-      if (options.confOverrides?.[projName]) {
-        conf = { ...conf, ...options.confOverrides[projName] };
+      if (options.confOverrides) {
+        const overrideKey = Object.keys(options.confOverrides).find(
+          (v) => projName.startsWith(v) && v,
+        );
+
+        const overrideConf =
+          overrideKey && options.confOverrides[overrideKey]
+            ? options.confOverrides[overrideKey]
+            : {};
+
+        conf = { ...conf, ...overrideConf };
       }
 
       projects.push(conf);
