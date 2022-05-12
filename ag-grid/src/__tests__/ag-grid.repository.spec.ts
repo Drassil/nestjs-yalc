@@ -107,6 +107,7 @@ describe('AgGrid Repoository', () => {
     newAgGridRepository = new AgGridRepository();
 
     mockedQueryBuilder = mockQueryBuilder<BaseEntity>();
+    mockedQueryBuilder.getCount = jest.fn().mockReturnValue(1);
     mockedQueryBuilder.getMany = jest.fn().mockReturnValue(getManyResult);
     mockedQueryBuilder.getManyAndCount = jest
       .fn()
@@ -138,6 +139,14 @@ describe('AgGrid Repoository', () => {
       .mockReturnValueOnce(mockedQueryBuilder);
     const testData = newAgGridRepository.getManyAgGrid({});
     await expect(testData).resolves.toEqual(getManyResult);
+  });
+
+  it('countAgGrid should work', async () => {
+    jest
+      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .mockReturnValueOnce(mockedQueryBuilder);
+    const testData = newAgGridRepository.countAgGrid({});
+    await expect(testData).resolves.toEqual(1);
   });
 
   it('getManyAndCountAgGrid should work', async () => {

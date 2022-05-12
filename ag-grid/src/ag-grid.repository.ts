@@ -290,6 +290,18 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     return queryBuilder.getMany();
   }
 
+  public async countAgGrid(
+    findOptions: AgGridFindManyOptions<Entity>,
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
+  ): Promise<number> {
+    const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
+
+    return queryBuilder.getCount();
+  }
+
   /**
    * @param findOptions All we need to select, filter, order and join the data
    * @param withFail If true ignore the fail, if false when u don't find a entity it'll trhow an error
