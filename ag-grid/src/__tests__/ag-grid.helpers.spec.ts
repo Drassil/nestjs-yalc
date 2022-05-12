@@ -317,7 +317,7 @@ describe('Ag-grid helpers', () => {
       fixedAlias,
     );
     expect(testData).toEqual(
-      "(`alias`.`status` = 'verified' AND (`alias`.`active` = 1 AND `alias`.`active` > 0)) AND `alias`.`status` = 'verified'",
+      "`alias`.`status` = 'verified' AND (`alias`.`status` = 'verified' AND (`alias`.`active` = 1 AND `alias`.`active` > 0))",
     );
   });
 
