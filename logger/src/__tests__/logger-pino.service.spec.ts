@@ -28,7 +28,7 @@ describe('Pino logger service test', () => {
     logger.error('error', 'trace');
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith({}, '[test] error trace');
+    expect(method).toHaveBeenCalledWith({ context: 'test' }, 'error trace');
   });
 
   it('Test warn', async () => {

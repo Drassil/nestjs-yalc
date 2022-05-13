@@ -28,12 +28,12 @@ export const FLUSH_INTERVAL = 10000;
 export class PinoLogger extends LoggerAbstractService {
   constructor(context: string, logLevels: LogLevel[]) {
     super(context, logLevels, {
-      log: (message) => logger.info({}, `[${context}] ${message}`),
+      log: (message) => logger.info({ context }, `${message}`),
       error: (message, trace) =>
-        logger.error({}, `[${context}] ${message} ${trace}`),
-      debug: (message) => logger.debug({}, `[${context}] ${message}`),
-      warn: (message) => logger.warn({}, `[${context}] ${message}`),
-      verbose: (message) => logger.trace({}, `[${context}] ${message}`),
+        logger.error({ context }, `${message} ${trace}`),
+      debug: (message) => logger.debug({ context }, `${message}`),
+      warn: (message) => logger.warn({ context }, `${message}`),
+      verbose: (message) => logger.trace({ context }, `${message}`),
     });
 
     logger.level = 'trace'; // enable all. Levels are handled by the Service.
