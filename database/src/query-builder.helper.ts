@@ -14,6 +14,7 @@ import {
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface';
 import { isJsonSQLRaw } from './json.helpers';
+import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
 // import {
 //   IJsonVirtualFieldOptions,
 //   NYALC_JSON_VIRTUAL_FIELD_META_KEY,
@@ -232,13 +233,15 @@ export class QueryBuilderHelper {
 
   public static convertFieldWithMap(field: string, map: IFieldMapper) {
     if (field in map) {
-      return map[field].dst;
+      return map[field].mode === 'derived' && map[field]._propertyName
+        ? (map[field]._propertyName as string)
+        : map[field].dst;
     }
     return field;
   }
 
   public static applyOrderToJoinedQueryBuilder(
-    findOptions: FindManyOptions,
+    findOptions: AgGridFindManyOptions,
     parentName: string,
     fieldMap?: {
       parent: IFieldMapper;
@@ -248,6 +251,9 @@ export class QueryBuilderHelper {
     const sortingColumns: any[] = [];
     let alias: string;
     let mapper: IFieldMapper;
+
+    // console.log(findOptions.extra?._keysMeta);
+
     for (const key in findOptions.order as ObjectLiteral) {
       //If is a nested resource we need to change the name format into Parent__Joined_resource
       if (key.includes('.') && fieldMap) {
@@ -255,7 +261,13 @@ export class QueryBuilderHelper {
         alias = splitted[0];
         mapper = this.getMapper(fieldMap, alias);
 
-        const newKey = `${splitted[0]}.${this.convertFieldWithMap(
+        const fieldInfo = mapper[splitted[1]];
+        const prefix =
+          fieldInfo && fieldInfo.mode === 'derived'
+            ? `${splitted[0]}_`
+            : `${splitted[0]}.`;
+
+        const newKey = `${prefix}${this.convertFieldWithMap(
           splitted[1],
           mapper,
         )}`;
@@ -272,8 +284,15 @@ export class QueryBuilderHelper {
     //If we have other order we'll apply here
     if (findOptionsOrder.order) {
       for (const i of Object.keys(findOptionsOrder.order)) {
+        const fieldInfo =
+          fieldMap?.parent[i] ?? findOptions.extra?._fieldMapper?.[i];
+        const prefix =
+          fieldInfo && fieldInfo.mode === 'derived'
+            ? `${parentName}_`
+            : `${parentName}.`;
+
         sortingColumns.push({
-          key: `${parentName}.${
+          key: `${prefix}${
             fieldMap ? this.convertFieldWithMap(i, fieldMap.parent) : i
           }`,
           operator: findOptionsOrder.order[i],

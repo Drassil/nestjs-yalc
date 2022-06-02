@@ -50,6 +50,8 @@ import {
   applyJoinArguments,
   columnConversion,
   forceFilters,
+  formatRawSelection,
+  getDestinationFieldName,
   isAskingForCount,
   isSymbolic,
   objectToFieldMapper,
@@ -420,10 +422,19 @@ export function mapAgGridParams(
   const sorting = args.sorting ?? defaultSorting;
   if (sorting) {
     sorting.forEach((sortParams) => {
-      const colName = columnConversion(
-        sortParams.colId.toString(),
-        fieldMapper,
-      );
+      const col = sortParams.colId.toString();
+      let colName;
+      if (fieldMapper[col]?.mode === 'derived') {
+        colName = formatRawSelection(
+          getDestinationFieldName(fieldMapper[col].dst),
+          fieldMapper[col]._propertyName ?? fieldMapper[col].dst,
+          '',
+          true,
+        );
+      } else {
+        colName = columnConversion(col, fieldMapper);
+      }
+
       const val = sortParams.sort?.toUpperCase();
       const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
       order[colName] = sortDir;

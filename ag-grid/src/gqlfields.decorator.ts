@@ -6,7 +6,7 @@ import {
 } from '@nestjs-yalc/interfaces/maps.interface';
 import {
   columnConversion,
-  formatRawSelection,
+  formatRawSelectionWithoutAlias,
   objectToFieldMapper,
 } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
 import { ClassType } from '@nestjs-yalc/types/globals';
@@ -83,7 +83,10 @@ export const GqlAgGridFieldsMapper = (
                 keysMeta[key] = {
                   fieldMapper: v,
                   isNested: true,
-                  rawSelect: formatRawSelection(v.dst, k, subItem.name.value),
+                  rawSelect: formatRawSelectionWithoutAlias(
+                    v.dst,
+                    subItem.name.value,
+                  ),
                 };
               }
             });
@@ -115,7 +118,7 @@ export const GqlAgGridFieldsMapper = (
         keysMeta[key] = {
           fieldMapper: mapper.field[subItem.name.value],
           isNested: true,
-          rawSelect: formatRawSelection(dst, subItem.name.value, _prefix),
+          rawSelect: formatRawSelectionWithoutAlias(dst, _prefix),
         };
 
         return;
@@ -135,7 +138,7 @@ export const GqlAgGridFieldsMapper = (
       keysMeta[key] = {
         fieldMapper: mapper.field[item.name.value],
         isNested,
-        rawSelect: formatRawSelection(dst, item.name.value, prefix),
+        rawSelect: formatRawSelectionWithoutAlias(dst, prefix),
       };
 
       return;
@@ -168,7 +171,7 @@ export const GqlAgGridFieldsMapper = (
         keysMeta[v.dst] = {
           fieldMapper: v,
           isNested: false,
-          rawSelect: formatRawSelection(v.dst, k, ''),
+          rawSelect: formatRawSelectionWithoutAlias(v.dst, ''),
         };
         return;
       }

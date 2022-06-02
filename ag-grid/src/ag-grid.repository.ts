@@ -89,9 +89,13 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
         if (meta && isDerived) {
           if (isNested) {
-            joinSelection.push(meta.rawSelect);
+            joinSelection.push(
+              `${meta.rawSelect} AS \`${queryBuilder.alias}_${meta.fieldMapper._propertyName}\``,
+            );
           } else {
-            rawSelection.push(meta.rawSelect);
+            rawSelection.push(
+              `${meta.rawSelect} AS \`${queryBuilder.alias}_${meta.fieldMapper._propertyName}\``,
+            );
           }
         }
       });

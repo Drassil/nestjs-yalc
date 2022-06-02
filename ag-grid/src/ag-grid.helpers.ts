@@ -647,6 +647,23 @@ export function traverseFiltersAndApplyFunction(
   }
 }
 
+// TODO: refactoring formatRawSelection*
+
+export function formatRawSelectionWithoutAlias(
+  selection: string,
+  /* istanbul ignore next */
+  prefix = '',
+): string {
+  let _prefix = '';
+  if (prefix) {
+    _prefix = prefix + `.`;
+  }
+
+  selection = `${_prefix}${selection}`;
+
+  return selection;
+}
+
 export function formatRawSelection(
   selection: string,
   fieldName: string,
