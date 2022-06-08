@@ -10,6 +10,14 @@ describe('QueryBuilderHelper', () => {
     testQb = new SelectQueryBuilderPatched<Partial<ExtendedBaseEntity>>(
       mockedQb,
     );
+
+    testQb = new Proxy(testQb, {
+      get(obj, p) {
+        if (p === 'alias') return false;
+
+        return obj[p];
+      },
+    });
   });
 
   it('getMany works correctly', async () => {

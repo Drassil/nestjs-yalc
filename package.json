@@ -12,7 +12,7 @@
     "test:cov:serve": "npx http-server -c-1 ./docs/compodoc/jestcoverage/"
   },
   "author": "",
-  "license": "AGPL-3.0-or-later",
+  "license": "MIT",
   "workspaces": [
     "ag-grid",
     "aws-helpers",

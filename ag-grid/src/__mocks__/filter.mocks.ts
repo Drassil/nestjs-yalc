@@ -71,6 +71,15 @@ export const fixedIFieldMapper: IFieldMapper<any> = {
     dst: `third_${dbName}`,
     isSymbolic: true,
   },
+  [`derived1_${fixedKey}`]: {
+    dst: `derived_${dbName}`,
+    mode: 'derived',
+  },
+  [`derived2_${fixedKey}`]: {
+    dst: `derived2_${dbName}`,
+    mode: 'derived',
+    _propertyName: 'derived2',
+  },
 };
 
 /* 
@@ -314,6 +323,16 @@ export const fixedArgsQueryParams: IAgQueryParams = {
       },
     ],
   },
+  sorting: [
+    {
+      colId: 'derived1_passed',
+      sort: SortDirection.ASC,
+    },
+    {
+      colId: 'derived2_passed',
+      sort: SortDirection.DESC,
+    },
+  ],
   join: {},
 };
 

@@ -15,6 +15,20 @@ const dummyFieldMap: IFieldMapper = {
   tag: { dst: 'tag' },
 };
 
+const dummyFieldMapDerivedTag: IFieldMapper = {
+  tagCount: { dst: 'COUNT(tag)', mode: 'derived', _propertyName: 'tagCount' },
+  tag: { dst: 'tag' },
+};
+
+const dummyFieldMapDerivedUser: IFieldMapper = {
+  guidCount: {
+    dst: 'COUNT(guid)',
+    mode: 'derived',
+    _propertyName: 'guidCount',
+  },
+  guid: { dst: 'guid' },
+};
+
 const fixedKey = 'key';
 const fixedAlias = 'alias';
 const fixedKeyPrefixed = `\`${fixedAlias}\`.\`${fixedKey}\``;
@@ -535,18 +549,39 @@ describe('QueryBuilderHelper', () => {
           'UserTag.tag': findOp,
         },
         order: {
-          'UserTag.tag': 'ASC',
+          guidCount: 'ASC',
+          'UserTag.tagCount': 'ASC',
+          'UserTag.tag': 'DESC',
           'UserTag.userId': 'ASC',
           userId: 'ASC',
         },
       },
       'userDynamic',
-      { parent: dummyFieldMap, joined: dummyFieldMap },
+      { parent: dummyFieldMapDerivedUser, joined: dummyFieldMapDerivedTag },
     );
+
     expect(testData).toEqual([
-      { key: 'UserTag.tag', operator: 'ASC' },
+      { key: 'UserTag_tagCount', operator: 'ASC' },
+      { key: 'UserTag.tag', operator: 'DESC' },
       { key: 'UserTag.userId', operator: 'ASC' },
+      { key: 'userDynamic_guidCount', operator: 'ASC' },
       { key: 'userDynamic.userId', operator: 'ASC' },
+    ]);
+
+    const testData2 = QueryBuilderHelper.applyOrderToJoinedQueryBuilder(
+      {
+        order: {
+          tagCount: 'ASC',
+        },
+        extra: {
+          _fieldMapper: dummyFieldMapDerivedTag,
+        },
+      },
+      'UserDynamic',
+    );
+
+    expect(testData2).toEqual([
+      { key: 'UserDynamic_tagCount', operator: 'ASC' },
     ]);
   });
 
