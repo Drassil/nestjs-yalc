@@ -818,6 +818,11 @@ describe('Ag-grid helpers', () => {
     expect(result).toBe('prefix_');
   });
 
+  it('Should check formatRawSelection with onlyAlias false', () => {
+    const result = formatRawSelection('selection', 'test', 'prefix');
+    expect(result).toBe('prefix.selection AS `prefix_test`');
+  });
+
   it('Should getEntityRelations properly with DTO', () => {
     const res = AgGridHelpers.getEntityRelations(
       TestEntityRelation,
