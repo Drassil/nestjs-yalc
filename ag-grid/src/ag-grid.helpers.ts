@@ -696,7 +696,6 @@ export function applySelectOnFind<T = any>(
   findOptions: AgGridFindManyOptions,
   field: keyof T,
   fieldMapper: { [key: string]: IAgGridFieldMetadata },
-  alias = '',
   /**
    * If it's a nested field, you need to specify a path
    */
@@ -722,7 +721,7 @@ export function applySelectOnFind<T = any>(
     keysMeta[key] = {
       fieldMapper: fieldMapper[fieldName],
       isNested: !!path,
-      rawSelect: formatRawSelection(dst, fieldName, alias),
+      rawSelect: formatRawSelectionWithoutAlias(dst),
     };
 
     findOptions.extra._keysMeta = keysMeta;

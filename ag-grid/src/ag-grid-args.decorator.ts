@@ -50,7 +50,7 @@ import {
   applyJoinArguments,
   columnConversion,
   forceFilters,
-  formatRawSelection,
+  formatRawSelectionWithoutAlias,
   getDestinationFieldName,
   isAskingForCount,
   isSymbolic,
@@ -425,11 +425,9 @@ export function mapAgGridParams(
       const col = sortParams.colId.toString();
       let colName;
       if (fieldMapper[col]?.mode === 'derived') {
-        colName = formatRawSelection(
+        colName = formatRawSelectionWithoutAlias(
           getDestinationFieldName(fieldMapper[col].dst),
-          fieldMapper[col]._propertyName ?? fieldMapper[col].dst,
-          '',
-          true,
+          // fieldMapper[col]._propertyName ?? fieldMapper[col].dst,
         );
       } else {
         colName = columnConversion(col, fieldMapper);
