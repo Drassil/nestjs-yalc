@@ -19,7 +19,6 @@ import {
   ReadEntity,
   WriteEntity,
 } from '../__mocks__/generic-service.mocks';
-import { mocked } from 'ts-jest/utils';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { createMock } from '@golevelup/ts-jest';
 import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
@@ -43,7 +42,7 @@ describe('GenericService', () => {
   let baseEntityRepository = _baseEntityRepository;
 
   beforeEach(async () => {
-    mockedGetConnection = mocked(getConnection, true);
+    mockedGetConnection = jest.mocked(getConnection, true);
 
     // the target property can't be proxied
     // we need to create a new proxy by overriding the

@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import * as path from 'path';
-import { pathsToModuleNameMapper } from 'ts-jest/utils';
+import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
 
 export const coveragePathIgnorePatterns = [

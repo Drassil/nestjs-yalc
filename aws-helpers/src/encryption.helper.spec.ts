@@ -59,9 +59,8 @@ jest.mock('aws-sdk', () => {
   };
 });
 
-beforeAll(async (done) => {
+beforeAll(async () => {
   //get requires env vars
-  done();
 });
 
 describe('Encryption helper test', () => {
