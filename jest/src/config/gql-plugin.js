@@ -10,7 +10,14 @@ module.exports.version = 4;
 module.exports.factory = (cs) => {
   return transformer.before(
     {
-      typeFileNameSuffix: ['.input.ts', '.args.ts', '.entity.ts', '.type.ts'],
+      typeFileNameSuffix: [
+        '.input.ts',
+        '.args.ts',
+        '.arg.ts',
+        '.entity.ts',
+        '.type.ts',
+        '.dto.ts',
+      ],
       introspectComments: true,
     },
     cs.program, // "cs.tsCompiler.program" for older versions of Jest (<= v27)
