@@ -84,17 +84,16 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
 Then create the related resolver `user-phone.resolver.ts`
 
 ```typescript
-export const userPhoneProvidersDeps =
-  AgGridDependencyFactory<UserPhone>({
-    // if DTOs are not configured, the entity will be used to
-    // define the graphql types
-    entityModel: UserPhone,
-    // if you have a different db connection than the default one, you can set this value accordingly
-    service: { dbConnection: 'default' },
-     // what's the primary key used by the dataloader to load the resource when not specified
-     // elsewhere
-    dataloader: { databaseKey: 'ID' },
-  });
+export const userPhoneProvidersDeps = AgGridDependencyFactory<UserPhone>({
+  // if DTOs are not configured, the entity will be used to
+  // define the graphql types
+  entityModel: UserPhone,
+  // if you have a different db connection than the default one, you can set this value accordingly
+  service: { dbConnection: 'default' },
+  // what's the primary key used by the dataloader to load the resource when not specified
+  // elsewhere
+  dataloader: { databaseKey: 'ID' },
+});
 ```
 
 The `AgGridDependencyFactory` will generate at runtime the Resolver, the Service, the Dataloader, the Repository and, in this case,
@@ -112,7 +111,7 @@ These 2 properties should eventually added to your `TypeORM.forFeature` method a
 Example:
 
 ```typescript
-import { userPhoneProvidersDeps } from "./user-phone.resolver.ts"
+import { userPhoneProvidersDeps } from './user-phone.resolver.ts';
 
 @Module({})
 export class AppModule {
@@ -120,14 +119,9 @@ export class AppModule {
     return {
       module: UserModule,
       imports: [
-        TypeOrmModule.forFeature(
-          [userPhoneProviders.repository],
-          'default',
-        ),
+        TypeOrmModule.forFeature([userPhoneProviders.repository], 'default'),
       ],
-      providers: [
-        ...userPhoneProviders.providers,
-      ],
+      providers: [...userPhoneProviders.providers],
     };
   }
 }
@@ -237,10 +231,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
       targetKey: { dst: 'userId' },
     },
   })
-  @OneToMany(
-    () => UserPhone,
-    (meta) => meta.SkeletonUser,
-  )
+  @OneToMany(() => UserPhone, (meta) => meta.SkeletonUser)
   @JoinColumn([{ name: 'guid', referencedColumnName: 'userId' }])
   UserPhone?: UserPhone[];
 }
@@ -275,10 +266,7 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
       targetKey: { dst: 'userId', alias: 'userId' },
     },
   })
-  @OneToOne(
-    () => SkeletonUser,
-    (meta) => meta.SkeletonPhone,
-  )
+  @OneToOne(() => SkeletonUser, (meta) => meta.SkeletonPhone)
   @JoinColumn([{ name: 'userId', referencedColumnName: 'guid' }])
   SkeletonUser?: SkeletonUser;
 }
@@ -376,7 +364,7 @@ In the example above we've achieved the following:
 4. We're creating some input types that will be used to define the parameters needed for our mutations, notice that we use PartialType/OmitType from the
    nestjs/graphql library to remove properties from the extended type that we do not need
 
-There are many other features available NestJS-Yalc/ag-grid, including JSON field handling, middlewares, default values and many other. Please, refer
+There are many other features available NestJS-Yalc/crud-gen, including JSON field handling, middlewares, default values and many other. Please, refer
 to the documentation of the `@AgGridField` and `@AgGridObject` decorator to know more.
 
 As last step, we have to define our DTO and the entity within the `AgGridDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
@@ -459,10 +447,10 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
         // SkeletonModule_getSkeletonUser
         getResource: {
           decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-          idName: 'guid'
+          idName: 'guid',
         },
         getResourceGrid: {
-          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))]
+          decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
         },
       },
       mutations: {
@@ -478,7 +466,7 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
       },
     },
     service: { dbConnection },
-    dataloader: { databaseKey: 'guid' }
+    dataloader: { databaseKey: 'guid' },
   });
 ```
 
@@ -633,8 +621,7 @@ export const skeletonUserServiceFactory = (
   @Injectable()
   class SkeletonUserService
     extends GenericService<SkeletonUser>
-    implements SkeletonUserService
-  {
+    implements SkeletonUserService {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
       protected repository: AgGridRepository<SkeletonUser>,

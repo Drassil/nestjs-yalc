@@ -21,7 +21,7 @@ import {
 } from '../__mocks__/generic-service.mocks';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { createMock } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
 import { ConnectionNotFoundError } from 'typeorm';
 import { FactoryProvider } from '@nestjs/common';
 import {

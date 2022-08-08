@@ -4,14 +4,14 @@ import {
   isCombinedFilterModel,
   isFilterModel,
   isMulticolumnJoinOptions,
-} from './ag-grid-type-checker.utils';
-import { CustomWhereKeys } from './ag-grid.enum';
-import { AgGridBadFilterTypeError } from './ag-grid.error';
+} from './crud-gen-type-checker.utils';
+import { CustomWhereKeys } from './crud-gen.enum';
+import { AgGridBadFilterTypeError } from './crud-gen.error';
 import {
   FilterInput,
   IFilterInputOld,
   IMultiColumnJoinOptions,
-} from './ag-grid.interface';
+} from './crud-gen.interface';
 
 @Scalar('FilterInput')
 export class FilterScalar implements CustomScalar<string, FilterInput> {

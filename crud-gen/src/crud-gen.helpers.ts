@@ -535,7 +535,7 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
       (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
-  // to get ag-grid fields
+  // to get crud-gen fields
   const fieldMetadataList = getAgGridFieldMetadataList(entityModel);
 
   if (fieldMetadataList) {

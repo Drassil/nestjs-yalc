@@ -14,7 +14,7 @@
   "author": "",
   "license": "MIT",
   "workspaces": [
-    "ag-grid",
+    "crud-gen",
     "aws-helpers",
     "data-loader",
     "database",

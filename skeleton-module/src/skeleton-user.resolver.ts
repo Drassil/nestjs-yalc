@@ -1,4 +1,4 @@
-import { AgGridDependencyFactory } from 'crud-gen/src/ag-grid.helpers';
+import { AgGridDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
 import { resolverFactory } from 'crud-gen/src/generic-resolver.resolver';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import returnValue from '@nestjs-yalc/utils/returnValue';
@@ -22,7 +22,7 @@ import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from 'crud-gen/src/ag-grid.enum';
+} from 'crud-gen/src/crud-gen.enum';
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,

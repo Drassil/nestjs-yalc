@@ -1,12 +1,12 @@
 import { IFieldMapper } from '@nestjs-yalc/interfaces';
 import { Equal } from 'typeorm';
-import { IAgQueryParams } from '../ag-grid.args';
+import { IAgQueryParams } from '../crud-gen.args';
 import {
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from '../ag-grid.enum';
+} from '../crud-gen.enum';
 import {
   DateFilterModel,
   FilterInput,
@@ -18,8 +18,8 @@ import {
   ISetFilterModel,
   ISimpleFilterModel,
   ITextFilterModel,
-} from '../ag-grid.interface';
-import { IWhereCondition } from '../ag-grid.type';
+} from '../crud-gen.interface';
+import { IWhereCondition } from '../crud-gen.type';
 import { FilterOption, FilterOptionType } from '../object.decorator';
 
 const fixedKey = 'passed';

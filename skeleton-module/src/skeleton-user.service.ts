@@ -2,7 +2,7 @@ import { GenericService } from 'crud-gen/src/generic-service.service';
 import { SkeletonUser } from './persistance/skeleton-user.entity';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue';

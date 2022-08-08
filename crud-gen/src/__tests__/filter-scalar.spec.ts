@@ -1,6 +1,6 @@
 import { ObjectValueNode, StringValueNode } from 'graphql';
-import { FilterType, GeneralFilters, Operators } from '../ag-grid.enum';
-import { FilterInput, IMultiColumnJoinOptions } from '../ag-grid.interface';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
+import { FilterInput, IMultiColumnJoinOptions } from '../crud-gen.interface';
 import { FilterScalar } from '../filter.scalar';
 import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
 

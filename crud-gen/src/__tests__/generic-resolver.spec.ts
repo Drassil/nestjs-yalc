@@ -24,14 +24,14 @@ import {
   TestEntityRelation2,
 } from '../__mocks__/entity.mock';
 import * as AgGridObjectDecorator from '../object.decorator';
-import * as AgGridHelpers from '../ag-grid.helpers';
+import * as AgGridHelpers from '../crud-gen.helpers';
 
 import { IAgGridFieldMetadata } from '../object.decorator';
 import { BaseEntity } from 'typeorm';
-import { AgGridFindManyOptions } from '../ag-grid.interface';
-import { FilterType } from '../ag-grid.enum';
+import { AgGridFindManyOptions } from '../crud-gen.interface';
+import { FilterType } from '../crud-gen.enum';
 import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
-import { IRelationInfo } from '../ag-grid.helpers';
+import { IRelationInfo } from '../crud-gen.helpers';
 
 jest.mock('@nestjs/graphql');
 
@@ -214,37 +214,38 @@ let missingExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
   },
 };
 
-let undefinedExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> =
-  {
-    ...baseResolverOption,
-    queries: {
-      ...baseResolverOption.queries,
-      getResource: {
-        ...baseResolverOption.queries.getResourceGrid,
-        idName: {
-          hidden: true,
-        },
+let undefinedExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
+  ...baseResolverOption,
+  queries: {
+    ...baseResolverOption.queries,
+    getResource: {
+      ...baseResolverOption.queries.getResourceGrid,
+      idName: {
+        hidden: true,
       },
     },
-    mutations: {
-      ...baseResolverOption.mutations,
-      createResource: {
-        ...baseResolverOption.mutations.createResource,
-        extraInputs: {
-          guid: {},
-        },
+  },
+  mutations: {
+    ...baseResolverOption.mutations,
+    createResource: {
+      ...baseResolverOption.mutations.createResource,
+      extraInputs: {
+        guid: {},
       },
     },
-  };
+  },
+};
 
 const mockedResponse = {};
 
 describe('Generic Resolver', () => {
   const mockedGenericService = createMock<GenericService<TestEntityRelation>>();
-  const mockedTestEntityRelationDL =
-    createMock<GQLDataLoader<TestEntityRelation>>();
-  const mockedTestEntityRelation2DL =
-    createMock<GQLDataLoader<TestEntityRelation2>>();
+  const mockedTestEntityRelationDL = createMock<
+    GQLDataLoader<TestEntityRelation>
+  >();
+  const mockedTestEntityRelation2DL = createMock<
+    GQLDataLoader<TestEntityRelation2>
+  >();
   const mockedModuleRef = createMock<ModuleRef>();
 
   const spiedAgGridMetaDataList = jest.spyOn(
@@ -651,11 +652,10 @@ describe('Generic Resolver', () => {
   });
 
   it('Should not create mutation if it is a read-only resolver', () => {
-    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> =
-      {
-        ...baseResolverOption,
-        readonly: true,
-      };
+    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> = {
+      ...baseResolverOption,
+      readonly: true,
+    };
     const resolver = generateResolver({}, customBaseResolverOption);
     expect(resolver[queriesName.create]).not.toBeDefined();
     expect(resolver[queriesName.delete]).not.toBeDefined();
@@ -663,25 +663,24 @@ describe('Generic Resolver', () => {
   });
 
   it('Should create a resolver with custom queries', () => {
-    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> =
-      {
-        ...baseResolverOption,
-        customQueries: {
-          customQuery: {
-            isSingleResource: true,
-          },
-          customQueryGrid: {
-            extraArgs: {
-              ['date']: {
-                filterType: FilterType.DATE,
-              } as any,
-            },
-          },
-          customQueryGridNoArgs: {
-            extraArgs: undefined,
+    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> = {
+      ...baseResolverOption,
+      customQueries: {
+        customQuery: {
+          isSingleResource: true,
+        },
+        customQueryGrid: {
+          extraArgs: {
+            ['date']: {
+              filterType: FilterType.DATE,
+            } as any,
           },
         },
-      };
+        customQueryGridNoArgs: {
+          extraArgs: undefined,
+        },
+      },
+    };
     const resolver = generateResolver({}, customBaseResolverOption);
     expect(resolver['customQuery']).toBeDefined();
     expect(resolver['customQueryGrid']).toBeDefined();
@@ -694,8 +693,9 @@ describe('Generic Resolver', () => {
       'getOwnPropertyDescriptor',
     );
     spiedAgGridMetaDataList.mockReturnValue({});
-    const ResolverClass =
-      resolverFactory<TestEntityRelation>(baseResolverOption);
+    const ResolverClass = resolverFactory<TestEntityRelation>(
+      baseResolverOption,
+    );
 
     spiedGetPropertyDescriptor.mockReturnValue(undefined);
     const testFunction = {
@@ -806,8 +806,9 @@ describe('Generic Resolver', () => {
     };
 
     spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass =
-      resolverFactory<TestEntityRelation>(baseResolverOption);
+    const ResolverClass = resolverFactory<TestEntityRelation>(
+      baseResolverOption,
+    );
 
     defineFieldResolver([resolverInfo], ResolverClass);
   });
@@ -826,8 +827,9 @@ describe('Generic Resolver', () => {
     };
 
     spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass =
-      resolverFactory<TestEntityRelation>(baseResolverOption);
+    const ResolverClass = resolverFactory<TestEntityRelation>(
+      baseResolverOption,
+    );
 
     defineFieldResolver([resolverInfo], ResolverClass);
   });
@@ -844,8 +846,9 @@ describe('Generic Resolver', () => {
     };
 
     spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass =
-      resolverFactory<TestEntityRelation>(baseResolverOption);
+    const ResolverClass = resolverFactory<TestEntityRelation>(
+      baseResolverOption,
+    );
 
     expect(() =>
       defineFieldResolver([resolverInfo], ResolverClass),

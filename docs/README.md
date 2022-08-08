@@ -4,7 +4,7 @@ Nest-yalc stands for Nestjs - Yet Another Library Collection
 
 ## Features
 
-- Support of the [AgGrid](https://www.ag-grid.com/) filters for the GraphQL endpoints
+- Support of the [AgGrid](https://www.crud-gen.com/) filters for the GraphQL endpoints
 - Automatic runtime generation of CRUD endpoints using the NestJS dependency factory method
 - Parametrized the generation of: Resolver, Service, Dataloader, TypeORM repository based on ORM entities and DTOs.
 - Implemented JSON support for TypeORM entities by using decorators
@@ -15,7 +15,7 @@ Nest-yalc stands for Nestjs - Yet Another Library Collection
 
 ## Documentation
 
-- [How to create graphql API with nestjs-yalc/ag-grid](./api-creation.md)
+- [How to create graphql API with nestjs-yalc/crud-gen](./api-creation.md)
 
 ## NPM package.json and Workspace
 

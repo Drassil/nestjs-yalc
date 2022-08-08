@@ -15,8 +15,8 @@ export const isFieldMapperProperty = (
 };
 
 /**
- * @todo refactor or move this file to put the "filter logic" inside the ag-grid library instead:
- * move isRequired, isSymbolic and denyFilter in a separated interface within the ag-grid library
+ * @todo refactor or move this file to put the "filter logic" inside the crud-gen library instead:
+ * move isRequired, isSymbolic and denyFilter in a separated interface within the crud-gen library
  * which extends FieldMapperProperty
  *
  */

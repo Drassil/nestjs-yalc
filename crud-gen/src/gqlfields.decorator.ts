@@ -8,10 +8,10 @@ import {
   columnConversion,
   formatRawSelectionWithoutAlias,
   objectToFieldMapper,
-} from 'crud-gen/src/ag-grid.helpers';
+} from 'crud-gen/src/crud-gen.helpers';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { GraphQLResolveInfo } from 'graphql';
-import { removeSymbolicSelection } from './ag-grid-args.decorator';
+import { removeSymbolicSelection } from './crud-gen-args.decorator';
 import {
   IAgGridFieldMetadata,
   IFieldAndFilterMapper,

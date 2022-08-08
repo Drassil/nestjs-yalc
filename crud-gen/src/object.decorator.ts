@@ -8,7 +8,7 @@ import {
 } from '@nestjs/graphql';
 import 'reflect-metadata';
 import { RelationType } from 'typeorm/metadata/types/RelationTypes';
-import { IAgQueryParams } from './ag-grid.args';
+import { IAgQueryParams } from './crud-gen.args';
 
 export interface DstExtended {
   name: string;

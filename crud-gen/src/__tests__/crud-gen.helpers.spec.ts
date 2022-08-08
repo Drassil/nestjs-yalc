@@ -683,7 +683,7 @@ describe('Ag-grid helpers', () => {
     expect(result[0]).toBe('id');
   });
 
-  it('Should get the column properties from an ag-grid field with mode derived', () => {
+  it('Should get the column properties from an crud-gen field with mode derived', () => {
     const spiedgetAgGridFieldMetadataList = jest.spyOn(
       ObjectDecorator,
       'getAgGridFieldMetadataList',

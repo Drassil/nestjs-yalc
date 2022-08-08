@@ -1,5 +1,5 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import { ModuleRef } from '@nestjs/core';
 import 'reflect-metadata';

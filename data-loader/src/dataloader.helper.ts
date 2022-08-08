@@ -1,9 +1,9 @@
 import * as _DataLoader from 'dataloader';
 import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
-import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
+import { AgGridFindManyOptions } from 'crud-gen/src/crud-gen.interface';
 import { In } from 'typeorm';
-import { IWhereCondition } from 'crud-gen/src/ag-grid.type';
-import { Operators } from 'crud-gen/src/ag-grid.enum';
+import { IWhereCondition } from 'crud-gen/src/crud-gen.type';
+import { Operators } from 'crud-gen/src/crud-gen.enum';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -16,7 +16,7 @@ import {
   getServiceToken,
 } from 'crud-gen/src/generic-service.service';
 import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from 'crud-gen/src/ag-grid.helpers';
+import { getProviderToken } from 'crud-gen/src/crud-gen.helpers';
 // import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventAgGrid } from 'crud-gen/src/event.enum';
 import { EventEmitter2 } from 'eventemitter2';

@@ -20,10 +20,10 @@ import {
 } from 'typeorm';
 import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
-import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
-import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
+import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
+import { AgGridFindManyOptions } from 'crud-gen/src/crud-gen.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from './ag-grid.helpers';
+import { getProviderToken } from './crud-gen.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { getAgGridFieldMetadataList, isDstExtended } from './object.decorator';

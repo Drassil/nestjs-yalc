@@ -19,36 +19,93 @@
     "rootDir": ".",
     "baseUrl": "./",
     "paths": {
-      "@nestjs-yalc/database": ["database/src"],
-      "@nestjs-yalc/database/*": ["database/src/*"],
-      "@nestjs-yalc/ag-grid": ["ag-grid/src"],
-      "@nestjs-yalc/ag-grid/*": ["ag-grid/src/*"],
-      "@nestjs-yalc/aws-helpers": ["aws-helpers/src"],
-      "@nestjs-yalc/aws-helpers/*": ["aws-helpers/src/*"],
-      "@nestjs-yalc/data-loader": ["data-loader/src"],
-      "@nestjs-yalc/data-loader/*": ["data-loader/src/*"],
-      "@nestjs-yalc/field-middleware": ["field-middleware/src"],
-      "@nestjs-yalc/field-middleware/*": ["field-middleware/src/*"],
-      "@nestjs-yalc/graphql": ["graphql/src"],
-      "@nestjs-yalc/graphql/*": ["graphql/src/*"],
-      "@nestjs-yalc/interfaces": ["interfaces/src"],
-      "@nestjs-yalc/interfaces/*": ["interfaces/src/*"],
-      "@nestjs-yalc/logger": ["logger/src"],
-      "@nestjs-yalc/logger/*": ["logger/src/*"],
-      "@nestjs-yalc/utils": ["utils/src"],
-      "@nestjs-yalc/utils/*": ["utils/src/*"],
-      "@nestjs-yalc/jest": ["jest/src"],
-      "@nestjs-yalc/jest/*": ["jest/src/*"],
-      "@nestjs-yalc/types": ["types/src"],
-      "@nestjs-yalc/types/*": ["types/src/*"],
-      "@nestjs-yalc/kafka": ["kafka/src"],
-      "@nestjs-yalc/kafka/*": ["kafka/src/*"],
-      "@nestjs-yalc/skeleton-module": ["skeleton-module/src"],
-      "@nestjs-yalc/skeleton-module/*": ["skeleton-module/src/*"]
+      "@nestjs-yalc/database": [
+        "database/src"
+      ],
+      "@nestjs-yalc/database/*": [
+        "database/src/*"
+      ],
+      "@nestjs-yalc/crud-gen": [
+        "crud-gen/src"
+      ],
+      "@nestjs-yalc/crud-gen/*": [
+        "crud-gen/src/*"
+      ],
+      "@nestjs-yalc/aws-helpers": [
+        "aws-helpers/src"
+      ],
+      "@nestjs-yalc/aws-helpers/*": [
+        "aws-helpers/src/*"
+      ],
+      "@nestjs-yalc/data-loader": [
+        "data-loader/src"
+      ],
+      "@nestjs-yalc/data-loader/*": [
+        "data-loader/src/*"
+      ],
+      "@nestjs-yalc/field-middleware": [
+        "field-middleware/src"
+      ],
+      "@nestjs-yalc/field-middleware/*": [
+        "field-middleware/src/*"
+      ],
+      "@nestjs-yalc/graphql": [
+        "graphql/src"
+      ],
+      "@nestjs-yalc/graphql/*": [
+        "graphql/src/*"
+      ],
+      "@nestjs-yalc/interfaces": [
+        "interfaces/src"
+      ],
+      "@nestjs-yalc/interfaces/*": [
+        "interfaces/src/*"
+      ],
+      "@nestjs-yalc/logger": [
+        "logger/src"
+      ],
+      "@nestjs-yalc/logger/*": [
+        "logger/src/*"
+      ],
+      "@nestjs-yalc/utils": [
+        "utils/src"
+      ],
+      "@nestjs-yalc/utils/*": [
+        "utils/src/*"
+      ],
+      "@nestjs-yalc/jest": [
+        "jest/src"
+      ],
+      "@nestjs-yalc/jest/*": [
+        "jest/src/*"
+      ],
+      "@nestjs-yalc/types": [
+        "types/src"
+      ],
+      "@nestjs-yalc/types/*": [
+        "types/src/*"
+      ],
+      "@nestjs-yalc/kafka": [
+        "kafka/src"
+      ],
+      "@nestjs-yalc/kafka/*": [
+        "kafka/src/*"
+      ],
+      "@nestjs-yalc/skeleton-module": [
+        "skeleton-module/src"
+      ],
+      "@nestjs-yalc/skeleton-module/*": [
+        "skeleton-module/src/*"
+      ]
     }
   },
-  "include": ["**/src/**/*.ts"],
-  "exclude": ["**/node_modules", "**/.webpack"],
+  "include": [
+    "**/src/**/*.ts"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/.webpack"
+  ],
   "ts-node": {
     "transpileOnly": true,
     "files": true

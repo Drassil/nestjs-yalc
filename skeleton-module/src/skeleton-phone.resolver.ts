@@ -1,4 +1,4 @@
-import { AgGridDependencyFactory } from 'crud-gen/src/ag-grid.helpers';
+import { AgGridDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
 import {
   SkeletonPhoneType,
   SkeletonPhoneCreateInput,

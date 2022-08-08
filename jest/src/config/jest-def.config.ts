@@ -57,7 +57,7 @@ export const coverageThreshold = (
     //  * @todo  should be removed and be set to 100% asap
     //  */
     // switch (project.name) {
-    //   case 'unit/common/ag-grid':
+    //   case 'unit/common/crud-gen':
     //     branches = 92.27;
     //     functions = 98.92;
     //     lines = 98.75;

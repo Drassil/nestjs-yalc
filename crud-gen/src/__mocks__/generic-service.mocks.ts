@@ -1,6 +1,6 @@
 import { BaseEntity } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
 import { AgGridField, AgGridObject } from '../object.decorator';
 import { JsonTransformer } from '../transformers.helpers';
 

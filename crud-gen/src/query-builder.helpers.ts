@@ -1,5 +1,8 @@
 import { SelectQueryBuilder } from 'typeorm';
-import { formatRawSelection, getDestinationFieldName } from './ag-grid.helpers';
+import {
+  formatRawSelection,
+  getDestinationFieldName,
+} from './crud-gen.helpers';
 import {
   getAgGridFieldMetadataList,
   IAgGridFieldMetadata,

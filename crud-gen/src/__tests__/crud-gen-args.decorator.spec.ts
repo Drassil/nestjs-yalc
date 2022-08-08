@@ -1,5 +1,5 @@
 jest.mock('@nestjs/graphql');
-jest.mock('../ag-grid.args', () => ({
+jest.mock('../crud-gen.args', () => ({
   agQueryParamsFactory: jest.fn(),
   agQueryParamsNoPaginationFactory: jest.fn(),
 }));

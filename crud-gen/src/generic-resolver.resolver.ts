@@ -13,7 +13,7 @@ import {
 import {
   AgGridArgs,
   AgGridArgsSingle,
-} from 'crud-gen/src/ag-grid-args.decorator';
+} from 'crud-gen/src/crud-gen-args.decorator';
 
 import {
   applyDecorators,
@@ -21,19 +21,19 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { AgGridInterceptor } from 'crud-gen/src/ag-grid.interceptor';
+import { AgGridInterceptor } from 'crud-gen/src/crud-gen.interceptor';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import {
   IExtraArg,
   AgGridFindManyOptions,
   IIDArg,
-} from 'crud-gen/src/ag-grid.interface';
+} from 'crud-gen/src/crud-gen.interface';
 import {
   GenericService,
   getServiceToken,
 } from 'crud-gen/src/generic-service.service';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
-import AgGridGqlType from './ag-grid.type';
+import AgGridGqlType from './crud-gen.type';
 import {
   getDataloaderToken,
   GQLDataLoader,
@@ -45,11 +45,11 @@ import {
   filterTypeToNativeType,
   getEntityRelations,
   IRelationInfo,
-} from './ag-grid.helpers';
+} from './crud-gen.helpers';
 import { getAgGridFieldMetadataList } from './object.decorator';
-import { AgGridError } from './ag-grid.error';
-import { ExtraArgsStrategy } from './ag-grid.enum';
-import { IAgQueryParams } from './ag-grid.args';
+import { AgGridError } from './crud-gen.error';
+import { ExtraArgsStrategy } from './crud-gen.enum';
+import { IAgQueryParams } from './crud-gen.args';
 import { InputArgs } from 'crud-gen/src/gqlmapper.decorator';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { GetContext } from '@nestjs-yalc/utils/nest.decorator';

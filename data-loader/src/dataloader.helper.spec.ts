@@ -1,6 +1,6 @@
 import { createMock } from '@golevelup/ts-jest';
-import { SortDirection } from 'crud-gen/src/ag-grid.enum';
-import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
+import { SortDirection } from 'crud-gen/src/crud-gen.enum';
+import { AgGridFindManyOptions } from 'crud-gen/src/crud-gen.interface';
 import {
   FactoryProvider,
   NotAcceptableException,
