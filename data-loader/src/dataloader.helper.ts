@@ -1,9 +1,9 @@
 import * as _DataLoader from 'dataloader';
 import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
-import { CrudGenFindManyOptions } from 'crud-gen/src/crud-gen.interface';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
 import { In } from 'typeorm';
-import { IWhereCondition } from 'crud-gen/src/crud-gen.type';
-import { Operators } from 'crud-gen/src/crud-gen.enum';
+import { IWhereCondition } from '@nestjs-yalc/crud-gen/crud-gen.type';
+import { Operators } from '@nestjs-yalc/crud-gen/crud-gen.enum';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -14,11 +14,11 @@ import {
 import {
   GenericService,
   getServiceToken,
-} from 'crud-gen/src/generic-service.service';
+} from '@nestjs-yalc/crud-gen/generic-service.service';
 import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from 'crud-gen/src/crud-gen.helpers';
+import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers';
 // import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventCrudGen } from 'crud-gen/src/event.enum';
+import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum';
 import { EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;

@@ -5,7 +5,10 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/graphql';
-import { CrudGenField, CrudGenObject } from 'crud-gen/src/object.decorator';
+import {
+  CrudGenField,
+  CrudGenObject,
+} from '@nestjs-yalc/crud-gen/object.decorator';
 import { SkeletonUser } from '../persistance/skeleton-user.entity';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';

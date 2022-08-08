@@ -1,4 +1,4 @@
-import { CrudGenField } from 'crud-gen/src/object.decorator';
+import { CrudGenField } from '@nestjs-yalc/crud-gen/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
 import { ObjectType } from '@nestjs/graphql';
 import {

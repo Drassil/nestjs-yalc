@@ -13,7 +13,7 @@ import {
 import {
   CrudGenArgs,
   CrudGenArgsSingle,
-} from 'crud-gen/src/crud-gen-args.decorator';
+} from '@nestjs-yalc/crud-gen/crud-gen-args.decorator';
 
 import {
   applyDecorators,
@@ -21,17 +21,17 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { CrudGenInterceptor } from 'crud-gen/src/crud-gen.interceptor';
+import { CrudGenInterceptor } from '@nestjs-yalc/crud-gen/crud-gen.interceptor';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   IIDArg,
-} from 'crud-gen/src/crud-gen.interface';
+} from '@nestjs-yalc/crud-gen/crud-gen.interface';
 import {
   GenericService,
   getServiceToken,
-} from 'crud-gen/src/generic-service.service';
+} from '@nestjs-yalc/crud-gen/generic-service.service';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
 import CrudGenGqlType from './crud-gen.type';
 import {
@@ -50,7 +50,7 @@ import { getCrudGenFieldMetadataList } from './object.decorator';
 import { CrudGenError } from './crud-gen.error';
 import { ExtraArgsStrategy } from './crud-gen.enum';
 import { IAgQueryParams } from './crud-gen.args';
-import { InputArgs } from 'crud-gen/src/gqlmapper.decorator';
+import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { GetContext } from '@nestjs-yalc/utils/nest.decorator';
 export interface IGenericResolver {

@@ -20,8 +20,8 @@ import {
 } from 'typeorm';
 import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
-import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
-import { CrudGenFindManyOptions } from 'crud-gen/src/crud-gen.interface';
+import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from './crud-gen.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';

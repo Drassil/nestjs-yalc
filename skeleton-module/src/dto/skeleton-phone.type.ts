@@ -1,5 +1,8 @@
 import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
-import { CrudGenField, CrudGenObject } from 'crud-gen/src/object.decorator';
+import {
+  CrudGenField,
+  CrudGenObject,
+} from '@nestjs-yalc/crud-gen/object.decorator';
 import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';

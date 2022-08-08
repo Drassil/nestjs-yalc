@@ -8,7 +8,7 @@ import {
   columnConversion,
   formatRawSelectionWithoutAlias,
   objectToFieldMapper,
-} from 'crud-gen/src/crud-gen.helpers';
+} from '@nestjs-yalc/crud-gen/crud-gen.helpers';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { GraphQLResolveInfo } from 'graphql';
 import { removeSymbolicSelection } from './crud-gen-args.decorator';

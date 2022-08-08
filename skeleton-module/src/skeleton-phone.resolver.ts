@@ -1,4 +1,4 @@
-import { CrudGenDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
+import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers';
 import {
   SkeletonPhoneType,
   SkeletonPhoneCreateInput,
