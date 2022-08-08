@@ -155,7 +155,7 @@ const fixedFieldMetaData = {
   },
 };
 
-describe('Ag-grid helpers', () => {
+describe('Crud-gen helpers', () => {
   let mockedQueryBuilder: DeepMocked<SelectQueryBuilder<BaseEntity>>;
 
   beforeEach(() => {

@@ -19,17 +19,23 @@
     "rootDir": ".",
     "baseUrl": "./",
     "paths": {
-      "@nestjs-yalc/database": [
-        "database/src"
+      "@nestjs-yalc/app": [
+        "app/src"
       ],
-      "@nestjs-yalc/database/*": [
-        "database/src/*"
+      "@nestjs-yalc/app/*": [
+        "app/src/*"
       ],
       "@nestjs-yalc/crud-gen": [
         "crud-gen/src"
       ],
       "@nestjs-yalc/crud-gen/*": [
         "crud-gen/src/*"
+      ],
+      "@nestjs-yalc/database": [
+        "database/src"
+      ],
+      "@nestjs-yalc/database/*": [
+        "database/src/*"
       ],
       "@nestjs-yalc/aws-helpers": [
         "aws-helpers/src"
@@ -42,6 +48,12 @@
       ],
       "@nestjs-yalc/data-loader/*": [
         "data-loader/src/*"
+      ],
+      "@nestjs-yalc/errors": [
+        "errors/src"
+      ],
+      "@nestjs-yalc/errors/*": [
+        "errors/src/*"
       ],
       "@nestjs-yalc/field-middleware": [
         "field-middleware/src"

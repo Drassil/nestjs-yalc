@@ -242,7 +242,7 @@ const mockedGqlExecutionContext = GqlExecutionContext.create(
   mockedExecutionContext,
 );
 
-describe('Ag-grid args decorator', () => {
+describe('Crud-gen args decorator', () => {
   it('Check getTextFilter functionality', async () => {
     let testgetTextFilter;
     for (const test of switchCaseTextTests) {

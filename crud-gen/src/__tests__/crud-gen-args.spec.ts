@@ -10,7 +10,7 @@ class TestEntity extends BaseEntity {
   columnId: number;
 }
 
-describe('Ag-grid args', () => {
+describe('Crud-gen args', () => {
   it('Should generate agQuery params', async () => {
     const crudGenArgs = agQueryParamsFactory({
       sorting: [{ colId: 'somecol', sort: SortDirection.ASC }],

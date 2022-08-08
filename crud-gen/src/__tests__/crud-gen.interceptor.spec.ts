@@ -34,7 +34,7 @@ const infoObj = {
   ],
 };
 
-describe('AG-Grid Interceptor test', () => {
+describe('Crud-gen Interceptor test', () => {
   let crudGenInterceptor: CrudGenInterceptor;
   const callHandler = createMock<CallHandler>();
   const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());

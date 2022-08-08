@@ -15,7 +15,7 @@ import {
 
 @Scalar('FilterInput')
 export class FilterScalar implements CustomScalar<string, FilterInput> {
-  description = 'AG-Grid Filter scalar type';
+  description = 'CrudGen Filter scalar type';
 
   resultMemoize = new Map();
   resultMemoizeInverse = new WeakMap();

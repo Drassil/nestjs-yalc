@@ -23,7 +23,7 @@ import {
   fixedSimpleTextFilter,
 } from '../__mocks__/filter.mocks';
 
-describe('Ag-grid type checker', () => {
+describe('Crud-gen type checker', () => {
   it('isFilterModel should works properly', async () => {
     let testData = isFilterModel(undefined);
     expect(testData).toEqual(false);
