@@ -1,7 +1,7 @@
 import {
   columnConversion,
   objectToFieldMapper,
-} from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+} from 'crud-gen/src/ag-grid.helpers';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { ClassType } from '@nestjs-yalc/types';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';

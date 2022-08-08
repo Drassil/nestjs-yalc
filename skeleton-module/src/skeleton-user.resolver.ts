@@ -1,5 +1,5 @@
-import { AgGridDependencyFactory } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
-import { resolverFactory } from '@nestjs-yalc/ag-grid/generic-resolver.resolver';
+import { AgGridDependencyFactory } from 'crud-gen/src/ag-grid.helpers';
+import { resolverFactory } from 'crud-gen/src/generic-resolver.resolver';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UseGuards } from '@nestjs/common';
@@ -17,12 +17,12 @@ import {
   skeletonUserServiceFactory,
   SkeletonUserService,
 } from './skeleton-user.service';
-import { InputArgs } from '@nestjs-yalc/ag-grid/gqlmapper.decorator';
+import { InputArgs } from 'crud-gen/src/gqlmapper.decorator';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from '@nestjs-yalc/ag-grid/ag-grid.enum';
+} from 'crud-gen/src/ag-grid.enum';
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,

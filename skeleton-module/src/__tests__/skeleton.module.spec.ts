@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { SkeletonModule } from '../index';
 
-import * as helpers from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import * as helpers from 'crud-gen/src/ag-grid.helpers';
 
 describe('Test skeleton module', () => {
   it('should register the module', () => {

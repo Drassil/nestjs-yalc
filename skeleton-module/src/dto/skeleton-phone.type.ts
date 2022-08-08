@@ -1,8 +1,5 @@
 import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
-import {
-  AgGridField,
-  AgGridObject,
-} from '@nestjs-yalc/ag-grid/object.decorator';
+import { AgGridField, AgGridObject } from 'crud-gen/src/object.decorator';
 import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';

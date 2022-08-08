@@ -1,8 +1,8 @@
-import { GenericService } from '@nestjs-yalc/ag-grid/generic-service.service';
+import { GenericService } from 'crud-gen/src/generic-service.service';
 import { SkeletonUser } from './persistance/skeleton-user.entity';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue';
@@ -18,8 +18,7 @@ export const skeletonUserServiceFactory = (
   @Injectable()
   class SkeletonUserService
     extends GenericService<SkeletonUser>
-    implements SkeletonUserService
-  {
+    implements SkeletonUserService {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
       protected repository: AgGridRepository<SkeletonUser>,

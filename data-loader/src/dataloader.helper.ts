@@ -1,9 +1,9 @@
 import * as _DataLoader from 'dataloader';
 import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
 import { In } from 'typeorm';
-import { IWhereCondition } from '@nestjs-yalc/ag-grid/ag-grid.type';
-import { Operators } from '@nestjs-yalc/ag-grid/ag-grid.enum';
+import { IWhereCondition } from 'crud-gen/src/ag-grid.type';
+import { Operators } from 'crud-gen/src/ag-grid.enum';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -14,11 +14,11 @@ import {
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/ag-grid/generic-service.service';
+} from 'crud-gen/src/generic-service.service';
 import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { getProviderToken } from 'crud-gen/src/ag-grid.helpers';
 // import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventAgGrid } from '@nestjs-yalc/ag-grid/event.enum';
+import { EventAgGrid } from 'crud-gen/src/event.enum';
 import { EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
@@ -27,7 +27,7 @@ export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
  * Only used internally to add extra data to the Dataloader result
  */
 class _DataLoaderWithCount<
-  Entity extends Record<string, any>,
+  Entity extends Record<string, any>
 > extends _DataLoader<string, Entity[], string> {
   private count: number;
 
@@ -265,11 +265,11 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   }
 }
 
-export const getFn =
-  <Entity>(service: GenericService<Entity>) =>
-  async (findManyOptions: AgGridFindManyOptions) => {
-    return service.getEntityListAgGrid(findManyOptions, true);
-  };
+export const getFn = <Entity>(service: GenericService<Entity>) => async (
+  findManyOptions: AgGridFindManyOptions,
+) => {
+  return service.getEntityListAgGrid(findManyOptions, true);
+};
 
 export function DataLoaderFactory<Entity>(
   defaultSearchKey: keyof Entity,

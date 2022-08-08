@@ -1,6 +1,6 @@
 import { BaseEntity } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
-import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
+import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
 import { AgGridField, AgGridObject } from '../object.decorator';
 import { JsonTransformer } from '../transformers.helpers';
 
@@ -28,5 +28,6 @@ export class WriteEntity {
 
 export class MockedEntity extends BaseEntity {}
 
-export const baseEntityRepository =
-  createMock<AgGridRepository<MockedEntity>>();
+export const baseEntityRepository = createMock<
+  AgGridRepository<MockedEntity>
+>();

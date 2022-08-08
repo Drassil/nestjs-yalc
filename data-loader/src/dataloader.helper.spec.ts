@@ -1,6 +1,6 @@
 import { createMock } from '@golevelup/ts-jest';
-import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { SortDirection } from 'crud-gen/src/ag-grid.enum';
+import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
 
-import { GenericService } from '@nestjs-yalc/ag-grid/generic-service.service';
+import { GenericService } from 'crud-gen/src/generic-service.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {

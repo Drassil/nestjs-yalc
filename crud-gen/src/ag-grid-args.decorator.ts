@@ -13,7 +13,7 @@ import {
   In,
   IsNull,
 } from 'typeorm';
-import { GqlAgGridFieldsMapper } from '@nestjs-yalc/ag-grid/gqlfields.decorator';
+import { GqlAgGridFieldsMapper } from 'crud-gen/src/gqlfields.decorator';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import {
   IAgQueryParams,
@@ -72,7 +72,7 @@ import { FilterOption, FilterOptionType } from './object.decorator';
 import {
   ArgumentsError,
   MissingArgumentsError,
-} from '@nestjs-yalc/ag-grid/missing-arguments.error';
+} from 'crud-gen/src/missing-arguments.error';
 import {
   isCombinedFilterModel,
   isDateFilterModel,

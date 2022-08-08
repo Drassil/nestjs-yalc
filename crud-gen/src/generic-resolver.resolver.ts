@@ -13,7 +13,7 @@ import {
 import {
   AgGridArgs,
   AgGridArgsSingle,
-} from '@nestjs-yalc/ag-grid/ag-grid-args.decorator';
+} from 'crud-gen/src/ag-grid-args.decorator';
 
 import {
   applyDecorators,
@@ -21,17 +21,17 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { AgGridInterceptor } from '@nestjs-yalc/ag-grid/ag-grid.interceptor';
+import { AgGridInterceptor } from 'crud-gen/src/ag-grid.interceptor';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import {
   IExtraArg,
   AgGridFindManyOptions,
   IIDArg,
-} from '@nestjs-yalc/ag-grid/ag-grid.interface';
+} from 'crud-gen/src/ag-grid.interface';
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/ag-grid/generic-service.service';
+} from 'crud-gen/src/generic-service.service';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
 import AgGridGqlType from './ag-grid.type';
 import {
@@ -50,7 +50,7 @@ import { getAgGridFieldMetadataList } from './object.decorator';
 import { AgGridError } from './ag-grid.error';
 import { ExtraArgsStrategy } from './ag-grid.enum';
 import { IAgQueryParams } from './ag-grid.args';
-import { InputArgs } from '@nestjs-yalc/ag-grid/gqlmapper.decorator';
+import { InputArgs } from 'crud-gen/src/gqlmapper.decorator';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { GetContext } from '@nestjs-yalc/utils/nest.decorator';
 export interface IGenericResolver {
@@ -253,11 +253,10 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               return [parentRes, -1];
             }
 
-            const dataLoader: GQLDataLoader<Entity> =
-              await this.moduleRef.resolve(
-                getDataloaderToken(relType),
-                this.contextId,
-              );
+            const dataLoader: GQLDataLoader<Entity> = await this.moduleRef.resolve(
+              getDataloaderToken(relType),
+              this.contextId,
+            );
 
             const joinCol =
               resolverInfo.join?.referencedColumnName ??
@@ -336,11 +335,10 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               return parentRes;
             }
 
-            const dataLoader: GQLDataLoader<Entity> =
-              await this.moduleRef.resolve(
-                getDataloaderToken(relType),
-                this.contextId,
-              );
+            const dataLoader: GQLDataLoader<Entity> = await this.moduleRef.resolve(
+              getDataloaderToken(relType),
+              this.contextId,
+            );
 
             /* istanbul ignore next */
             const joinCol =
@@ -796,7 +794,7 @@ export function defineDeleteMutation<Entity>(
 
 export function resolverFactory<
   Entity extends Record<string, any> = any,
-  EntityWrite = Entity,
+  EntityWrite = Entity
 >(
   options: IGenericResolverOptions<Entity>,
 ): {

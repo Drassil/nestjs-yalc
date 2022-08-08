@@ -1,4 +1,4 @@
-import { AgGridDependencyFactory } from '@nestjs-yalc/ag-grid/ag-grid.helpers';
+import { AgGridDependencyFactory } from 'crud-gen/src/ag-grid.helpers';
 import {
   SkeletonPhoneType,
   SkeletonPhoneCreateInput,

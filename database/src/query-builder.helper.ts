@@ -8,13 +8,13 @@ import {
 } from 'typeorm';
 import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver';
 import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver';
-import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
+import { SortDirection } from 'crud-gen/src/ag-grid.enum';
 import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface';
 import { isJsonSQLRaw } from './json.helpers';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
 // import {
 //   IJsonVirtualFieldOptions,
 //   NYALC_JSON_VIRTUAL_FIELD_META_KEY,

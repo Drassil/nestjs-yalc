@@ -5,10 +5,7 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/graphql';
-import {
-  AgGridField,
-  AgGridObject,
-} from '@nestjs-yalc/ag-grid/object.decorator';
+import { AgGridField, AgGridObject } from 'crud-gen/src/object.decorator';
 import { SkeletonUser } from '../persistance/skeleton-user.entity';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';

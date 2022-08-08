@@ -1,4 +1,4 @@
-import { AgGridField } from '@nestjs-yalc/ag-grid/object.decorator';
+import { AgGridField } from 'crud-gen/src/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
 import { ObjectType } from '@nestjs/graphql';
 import {

@@ -20,8 +20,8 @@ import {
 } from 'typeorm';
 import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
-import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { AgGridRepository } from 'crud-gen/src/ag-grid.repository';
+import { AgGridFindManyOptions } from 'crud-gen/src/ag-grid.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from './ag-grid.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
