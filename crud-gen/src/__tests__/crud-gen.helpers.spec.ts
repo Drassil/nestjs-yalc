@@ -2,12 +2,12 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from '../ag-grid.enum';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
 import {
   AgGridConditionNotSupportedError,
   AgGridNotPossibleError,
   AgGridStringWhereError,
-} from '../ag-grid.error';
+} from '../crud-gen.error';
 import {
   forceFilterWorker,
   forceFilters,
@@ -30,11 +30,11 @@ import {
   applySelectOnFind,
   formatRawSelection,
   getDestinationFieldName,
-} from '../ag-grid.helpers';
-import { JoinArgOptions, JoinTypes } from '../ag-grid.input';
-import { IWhereCondition } from '../ag-grid.type';
+} from '../crud-gen.helpers';
+import { JoinArgOptions, JoinTypes } from '../crud-gen.input';
+import { IWhereCondition } from '../crud-gen.type';
 import * as ObjectDecorator from '../object.decorator';
-import * as AgGridHelpers from '../ag-grid.helpers';
+import * as AgGridHelpers from '../crud-gen.helpers';
 
 import {
   FilterOption,
@@ -507,33 +507,32 @@ describe('Ag-grid helpers', () => {
 
   describe('AgGridDependencyFactory', () => {
     // Object with override on provider
-    const fixedAgGridDependencyFactoryOptions: IAgGridDependencyFactoryOptions<TestEntity> =
-      {
+    const fixedAgGridDependencyFactoryOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
+      entityModel: TestEntity,
+      dataloader: {
+        databaseKey: 'id',
+        provider: {
+          provide: GQLDataLoader,
+          useClass: GQLDataLoader,
+        },
         entityModel: TestEntity,
-        dataloader: {
-          databaseKey: 'id',
-          provider: {
-            provide: GQLDataLoader,
-            useClass: GQLDataLoader,
-          },
-          entityModel: TestEntity,
+      },
+      service: {
+        dbConnection: 'id',
+        provider: {
+          provide: () => GenericService,
+          useClass: GenericService,
         },
-        service: {
-          dbConnection: 'id',
-          provider: {
-            provide: () => GenericService,
-            useClass: GenericService,
-          },
-          entityModel: TestEntity,
+        entityModel: TestEntity,
+      },
+      resolver: {
+        provider: {
+          provide: Resolver,
+          useClass: TestEntity,
         },
-        resolver: {
-          provider: {
-            provide: Resolver,
-            useClass: TestEntity,
-          },
-        },
-        repository: {} as any,
-      };
+      },
+      repository: {} as any,
+    };
 
     it('Should create a dependencyObject properly', () => {
       const dependecyObject = AgGridDependencyFactory<TestEntity>(
@@ -556,8 +555,9 @@ describe('Ag-grid helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject =
-        AgGridDependencyFactory<TestEntity>(customOptions);
+      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+        customOptions,
+      );
 
       expect(dependecyObject).toBeDefined();
     });
@@ -570,8 +570,9 @@ describe('Ag-grid helpers', () => {
         repository: undefined,
       };
 
-      const dependecyObject =
-        AgGridDependencyFactory<TestEntity>(customOptions);
+      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+        customOptions,
+      );
 
       expect(dependecyObject).toBeDefined();
     });
@@ -589,8 +590,9 @@ describe('Ag-grid helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject =
-        AgGridDependencyFactory<TestEntity>(customOptions);
+      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+        customOptions,
+      );
 
       expect(dependecyObject).toBeDefined();
     });

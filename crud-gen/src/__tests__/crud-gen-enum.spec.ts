@@ -1,6 +1,6 @@
 import { BaseEntity } from 'typeorm';
-import { entityFieldsEnumFactory } from '../ag-grid.enum';
-import * as AgGridHelper from '../ag-grid.helpers';
+import { entityFieldsEnumFactory } from '../crud-gen.enum';
+import * as AgGridHelper from '../crud-gen.helpers';
 
 const fixedProperty = 'columId';
 

@@ -9,14 +9,14 @@ import {
 } from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
 import { FindManyOptions, FindOperator } from 'typeorm';
-import { IAgQueryParams } from './ag-grid.args';
+import { IAgQueryParams } from './crud-gen.args';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
   Operators,
-} from './ag-grid.enum';
-import { IWhereCondition } from './ag-grid.type';
+} from './crud-gen.enum';
+import { IWhereCondition } from './crud-gen.type';
 import type { IKeyMeta } from './gqlfields.decorator';
 import { IFieldAndFilterMapper } from './object.decorator';
 

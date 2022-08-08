@@ -3,8 +3,8 @@ import {
   agQueryParamsFactory,
   agQueryParamsNoPaginationFactory,
   IAgQueryParams,
-} from '../ag-grid.args';
-import { RowDefaultValues, SortDirection } from '../ag-grid.enum';
+} from '../crud-gen.args';
+import { RowDefaultValues, SortDirection } from '../crud-gen.enum';
 
 class TestEntity extends BaseEntity {
   columnId: number;

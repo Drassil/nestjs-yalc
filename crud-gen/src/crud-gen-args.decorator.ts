@@ -19,7 +19,7 @@ import {
   IAgQueryParams,
   agQueryParamsFactory,
   agQueryParamsNoPaginationFactory,
-} from './ag-grid.args';
+} from './crud-gen.args';
 import {
   GeneralFilters,
   FilterType,
@@ -27,7 +27,7 @@ import {
   Operators,
   ExtraArgsStrategy,
   RowDefaultValues,
-} from './ag-grid.enum';
+} from './crud-gen.enum';
 import {
   AgGridFindManyOptions,
   DateFilterModel,
@@ -39,13 +39,13 @@ import {
   ISetFilterModel,
   IAgGridArgsOptions,
   IAgGridArgsSingleOptions,
-} from './ag-grid.interface';
+} from './crud-gen.interface';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
-} from './ag-grid.type';
+} from './crud-gen.type';
 import {
   applyJoinArguments,
   columnConversion,
@@ -55,17 +55,17 @@ import {
   isAskingForCount,
   isSymbolic,
   objectToFieldMapper,
-} from './ag-grid.helpers';
+} from './crud-gen.helpers';
 import {
   AgGridError,
   AgGridFilterNotSupportedError,
   AgGridFilterProhibited,
   AgGridInvalidArgumentError,
   AgGridInvalidOperatorError,
-} from './ag-grid.error';
+} from './crud-gen.error';
 import { DateHelper } from '@nestjs-yalc/utils/date.helper';
 import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
-import { agJoinArgFactory } from './ag-grid.input';
+import { agJoinArgFactory } from './crud-gen.input';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { GraphQLResolveInfo } from 'graphql';
 import { FilterOption, FilterOptionType } from './object.decorator';
@@ -80,7 +80,7 @@ import {
   isNumberFilterModel,
   isSetFilterModel,
   isTextFilterModel,
-} from './ag-grid-type-checker.utils';
+} from './crud-gen-type-checker.utils';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {

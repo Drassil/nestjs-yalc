@@ -2,8 +2,8 @@ import { ObjectType, Field, HideField } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
 import { FindManyOptions, FindOperator } from 'typeorm';
 import returnValue from '@nestjs-yalc/utils/returnValue';
-import { IExtraArg, ICombinedWhereModel } from './ag-grid.interface';
-import { Operators } from './ag-grid.enum';
+import { IExtraArg, ICombinedWhereModel } from './crud-gen.interface';
+import { Operators } from './crud-gen.enum';
 
 @ObjectType()
 export class PageDataAgGrid {

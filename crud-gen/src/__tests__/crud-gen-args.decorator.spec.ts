@@ -4,7 +4,7 @@ jest.mock('../ag-grid.args', () => ({
   agQueryParamsNoPaginationFactory: jest.fn(),
 }));
 
-import * as agGridArgsDecorator from '../ag-grid-args.decorator';
+import * as agGridArgsDecorator from '../crud-gen-args.decorator';
 import {
   Equal,
   LessThan,
@@ -16,8 +16,12 @@ import {
   In,
   BaseEntity,
 } from 'typeorm';
-import { IAgQueryParams } from '../ag-grid.args';
-import { ExtraArgsStrategy, FilterType, GeneralFilters } from '../ag-grid.enum';
+import { IAgQueryParams } from '../crud-gen.args';
+import {
+  ExtraArgsStrategy,
+  FilterType,
+  GeneralFilters,
+} from '../crud-gen.enum';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
   mockedExecutionContext,
@@ -28,18 +32,18 @@ import {
   FilterModel,
   IAgGridArgsOptions,
   ICombinedSimpleModel,
-} from '../ag-grid.interface';
+} from '../crud-gen.interface';
 import * as graphql from '@nestjs/graphql';
-import * as AgGridInput from '../ag-grid.input';
+import * as AgGridInput from '../crud-gen.input';
 import * as GqlAgGridDecorator from '../gqlfields.decorator';
-import * as AgGridHelpers from '../ag-grid.helpers';
+import * as AgGridHelpers from '../crud-gen.helpers';
 import {
   AgGridFilterNotSupportedError,
   AgGridFilterProhibited,
   AgGridInvalidArgumentError,
   AgGridInvalidOperatorError,
   AgGridError,
-} from '../ag-grid.error';
+} from '../crud-gen.error';
 import { DateHelper } from '@nestjs-yalc/utils/date.helper';
 import { GraphQLResolveInfo } from 'graphql';
 import { createMock } from '@golevelup/ts-jest';
@@ -799,8 +803,9 @@ describe('Ag-grid args decorator', () => {
       },
       gql: undefined,
     };
-    const decorator =
-      agGridArgsDecorator.AgGridCombineDecorators(defaultArgsOptions);
+    const decorator = agGridArgsDecorator.AgGridCombineDecorators(
+      defaultArgsOptions,
+    );
     expect(decorator).toEqual(expect.any(Function));
   });
 

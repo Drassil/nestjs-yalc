@@ -4,9 +4,9 @@ import {
   RowGroup,
   SortModel,
   sortModelFactory,
-} from '../ag-grid.input';
-import * as AgGridEnum from '../ag-grid.enum';
-import * as AgGridHelpers from '../ag-grid.helpers';
+} from '../crud-gen.input';
+import * as AgGridEnum from '../crud-gen.enum';
+import * as AgGridHelpers from '../crud-gen.helpers';
 import { TestEntity, TestEntityRelation } from '../__mocks__/entity.mock';
 
 describe('Dynamic user input dto test', () => {

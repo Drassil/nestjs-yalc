@@ -20,34 +20,34 @@ import { GraphQLResolveInfo } from 'graphql';
 import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs';
-import { createWhere, getFindOperator } from './ag-grid-args.decorator';
+import { createWhere, getFindOperator } from './crud-gen-args.decorator';
 import {
   isCombinedWhereModel,
   isFindOperator,
-} from './ag-grid-type-checker.utils';
-import { FilterType, Operators } from './ag-grid.enum';
+} from './crud-gen-type-checker.utils';
+import { FilterType, Operators } from './crud-gen.enum';
 import {
   AgGridConditionNotSupportedError,
   AgGridNotPossibleError,
   AgGridStringWhereError,
-} from './ag-grid.error';
-import { JoinArgOptions, JoinTypes } from './ag-grid.input';
+} from './crud-gen.error';
+import { JoinArgOptions, JoinTypes } from './crud-gen.input';
 import {
   IExtraArg,
   AgGridFindManyOptions,
   FilterInput,
-} from './ag-grid.interface';
+} from './crud-gen.interface';
 import {
   AgGridRepository,
   AgGridRepositoryFactory,
-} from './ag-grid.repository';
+} from './crud-gen.repository';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
   IWhereFilters,
-} from './ag-grid.type';
+} from './crud-gen.type';
 import {
   IGenericResolverOptions,
   resolverFactory,

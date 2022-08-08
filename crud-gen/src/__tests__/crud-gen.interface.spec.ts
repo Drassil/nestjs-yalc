@@ -1,4 +1,4 @@
-import { FilterType, GeneralFilters, Operators } from '../ag-grid.enum';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
 import {
   DateFilterModel,
   FilterModel,
@@ -7,7 +7,7 @@ import {
   INumberFilterModel,
   ICombinedSimpleModel,
   FilterInput,
-} from '../ag-grid.interface';
+} from '../crud-gen.interface';
 import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
 
 const simpleFilterModel: ISimpleFilterModel = {

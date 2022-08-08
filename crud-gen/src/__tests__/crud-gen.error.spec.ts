@@ -8,7 +8,7 @@ import {
   AgGridNotPossibleError,
   AgGridConditionNotSupportedError,
   AgGridStringWhereError,
-} from '../ag-grid.error';
+} from '../crud-gen.error';
 import { FilterErrors } from '../strings.enum';
 
 describe('AgGrid module errors', () => {

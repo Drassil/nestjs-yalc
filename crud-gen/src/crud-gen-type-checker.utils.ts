@@ -1,5 +1,5 @@
 import { FindOperator } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from './ag-grid.enum';
+import { FilterType, GeneralFilters, Operators } from './crud-gen.enum';
 import {
   DateFilterModel,
   FilterInput,
@@ -10,8 +10,8 @@ import {
   INumberFilterModel,
   ISetFilterModel,
   ITextFilterModel,
-} from './ag-grid.interface';
-import { findOperatorTypes, IWhereConditionType } from './ag-grid.type';
+} from './crud-gen.interface';
+import { findOperatorTypes, IWhereConditionType } from './crud-gen.type';
 
 export function isFilterInputStrict(
   currentFilter:

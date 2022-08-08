@@ -6,7 +6,7 @@ import * as RxjsOperators from 'rxjs/operators';
 import {
   AgGridInterceptor,
   agGridInterceptorWorker,
-} from '../ag-grid.interceptor';
+} from '../crud-gen.interceptor';
 import { createMock } from '@golevelup/ts-jest';
 import {
   mockedExecutionContext,

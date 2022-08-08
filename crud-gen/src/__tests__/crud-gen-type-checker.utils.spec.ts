@@ -9,9 +9,9 @@ import {
   isOperator,
   isSetFilterModel,
   isTextFilterModel,
-} from '../ag-grid-type-checker.utils';
-import { FilterType, Operators } from '../ag-grid.enum';
-import { FilterModel } from '../ag-grid.interface';
+} from '../crud-gen-type-checker.utils';
+import { FilterType, Operators } from '../crud-gen.enum';
+import { FilterModel } from '../crud-gen.interface';
 import {
   fixedCombinedOrDateFilter,
   fixedCombinedOrNumberFilter,

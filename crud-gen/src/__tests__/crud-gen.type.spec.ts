@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import * as $ from '../ag-grid.type';
+import * as $ from '../crud-gen.type';
 
 class Test {
   testField: string;

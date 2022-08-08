@@ -15,9 +15,9 @@ import {
   applySelectOnFind,
   objectToFieldMapper,
   whereObjectToSqlString,
-} from './ag-grid.helpers';
-import { AgGridFindManyOptions } from './ag-grid.interface';
-import { IWhereFilters } from './ag-grid.type';
+} from './crud-gen.helpers';
+import { AgGridFindManyOptions } from './crud-gen.interface';
+import { IWhereFilters } from './crud-gen.type';
 import { IAgGridFieldMetadata } from './object.decorator';
 import './query-builder.helpers'; // must be imported here
 
@@ -29,7 +29,9 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
   /**
    * @todo we should create a class helper/adapter for the findOptions and move this method there
    */
-  public getActualLimits(findOptions: AgGridFindManyOptions<Entity>): {
+  public getActualLimits(
+    findOptions: AgGridFindManyOptions<Entity>,
+  ): {
     skip?: number;
     take?: number;
   } {
@@ -151,11 +153,10 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
       processRelationExtraConditions('left', joinCopy.leftJoinAndSelect);
     }
 
-    queryBuilder =
-      FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
-        queryBuilder,
-        { ...strippedFindOptions, join: joinCopy },
-      );
+    queryBuilder = FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
+      queryBuilder,
+      { ...strippedFindOptions, join: joinCopy },
+    );
 
     rawSelection.length > 0 && queryBuilder.addSelect(rawSelection);
 
