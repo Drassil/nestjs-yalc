@@ -16,21 +16,21 @@ import {
   objectToFieldMapper,
   whereObjectToSqlString,
 } from './crud-gen.helpers';
-import { AgGridFindManyOptions } from './crud-gen.interface';
+import { CrudGenFindManyOptions } from './crud-gen.interface';
 import { IWhereFilters } from './crud-gen.type';
-import { IAgGridFieldMetadata } from './object.decorator';
+import { ICrudGenFieldMetadata } from './object.decorator';
 import './query-builder.helpers'; // must be imported here
 
-export const AG_GRID_MAIN_ALIAS = 'AgGridMainAlias';
+export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
 
-export class AgGridRepository<Entity> extends Repository<Entity> {
+export class CrudGenRepository<Entity> extends Repository<Entity> {
   protected entity: EntityClassOrSchema;
 
   /**
    * @todo we should create a class helper/adapter for the findOptions and move this method there
    */
   public getActualLimits(
-    findOptions: AgGridFindManyOptions<Entity>,
+    findOptions: CrudGenFindManyOptions<Entity>,
   ): {
     skip?: number;
     take?: number;
@@ -46,8 +46,8 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     return { skip: findOptions.skip, take: findOptions.take };
   }
 
-  public getFormattedAgGridQueryBuilder(
-    findOptions: AgGridFindManyOptions<Entity>,
+  public getFormattedCrudGenQueryBuilder(
+    findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
@@ -104,7 +104,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     }
 
     /**
-     * Add join where conditions from AgGrid decorator relation property
+     * Add join where conditions from CrudGen decorator relation property
      */
 
     let joinCopy;
@@ -125,7 +125,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
          * in order to apply the extra conditions
          */
         Object.keys(joinInfo).forEach((key) => {
-          const fieldInfo = extra?._fieldMapper?.[key] as IAgGridFieldMetadata;
+          const fieldInfo = extra?._fieldMapper?.[key] as ICrudGenFieldMetadata;
 
           if (!fieldInfo?.relation) return;
 
@@ -202,8 +202,8 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     return queryBuilder;
   }
 
-  public getAgGridQueryBuilder(
-    findOptions: AgGridFindManyOptions<Entity>,
+  public getCrudGenQueryBuilder(
+    findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
@@ -214,7 +214,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     if (findOptions.subQueryFilters) {
       const joinQueryBuilder = queryBuilder.connection.createQueryBuilder();
 
-      const subQuery = this.getFormattedAgGridQueryBuilder(
+      const subQuery = this.getFormattedCrudGenQueryBuilder(
         findOptions.subQueryFilters,
         fieldMap,
       ).select('*');
@@ -230,14 +230,14 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
         joinQueryBuilder.expressionMap.mainAlias.metadata =
           queryBuilder.expressionMap.mainAlias.metadata;
 
-      return this.getFormattedAgGridQueryBuilder(
+      return this.getFormattedCrudGenQueryBuilder(
         findOptions,
         fieldMap,
         joinQueryBuilder,
       );
     }
 
-    return this.getFormattedAgGridQueryBuilder(
+    return this.getFormattedCrudGenQueryBuilder(
       findOptions,
       fieldMap,
       queryBuilder,
@@ -248,15 +248,15 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
    * Returns a List of entities based in the provided options.
    * @param findOptions Filter options
    */
-  public async getManyAndCountAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+  public async getManyAndCountCrudGen(
+    findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<[Entity[], number]> {
     // console.log('==========START QUERY==============');
-    const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
+    const queryBuilder = this.getCrudGenQueryBuilder(findOptions, fieldMap);
 
     const { skip = 0, take } = this.getActualLimits(findOptions);
 
@@ -283,26 +283,26 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
    * Returns a List of entities based in the provided options.
    * @param findOptions Filter options
    */
-  public async getManyAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+  public async getManyCrudGen(
+    findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<Entity[]> {
-    const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
+    const queryBuilder = this.getCrudGenQueryBuilder(findOptions, fieldMap);
 
     return queryBuilder.getMany();
   }
 
-  public async countAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+  public async countCrudGen(
+    findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
   ): Promise<number> {
-    const queryBuilder = this.getAgGridQueryBuilder(findOptions, fieldMap);
+    const queryBuilder = this.getCrudGenQueryBuilder(findOptions, fieldMap);
 
     return queryBuilder.getCount();
   }
@@ -312,17 +312,17 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
    * @param withFail If true ignore the fail, if false when u don't find a entity it'll trhow an error
    * @param mode Set it to true to query data after a mutation
    */
-  async getOneAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+  async getOneCrudGen(
+    findOptions: CrudGenFindManyOptions<Entity>,
     withFail?: boolean,
     mode?: ReplicationMode,
   ): Promise<Entity>;
-  async getOneAgGrid(
-    findOptions: AgGridFindManyOptions<Entity>,
+  async getOneCrudGen(
+    findOptions: CrudGenFindManyOptions<Entity>,
     withFail?: boolean,
     mode: ReplicationMode = ReplicationMode.SLAVE,
   ): Promise<Entity | undefined> {
-    const queryBuilder = this.getFormattedAgGridQueryBuilder(findOptions);
+    const queryBuilder = this.getFormattedCrudGenQueryBuilder(findOptions);
     const returnFunction = this.getOneOrFail(withFail);
     return QueryBuilderHelper.applyOperationToQueryBuilder(
       queryBuilder,
@@ -358,7 +358,7 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
     fields: (keyof Entity)[],
     gqlType: ClassType<Entity>,
   ) {
-    const findOptions: AgGridFindManyOptions = {};
+    const findOptions: CrudGenFindManyOptions = {};
     const fieldMapper = objectToFieldMapper(gqlType);
 
     fields.forEach((field) =>
@@ -370,16 +370,16 @@ export class AgGridRepository<Entity> extends Repository<Entity> {
 
 const repositoryMap = new WeakMap();
 
-export function AgGridRepositoryFactory<Entity>(
+export function CrudGenRepositoryFactory<Entity>(
   entity: ClassType<Entity>,
-): ClassType<AgGridRepository<Entity>> {
+): ClassType<CrudGenRepository<Entity>> {
   let cached;
   if ((cached = repositoryMap.get(entity))) return cached;
 
   const dynamicClass = (name: string) =>
-    ({ [name]: class extends AgGridRepository<Entity> {} }[name]);
+    ({ [name]: class extends CrudGenRepository<Entity> {} }[name]);
 
-  const repo: ClassType<AgGridRepository<Entity>> = dynamicClass(
+  const repo: ClassType<CrudGenRepository<Entity>> = dynamicClass(
     `${entity.name}Repository`,
   );
 

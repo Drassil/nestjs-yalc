@@ -21,7 +21,7 @@ import {
 } from '../__mocks__/generic-service.mocks';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { createMock } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
+import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
 import { ConnectionNotFoundError } from 'typeorm';
 import { FactoryProvider } from '@nestjs/common';
 import {
@@ -70,14 +70,14 @@ describe('GenericService', () => {
   });
 
   it('should create a service with write repository', () => {
-    const writeRepo = new AgGridRepository();
+    const writeRepo = new CrudGenRepository();
     service = new GenericService(baseEntityRepository, writeRepo);
     expect(service.getRepository() === baseEntityRepository).toBeTruthy();
     expect(service.getRepositoryWrite() === writeRepo).toBeTruthy();
   });
 
   it('should set all repositories correctly', () => {
-    const writeRepo = new AgGridRepository();
+    const writeRepo = new CrudGenRepository();
     service.setRepository(writeRepo);
     expect(service.getRepository() === writeRepo).toBeTruthy();
     expect(service.getRepositoryWrite() === writeRepo).toBeTruthy();
@@ -260,7 +260,7 @@ describe('GenericService', () => {
   });
 
   it('Check getEntityList with specific Database', async () => {
-    const testRepository = createMock<AgGridRepository<BaseEntity>>();
+    const testRepository = createMock<CrudGenRepository<BaseEntity>>();
     const mockedConnection = createMock<Connection>();
     mockedConnection.getRepository.mockReturnValue(testRepository);
     mockedGetConnection.mockReturnValueOnce(mockedConnection);
@@ -294,7 +294,7 @@ describe('GenericService', () => {
     insertResult.identifiers = [{ id: '123' }];
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
     expect(service.createEntity({})).resolves.toBe(mockedEntity);
   });
 
@@ -304,11 +304,11 @@ describe('GenericService', () => {
     insertResult.identifiers = [{ id: '123' }];
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
     const result = await service.createEntity({}, {}, false);
     expect(result).toBe(true);
     baseEntityRepository.insert.mockRestore();
-    baseEntityRepository.getOneAgGrid.mockRestore();
+    baseEntityRepository.getOneCrudGen.mockRestore();
   });
 
   it('Should insert an entity correctly when entity isClass', async () => {
@@ -320,17 +320,17 @@ describe('GenericService', () => {
       .mockReturnValue(true);
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
     const result = await service.createEntity({});
     expect(result).toBe(mockedEntity);
     mockedIsClass.mockRestore();
   });
 
   it('should correctly map entities from read to write', () => {
-    const writeRepo = new AgGridRepository();
+    const writeRepo = new CrudGenRepository();
     writeRepo.target = WriteEntity;
 
-    const readRepo = new AgGridRepository();
+    const readRepo = new CrudGenRepository();
     readRepo.target = ReadEntity;
 
     const newService = new GenericService<ReadEntity, WriteEntity>(
@@ -347,10 +347,10 @@ describe('GenericService', () => {
   });
 
   it('should correctly map entities from read to write (without mapper)', () => {
-    const writeRepo = new AgGridRepository();
+    const writeRepo = new CrudGenRepository();
     writeRepo.target = WriteEntity;
 
-    const readRepo = new AgGridRepository();
+    const readRepo = new CrudGenRepository();
     readRepo.target = WriteEntity;
 
     const newService = new GenericService<WriteEntity, WriteEntity>(
@@ -362,10 +362,10 @@ describe('GenericService', () => {
   });
 
   it('should not map entities from read to write when there are no classes', () => {
-    const writeRepo = new AgGridRepository();
+    const writeRepo = new CrudGenRepository();
     writeRepo.target = {};
 
-    const readRepo = new AgGridRepository();
+    const readRepo = new CrudGenRepository();
     readRepo.target = {};
 
     const newService = new GenericService<WriteEntity, WriteEntity>(
@@ -381,7 +381,7 @@ describe('GenericService', () => {
 
     baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
     baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
 
     const result = await service.updateEntity({}, {});
     expect(result).toBe(mockedEntity);
@@ -392,7 +392,7 @@ describe('GenericService', () => {
 
     baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
     baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
 
     await expect(service.updateEntity({}, {}, {}, false)).resolves.toBe(true);
   });
@@ -405,7 +405,7 @@ describe('GenericService', () => {
 
     baseEntityRepository.find.mockResolvedValueOnce([mockedEntity]);
     baseEntityRepository.update.mockResolvedValueOnce(new UpdateResult());
-    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    baseEntityRepository.getOneCrudGen.mockResolvedValueOnce(mockedEntity);
     baseEntityRepository.getId.mockReturnValue({ id: 'id' });
 
     const result = await service.updateEntity({}, {});
@@ -483,38 +483,38 @@ describe('GenericService', () => {
       ConditionsTooBroadError,
     );
   });
-  it('test getEntityListAgGrid', async () => {
+  it('test getEntityListCrudGen', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     baseEntityRepository.find.mockResolvedValue(mockedList);
-    const entityListAgGrid = await service.getEntityListAgGrid({});
-    expect(entityListAgGrid).toBeDefined();
+    const entityListCrudGen = await service.getEntityListCrudGen({});
+    expect(entityListCrudGen).toBeDefined();
   });
 
-  it('test getEntityListAgGrid with count', async () => {
+  it('test getEntityListCrudGen with count', async () => {
     const mockedCountedList: [BaseEntity[], number] = [[new BaseEntity()], 1];
     baseEntityRepository.findAndCount.mockResolvedValue(mockedCountedList);
-    await service.getEntityListAgGrid({}, true);
-    expect(baseEntityRepository.getManyAndCountAgGrid).toBeCalledWith({});
+    await service.getEntityListCrudGen({}, true);
+    expect(baseEntityRepository.getManyAndCountCrudGen).toBeCalledWith({});
   });
 
-  it('test getEntityListAgGrid with false count', async () => {
+  it('test getEntityListCrudGen with false count', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     baseEntityRepository.find.mockResolvedValue(mockedList);
-    await service.getEntityListAgGrid({}, false);
-    expect(baseEntityRepository.getManyAgGrid).toBeCalledWith({});
+    await service.getEntityListCrudGen({}, false);
+    expect(baseEntityRepository.getManyCrudGen).toBeCalledWith({});
   });
 
-  it('test getEntityListAgGrid with relations', async () => {
+  it('test getEntityListCrudGen with relations', async () => {
     const mockedList: BaseEntity[] = [new BaseEntity()];
     baseEntityRepository.find.mockResolvedValue(mockedList);
-    await service.getEntityListAgGrid({}, false, ['RelatedEntity']);
-    expect(baseEntityRepository.getManyAgGrid).toBeCalledWith({
+    await service.getEntityListCrudGen({}, false, ['RelatedEntity']);
+    expect(baseEntityRepository.getManyCrudGen).toBeCalledWith({
       relations: ['RelatedEntity'],
     });
   });
 
-  it('test getEntityListAgGrid with specific Database', async () => {
-    const testRepository = createMock<AgGridRepository<BaseEntity>>();
+  it('test getEntityListCrudGen with specific Database', async () => {
+    const testRepository = createMock<CrudGenRepository<BaseEntity>>();
     const mockedConnection = createMock<Connection>();
     mockedConnection.getRepository.mockReturnValue(testRepository);
     mockedGetConnection.mockReturnValueOnce(mockedConnection);
@@ -525,7 +525,7 @@ describe('GenericService', () => {
     // Checks the base repository to be set before changing it
     expect(service.getRepository()).toBe(baseEntityRepository);
 
-    await service.getEntityListAgGrid({}, false, [], 'databaseName');
+    await service.getEntityListCrudGen({}, false, [], 'databaseName');
 
     expect(mockedConnection.getRepository).toHaveBeenCalledWith(
       baseEntityRepository.target,

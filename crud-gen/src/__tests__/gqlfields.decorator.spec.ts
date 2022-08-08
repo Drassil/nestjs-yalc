@@ -5,7 +5,7 @@ jest.mock('@nestjs-yalc/crud-gen/crud-gen.args', () => ({
 
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import * as $ from '../gqlfields.decorator';
-import * as AgGridHelper from '../crud-gen.helpers';
+import * as CrudGenHelper from '../crud-gen.helpers';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
@@ -267,7 +267,7 @@ describe('Graphql decorator test', () => {
     const arr: IFieldMapper = {
       ['first']: { dst: 'specified', isRequired: true },
     };
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest.keys).toEqual(
       expect.arrayContaining(['specified']),
@@ -280,7 +280,7 @@ describe('Graphql decorator test', () => {
   it('Check GqlFieldsMapper Functionality with nodes', async () => {
     const arr: IFieldMapper = { ['otherField']: { dst: 'specified' } };
 
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, nodesObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, nodesObj);
 
     console.log(GqlFieldsMapperTest.keys);
     expect(GqlFieldsMapperTest.keys).toEqual(['specified']);
@@ -290,7 +290,7 @@ describe('Graphql decorator test', () => {
     const arr: IFieldMapper = {
       ['toAdd']: { dst: 'specified', isRequired: true },
     };
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest.keys).toEqual(
       expect.arrayContaining(['specified']),
@@ -300,12 +300,12 @@ describe('Graphql decorator test', () => {
     );
   });
 
-  it('Check GqlAgGridFieldsMapper Functionality with specified field name to add', async () => {
+  it('Check GqlCrudGenFieldsMapper Functionality with specified field name to add', async () => {
     const arr: IFieldMapper = {
       ['toAdd']: { dst: 'specified', isRequired: true },
       ['subToChange']: { dst: 'toAddSub', isRequired: true },
     };
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest.keys).toEqual(
       expect.arrayContaining(['specified', 'toAddSub']),
@@ -318,15 +318,15 @@ describe('Graphql decorator test', () => {
   it('Check with nested', async () => {
     const arr: IFieldMapper = { ['first']: { dst: 'specified' } };
     jest
-      .spyOn(AgGridHelper, 'objectToFieldMapper')
+      .spyOn(CrudGenHelper, 'objectToFieldMapper')
       .mockReturnValue(fieldAndFilterMapper);
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, edgesObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, edgesObj);
 
     console.log(GqlFieldsMapperTest.keys);
     expect(GqlFieldsMapperTest.keys).toEqual([]);
   });
 
-  it('Check GqlAgGridFieldsMapper with undefined values', () => {
+  it('Check GqlCrudGenFieldsMapper with undefined values', () => {
     const arr: IFieldMapper = { ['first']: { dst: 'specified' } };
     const custominfo = {
       fieldNodes: [
@@ -335,38 +335,38 @@ describe('Graphql decorator test', () => {
         },
       ],
     };
-    let GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, custominfo as any);
+    let GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, custominfo as any);
 
     expect(GqlFieldsMapperTest.keys).toEqual([]);
 
     custominfo.fieldNodes = undefined;
-    GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, custominfo as any);
+    GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, custominfo as any);
 
     expect(GqlFieldsMapperTest.keys).toEqual([]);
   });
 
-  it('Check GqlAgGridFieldsMapper with derived fields', () => {
+  it('Check GqlCrudGenFieldsMapper with derived fields', () => {
     const arr: IFieldMapper = {
       ['node']: { dst: 'data -> $.id', mode: 'derived' },
     };
 
     jest
-      .spyOn(AgGridHelper, 'objectToFieldMapper')
+      .spyOn(CrudGenHelper, 'objectToFieldMapper')
       .mockReturnValue(fieldAndFilterMapper);
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest).toBeDefined();
   });
 
-  it('Check GqlAgGridFieldsMapper with extraInfo not setted', () => {
+  it('Check GqlCrudGenFieldsMapper with extraInfo not setted', () => {
     const arr: IFieldMapper = {
       ['node']: { dst: 'data -> $.id', mode: 'derived' },
     };
 
     jest
-      .spyOn(AgGridHelper, 'objectToFieldMapper')
+      .spyOn(CrudGenHelper, 'objectToFieldMapper')
       .mockReturnValue({ ...fieldAndFilterMapper, extraInfo: undefined });
-    const GqlFieldsMapperTest = $.GqlAgGridFieldsMapper(arr, infoObj);
+    const GqlFieldsMapperTest = $.GqlCrudGenFieldsMapper(arr, infoObj);
 
     expect(GqlFieldsMapperTest).toBeDefined();
   });

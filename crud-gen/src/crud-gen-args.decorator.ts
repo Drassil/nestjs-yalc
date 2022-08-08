@@ -13,7 +13,7 @@ import {
   In,
   IsNull,
 } from 'typeorm';
-import { GqlAgGridFieldsMapper } from 'crud-gen/src/gqlfields.decorator';
+import { GqlCrudGenFieldsMapper } from 'crud-gen/src/gqlfields.decorator';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
 import {
   IAgQueryParams,
@@ -29,7 +29,7 @@ import {
   RowDefaultValues,
 } from './crud-gen.enum';
 import {
-  AgGridFindManyOptions,
+  CrudGenFindManyOptions,
   DateFilterModel,
   FilterInput,
   FilterModel,
@@ -37,8 +37,8 @@ import {
   ICombinedSimpleModel,
   ISimpleFilterModel,
   ISetFilterModel,
-  IAgGridArgsOptions,
-  IAgGridArgsSingleOptions,
+  ICrudGenArgsOptions,
+  ICrudGenArgsSingleOptions,
 } from './crud-gen.interface';
 import {
   findOperatorTypes,
@@ -57,11 +57,11 @@ import {
   objectToFieldMapper,
 } from './crud-gen.helpers';
 import {
-  AgGridError,
-  AgGridFilterNotSupportedError,
-  AgGridFilterProhibited,
-  AgGridInvalidArgumentError,
-  AgGridInvalidOperatorError,
+  CrudGenError,
+  CrudGenFilterNotSupportedError,
+  CrudGenFilterProhibited,
+  CrudGenInvalidArgumentError,
+  CrudGenInvalidOperatorError,
 } from './crud-gen.error';
 import { DateHelper } from '@nestjs-yalc/utils/date.helper';
 import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
@@ -97,7 +97,7 @@ export function getTextFilter(filter: string, firstParameter: string) {
     case GeneralFilters.LIKE.toLowerCase():
       return Like(`%${firstParameter}%`);
     default:
-      throw new AgGridFilterNotSupportedError(`filter: ${filter} type: TEXT`);
+      throw new CrudGenFilterNotSupportedError(`filter: ${filter} type: TEXT`);
   }
 }
 
@@ -122,7 +122,9 @@ export function getNumberFilter(
     case GeneralFilters.INRANGE.toLowerCase():
       return Between(firstParameter, secondParameter) as FindOperator<number>;
     default:
-      throw new AgGridFilterNotSupportedError(`filter: ${filter} type: NUMBER`);
+      throw new CrudGenFilterNotSupportedError(
+        `filter: ${filter} type: NUMBER`,
+      );
   }
 }
 
@@ -155,7 +157,7 @@ export function getDateFilter(
         DateHelper.dateToSQLDateTime(new Date(dateTo)),
       );
     default:
-      throw new AgGridFilterNotSupportedError(`filter: ${filter} type: DATE`);
+      throw new CrudGenFilterNotSupportedError(`filter: ${filter} type: DATE`);
   }
 }
 
@@ -182,7 +184,7 @@ export function filterSwitch(
   }
 
   if (arg1 === undefined) {
-    throw new AgGridInvalidArgumentError();
+    throw new CrudGenInvalidArgumentError();
   }
 
   filterName = filterName ?? filter.type;
@@ -209,7 +211,7 @@ export function getFindOperator(
     case FilterType.SET:
       return In(arg1);
     default:
-      throw new AgGridFilterNotSupportedError(
+      throw new CrudGenFilterNotSupportedError(
         `filter: ${filterName} type: ${filterType}`,
       );
   }
@@ -223,7 +225,7 @@ export function convertFilter(
       filter.operator.toUpperCase() !== Operators.OR &&
       filter.operator.toUpperCase() !== Operators.AND
     ) {
-      throw new AgGridInvalidOperatorError();
+      throw new CrudGenInvalidOperatorError();
     }
     return {
       operator: filter.operator,
@@ -232,7 +234,7 @@ export function convertFilter(
     };
   }
 
-  if (!isFilterModel(filter)) throw new AgGridInvalidArgumentError();
+  if (!isFilterModel(filter)) throw new CrudGenInvalidArgumentError();
 
   let filterToApply;
   if (
@@ -263,7 +265,7 @@ export function resolveFilter(
   ) {
     filterToApply = convertFilter(filter);
   } else {
-    throw new AgGridFilterNotSupportedError(`${JSON.stringify(filter)}`);
+    throw new CrudGenFilterNotSupportedError(`${JSON.stringify(filter)}`);
   }
   return filterToApply;
 }
@@ -291,7 +293,7 @@ export function createWhere(
        * @see https://github.com/graphql/graphql-spec/issues/488
        */
       if (exprTypes.length > 1) {
-        throw new AgGridError(
+        throw new CrudGenError(
           `Field can't use more than one expression type on same expression: ${exprTypes}`,
         );
       }
@@ -331,7 +333,7 @@ export function createWhere(
         filters: { [key]: resolveFilter(expr) },
       });
     } else {
-      throw new AgGridFilterNotSupportedError(`${JSON.stringify(expr)}`);
+      throw new CrudGenFilterNotSupportedError(`${JSON.stringify(expr)}`);
     }
   }
 
@@ -372,7 +374,7 @@ export function checkFilterScope(
         ? !filterOption.fields.includes(key)
         : filterOption.fields.includes(key))
     ) {
-      throw new AgGridFilterProhibited();
+      throw new CrudGenFilterProhibited();
     }
   }
   const { childExpressions } = where;
@@ -381,12 +383,12 @@ export function checkFilterScope(
   }
 }
 
-export function mapAgGridParams(
-  params: IAgGridArgsOptions | undefined,
+export function mapCrudGenParams(
+  params: ICrudGenArgsOptions | undefined,
   ctx: GqlExecutionContext,
   args: IAgQueryParams,
   info: GraphQLResolveInfo,
-): AgGridFindManyOptions {
+): CrudGenFindManyOptions {
   let filterOption: FilterOption | undefined;
   let fieldMapper: IFieldMapper = {};
   const fieldType = params?.fieldType ?? params?.fieldMap ?? params?.entityType;
@@ -400,7 +402,7 @@ export function mapAgGridParams(
 
   const defaultSorting = params?.defaultValue?.sorting;
   // MAP query fields -> select
-  const { keys, keysMeta } = GqlAgGridFieldsMapper(
+  const { keys, keysMeta } = GqlCrudGenFieldsMapper(
     fieldType ?? {},
     ctx.getInfo(),
   );
@@ -447,7 +449,7 @@ export function mapAgGridParams(
     if (maxRow === 0 || requestRow < maxRow) {
       return requestRow;
     } else {
-      throw new AgGridError(
+      throw new CrudGenError(
         `Invalid max number of row selected: cannot exeed max ${maxRow}`,
       );
     }
@@ -508,7 +510,7 @@ export function mapAgGridParams(
     where = forceFilters(where, forcedFilters, fieldMapper);
   }
 
-  const findManyOptions: AgGridFindManyOptions = {
+  const findManyOptions: CrudGenFindManyOptions = {
     skip,
     take,
     order,
@@ -534,13 +536,13 @@ export function mapAgGridParams(
   return findManyOptions;
 }
 
-export const AgGridArgsFactory = <T>(
-  data: IAgGridArgsOptions | undefined,
+export const CrudGenArgsFactory = <T>(
+  data: ICrudGenArgsOptions | undefined,
   ctx: ExecutionContext,
-): AgGridFindManyOptions<T> => {
+): CrudGenFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
-  const params = mapAgGridParams(
+  const params = mapCrudGenParams(
     data,
     gqlCtx,
     gqlCtx.getArgs(),
@@ -550,12 +552,12 @@ export const AgGridArgsFactory = <T>(
   return params;
 };
 
-export const AgGridArgsMapper = createParamDecorator(AgGridArgsFactory);
+export const CrudGenArgsMapper = createParamDecorator(CrudGenArgsFactory);
 
 /**
  * Combine multiple param decorators
  */
-export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
+export const CrudGenCombineDecorators = (params: ICrudGenArgsOptions) => {
   const argDecorators: ParameterDecorator[] = [];
   if (params.extraArgs) {
     for (const argName of Object.keys(params.extraArgs)) {
@@ -585,7 +587,7 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
   }
 
   const args = Args(params.gql ?? {});
-  const mapper = AgGridArgsMapper(params);
+  const mapper = CrudGenArgsMapper(params);
   return function (target: any, key: string, index: number) {
     args(target, key, index);
     joinArg && joinArg(target, key, index);
@@ -594,7 +596,7 @@ export const AgGridCombineDecorators = (params: IAgGridArgsOptions) => {
   };
 };
 
-export const AgGridArgs = (params: IAgGridArgsOptions) => {
+export const CrudGenArgs = (params: ICrudGenArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
@@ -604,13 +606,13 @@ export const AgGridArgs = (params: IAgGridArgsOptions) => {
 
   params.gql = gqlOptions;
 
-  return AgGridCombineDecorators(params);
+  return CrudGenCombineDecorators(params);
 };
 
 /**
  * Combine multiple param decorators
  */
-export const AgGridArgsNoPagination = (params: IAgGridArgsOptions) => {
+export const CrudGenArgsNoPagination = (params: ICrudGenArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
@@ -620,22 +622,22 @@ export const AgGridArgsNoPagination = (params: IAgGridArgsOptions) => {
 
   params.gql = gqlOptions;
 
-  return AgGridCombineDecorators(params);
+  return CrudGenCombineDecorators(params);
 };
 
-export function AgGridArgsSingleDecoratorMapper<T>(
-  params: IAgGridArgsOptions | undefined,
+export function CrudGenArgsSingleDecoratorMapper<T>(
+  params: ICrudGenArgsOptions | undefined,
   args: IAgQueryParams,
   info: GraphQLResolveInfo,
-): AgGridFindManyOptions<T> {
-  const findManyOptions: AgGridFindManyOptions = {};
+): CrudGenFindManyOptions<T> {
+  const findManyOptions: CrudGenFindManyOptions = {};
 
   if (params) {
     const fieldType = params.fieldType ?? params.entityType;
     if (fieldType) {
       const fieldMapper = objectToFieldMapper(fieldType);
 
-      const { keys, keysMeta } = GqlAgGridFieldsMapper(fieldType, info);
+      const { keys, keysMeta } = GqlCrudGenFieldsMapper(fieldType, info);
       findManyOptions.select = keys;
       findManyOptions.extra = {
         _keysMeta: keysMeta,
@@ -656,24 +658,24 @@ export function AgGridArgsSingleDecoratorMapper<T>(
   return findManyOptions;
 }
 
-export const AgGridArgsSingleDecoratorFactory = <T>(
-  data: IAgGridArgsOptions | undefined,
+export const CrudGenArgsSingleDecoratorFactory = <T>(
+  data: ICrudGenArgsOptions | undefined,
   ctx: ExecutionContext,
-): AgGridFindManyOptions<T> => {
+): CrudGenFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
-  return AgGridArgsSingleDecoratorMapper<T>(
+  return CrudGenArgsSingleDecoratorMapper<T>(
     data,
     gqlCtx.getArgs(),
     gqlCtx.getInfo(),
   );
 };
 
-export const AgGridArgsSingleDecorator = createParamDecorator(
-  AgGridArgsSingleDecoratorFactory,
+export const CrudGenArgsSingleDecorator = createParamDecorator(
+  CrudGenArgsSingleDecoratorFactory,
 );
 
-export const AgGridArgsSingle = (params: IAgGridArgsSingleOptions) => {
+export const CrudGenArgsSingle = (params: ICrudGenArgsSingleOptions) => {
   let joinArg: ParameterDecorator;
   if (params.entityType) {
     const JoinOptionInput = agJoinArgFactory(params.entityType);
@@ -688,7 +690,7 @@ export const AgGridArgsSingle = (params: IAgGridArgsSingleOptions) => {
     }
   }
 
-  const mapper = AgGridArgsSingleDecorator(params);
+  const mapper = CrudGenArgsSingleDecorator(params);
   return function (target: any, key: string, index: number) {
     joinArg && joinArg(target, key, index);
     mapper(target, key, index);

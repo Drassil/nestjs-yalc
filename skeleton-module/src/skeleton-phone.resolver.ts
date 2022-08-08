@@ -1,4 +1,4 @@
-import { AgGridDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
+import { CrudGenDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
 import {
   SkeletonPhoneType,
   SkeletonPhoneCreateInput,
@@ -8,7 +8,7 @@ import {
 import { SkeletonPhone } from './persistance/skeleton-phone.entity';
 
 export const skeletonPhoneProvidersFactory = (dbConnection: string) =>
-  AgGridDependencyFactory<SkeletonPhone>({
+  CrudGenDependencyFactory<SkeletonPhone>({
     // The model used for TypeORM
     entityModel: SkeletonPhone,
     resolver: {

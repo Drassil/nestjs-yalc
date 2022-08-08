@@ -4,8 +4,8 @@ import {
   getDestinationFieldName,
 } from './crud-gen.helpers';
 import {
-  getAgGridFieldMetadataList,
-  IAgGridFieldMetadata,
+  getCrudGenFieldMetadataList,
+  ICrudGenFieldMetadata,
 } from './object.decorator';
 
 /**
@@ -23,11 +23,11 @@ SelectQueryBuilder.prototype.getMany = async function () {
   const { entities, raw } = await this.getRawAndEntities();
 
   const items = entities.map((entity, index) => {
-    const metaInfo = getAgGridFieldMetadataList(entity.constructor) ?? {};
+    const metaInfo = getCrudGenFieldMetadataList(entity.constructor) ?? {};
     const item = raw[index];
 
     for (const [propertyKey, field] of Object.entries<
-      IAgGridFieldMetadata<any>
+      ICrudGenFieldMetadata<any>
     >(metaInfo)) {
       if (field.mode === 'derived' && field.dst) {
         const itemKey = formatRawSelection(
@@ -52,9 +52,9 @@ SelectQueryBuilder.prototype.getOne = async function () {
 
   if (!Array.isArray(entities) || entities.length <= 0) return entities[0];
 
-  const metaInfo = getAgGridFieldMetadataList(entities[0].constructor) ?? {};
+  const metaInfo = getCrudGenFieldMetadataList(entities[0].constructor) ?? {};
 
-  for (const [propertyKey, field] of Object.entries<IAgGridFieldMetadata<any>>(
+  for (const [propertyKey, field] of Object.entries<ICrudGenFieldMetadata<any>>(
     metaInfo,
   )) {
     if (field.mode === 'derived' && field.dst) {

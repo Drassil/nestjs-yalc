@@ -5,13 +5,13 @@ import * as helpers from 'crud-gen/src/crud-gen.helpers';
 
 describe('Test skeleton module', () => {
   it('should register the module', () => {
-    const spiedAgGridDependencyFactory = jest.spyOn(
+    const spiedCrudGenDependencyFactory = jest.spyOn(
       helpers,
-      'AgGridDependencyFactory',
+      'CrudGenDependencyFactory',
     );
 
     const module = SkeletonModule.register('test');
     expect(module).toBeDefined();
-    expect(spiedAgGridDependencyFactory).toHaveBeenCalledTimes(2); // user and phone
+    expect(spiedCrudGenDependencyFactory).toHaveBeenCalledTimes(2); // user and phone
   });
 });

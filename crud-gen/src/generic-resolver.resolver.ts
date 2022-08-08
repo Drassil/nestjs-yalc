@@ -11,8 +11,8 @@ import {
   ReturnTypeFunc,
 } from '@nestjs/graphql';
 import {
-  AgGridArgs,
-  AgGridArgsSingle,
+  CrudGenArgs,
+  CrudGenArgsSingle,
 } from 'crud-gen/src/crud-gen-args.decorator';
 
 import {
@@ -21,11 +21,11 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { AgGridInterceptor } from 'crud-gen/src/crud-gen.interceptor';
+import { CrudGenInterceptor } from 'crud-gen/src/crud-gen.interceptor';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import {
   IExtraArg,
-  AgGridFindManyOptions,
+  CrudGenFindManyOptions,
   IIDArg,
 } from 'crud-gen/src/crud-gen.interface';
 import {
@@ -33,7 +33,7 @@ import {
   getServiceToken,
 } from 'crud-gen/src/generic-service.service';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
-import AgGridGqlType from './crud-gen.type';
+import CrudGenGqlType from './crud-gen.type';
 import {
   getDataloaderToken,
   GQLDataLoader,
@@ -46,8 +46,8 @@ import {
   getEntityRelations,
   IRelationInfo,
 } from './crud-gen.helpers';
-import { getAgGridFieldMetadataList } from './object.decorator';
-import { AgGridError } from './crud-gen.error';
+import { getCrudGenFieldMetadataList } from './object.decorator';
+import { CrudGenError } from './crud-gen.error';
 import { ExtraArgsStrategy } from './crud-gen.enum';
 import { IAgQueryParams } from './crud-gen.args';
 import { InputArgs } from 'crud-gen/src/gqlmapper.decorator';
@@ -149,7 +149,7 @@ export function hasExtraArgs(option: IGenericResolverQueryOptions): boolean {
   return !!(<IGenericResolverQueryOptions>option).extraArgs;
 }
 
-export function hasFilters(findOptions: AgGridFindManyOptions) {
+export function hasFilters(findOptions: CrudGenFindManyOptions) {
   return (
     (findOptions.where &&
       Object.values(findOptions.where.filters).length > 0) ||
@@ -224,7 +224,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
     if (Array.isArray(relType)) {
       relType = relType[0];
     } else if (!relType) {
-      throw new AgGridError('relation type undefined');
+      throw new CrudGenError('relation type undefined');
     }
 
     if (
@@ -240,13 +240,13 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           writable: true,
           value: async function (
             parent: Entity,
-            findOptions: AgGridFindManyOptions,
+            findOptions: CrudGenFindManyOptions,
           ): Promise<[Array<Entity | null>, number]> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
             if (parentRes !== undefined) {
               if (hasFilters(findOptions))
-                throw new AgGridError(
+                throw new CrudGenError(
                   'Cannot specify join arguments and resolver arguments at the same time',
                 );
 
@@ -284,10 +284,10 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           `GenericResolver.${resolverInfo.relation.propertyName} must have a descriptor`,
         );
 
-      ResolveField(returnValue(AgGridGqlType<Entity>(relType)), {
+      ResolveField(returnValue(CrudGenGqlType<Entity>(relType)), {
         nullable: resolverInfo.agField?.gqlOptions?.nullable,
       })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
-      UseInterceptors(new AgGridInterceptor())(
+      UseInterceptors(new CrudGenInterceptor())(
         resolver.prototype,
         resolverInfo.relation.propertyName,
         descriptor,
@@ -295,7 +295,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
 
       Parent()(resolver.prototype, resolverInfo.relation.propertyName, 0);
 
-      AgGridArgs({
+      CrudGenArgs({
         fieldType: relType,
         entityType: relType,
         defaultValue: resolverInfo.agField?.relation?.defaultValue,
@@ -322,13 +322,13 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
           writable: true,
           value: async function (
             parent: Entity,
-            findOptions: AgGridFindManyOptions,
+            findOptions: CrudGenFindManyOptions,
           ): Promise<Entity | null> {
             const parentRes = parent[resolverInfo.relation.propertyName];
 
             if (parentRes !== undefined) {
               if (hasFilters(findOptions))
-                throw new AgGridError(
+                throw new CrudGenError(
                   'Cannot specify join arguments and resolver arguments at the same time',
                 );
 
@@ -372,7 +372,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
 
       Parent()(resolver.prototype, resolverInfo.relation.propertyName, 0);
 
-      AgGridArgsSingle({ fieldType: relType, entityType: relType })(
+      CrudGenArgsSingle({ fieldType: relType, entityType: relType })(
         resolver.prototype,
         resolverInfo.relation.propertyName,
         1,
@@ -399,7 +399,7 @@ export function defineGetSingleResource<Entity>(
     configurable: true,
     writable: true,
     value: async function (
-      findOptions: AgGridFindManyOptions<Entity>,
+      findOptions: CrudGenFindManyOptions<Entity>,
       ctx: ExecutionContext,
       id?: string,
     ): Promise<Entity | null> {
@@ -452,7 +452,7 @@ export function defineGetSingleResource<Entity>(
       ? fieldType()
       : fieldType;
 
-  AgGridArgsSingle({
+  CrudGenArgsSingle({
     fieldType,
     entityType,
   })(resolver.prototype, queryName, 0);
@@ -489,9 +489,9 @@ export function defineGetGridResource<Entity>(
     configurable: true,
     writable: true,
     value: async function (
-      findOptions: AgGridFindManyOptions,
+      findOptions: CrudGenFindManyOptions,
     ): Promise<[Entity[], number]> {
-      return (<GenericService<Entity>>this.service).getEntityListAgGrid(
+      return (<GenericService<Entity>>this.service).getEntityListCrudGen(
         findOptions,
         true,
       );
@@ -513,12 +513,12 @@ export function defineGetGridResource<Entity>(
       Query,
       queryName,
       methodOptions.returnType ??
-        returnValue(AgGridGqlType<Entity>(returnType)),
+        returnValue(CrudGenGqlType<Entity>(returnType)),
       methodOptions,
     ),
   )(resolver.prototype, queryName, descriptor);
 
-  UseInterceptors(new AgGridInterceptor())(
+  UseInterceptors(new CrudGenInterceptor())(
     resolver.prototype,
     queryName,
     descriptor,
@@ -532,7 +532,7 @@ export function defineGetGridResource<Entity>(
 
   const extraArgTypes: any[] = [];
   if (hasExtraArgs(methodOptions)) {
-    AgGridArgs({
+    CrudGenArgs({
       fieldType,
       entityType,
       extraArgs: methodOptions.extraArgs,
@@ -546,7 +546,7 @@ export function defineGetGridResource<Entity>(
       });
     }
   } else {
-    AgGridArgs({
+    CrudGenArgs({
       fieldType,
       entityType,
     })(resolver.prototype, queryName, 0);
@@ -572,7 +572,7 @@ export function defineCreateMutation<Entity>(
     writable: true,
     value: async function (
       input: Entity,
-      findOptions: AgGridFindManyOptions<Entity>,
+      findOptions: CrudGenFindManyOptions<Entity>,
       ctx: ExecutionContext,
       extraInputsArgs?: { [key: string]: IExtraInput<Entity> },
     ): Promise<Entity | null> {
@@ -636,7 +636,7 @@ export function defineCreateMutation<Entity>(
       ? fieldType()
       : fieldType;
 
-  AgGridArgsSingle({
+  CrudGenArgsSingle({
     fieldType,
     entityType,
   })(resolver.prototype, queryName, 1);
@@ -676,7 +676,7 @@ export function defineUpdateMutation<Entity>(
     value: async function (
       conditions: Entity,
       input: Entity,
-      findOptions: AgGridFindManyOptions<Entity>,
+      findOptions: CrudGenFindManyOptions<Entity>,
     ): Promise<Entity | null> {
       return (<GenericService<Entity>>this.service).updateEntity(
         conditions,
@@ -731,7 +731,7 @@ export function defineUpdateMutation<Entity>(
       ? fieldType()
       : fieldType;
 
-  AgGridArgsSingle({
+  CrudGenArgsSingle({
     fieldType,
     entityType,
   })(resolver.prototype, queryName, 2);
@@ -839,7 +839,7 @@ export function resolverFactory<
     options.dto,
   );
 
-  const fieldMetadataList = getAgGridFieldMetadataList(returnType);
+  const fieldMetadataList = getCrudGenFieldMetadataList(returnType);
   if (fieldMetadataList) {
     Object.keys(fieldMetadataList).forEach((propertyName) => {
       const field = fieldMetadataList[propertyName];

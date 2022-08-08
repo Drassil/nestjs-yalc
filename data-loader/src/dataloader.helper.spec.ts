@@ -1,6 +1,6 @@
 import { createMock } from '@golevelup/ts-jest';
 import { SortDirection } from 'crud-gen/src/crud-gen.enum';
-import { AgGridFindManyOptions } from 'crud-gen/src/crud-gen.interface';
+import { CrudGenFindManyOptions } from 'crud-gen/src/crud-gen.interface';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -22,7 +22,7 @@ describe('GQLDataLoader class', () => {
   }
 
   const mockLoadFn = jest.fn();
-  const mockedFindManyOptions = createMock<AgGridFindManyOptions>();
+  const mockedFindManyOptions = createMock<CrudGenFindManyOptions>();
   const mockedEventEmitter = createMock<EventEmitter2>();
   let dataLoader: GQLDataLoader<EntityTest>;
 
@@ -69,7 +69,7 @@ describe('GQLDataLoader class', () => {
     const obj = new EntityTest('asset_1');
     mockLoadFn.mockResolvedValue([[obj]]);
 
-    let findOptions = createMock<AgGridFindManyOptions<EntityTest>>();
+    let findOptions = createMock<CrudGenFindManyOptions<EntityTest>>();
     findOptions = {
       ...findOptions,
       order: { anotherField: SortDirection.ASC },
@@ -82,7 +82,7 @@ describe('GQLDataLoader class', () => {
       },
     };
 
-    let findOptions2 = createMock<AgGridFindManyOptions<EntityTest>>();
+    let findOptions2 = createMock<CrudGenFindManyOptions<EntityTest>>();
     findOptions2 = {
       ...findOptions2,
       select: ['databaseKey'], // to cover one condition
@@ -178,7 +178,7 @@ describe('GQLDataLoader class', () => {
     const genericService = createMock<GenericService>();
 
     const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
-    genericService.getEntityListAgGrid.mockResolvedValue(output);
+    genericService.getEntityListCrudGen.mockResolvedValue(output);
 
     const result: FactoryProvider = DataLoaderFactory<EntityTest>(
       'databaseKey',

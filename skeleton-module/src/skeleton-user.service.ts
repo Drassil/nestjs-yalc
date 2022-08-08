@@ -2,7 +2,7 @@ import { GenericService } from 'crud-gen/src/generic-service.service';
 import { SkeletonUser } from './persistance/skeleton-user.entity';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
+import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue';
@@ -21,7 +21,7 @@ export const skeletonUserServiceFactory = (
     implements SkeletonUserService {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
-      protected repository: AgGridRepository<SkeletonUser>,
+      protected repository: CrudGenRepository<SkeletonUser>,
     ) {
       super(repository);
     }

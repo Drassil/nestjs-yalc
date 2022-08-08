@@ -1,4 +1,4 @@
-import { AgGridField } from 'crud-gen/src/object.decorator';
+import { CrudGenField } from 'crud-gen/src/object.decorator';
 import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
 import { ObjectType } from '@nestjs/graphql';
 import {
@@ -32,13 +32,13 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   // This configuration can't be moved in DTO
   // because it instructs TypeORM on how to select
   // the resource
-  @AgGridField({
+  @CrudGenField({
     dst: `CONCAT(firstName,' ', lastName)`,
     mode: 'derived',
     isSymbolic: true,
   })
   // virtual column, not selectable
-  // handled by the @AgGridField
+  // handled by the @CrudGenField
   @Column({
     select: false,
     insert: false,

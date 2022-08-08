@@ -27,19 +27,19 @@ import {
 } from './crud-gen-type-checker.utils';
 import { FilterType, Operators } from './crud-gen.enum';
 import {
-  AgGridConditionNotSupportedError,
-  AgGridNotPossibleError,
-  AgGridStringWhereError,
+  CrudGenConditionNotSupportedError,
+  CrudGenNotPossibleError,
+  CrudGenStringWhereError,
 } from './crud-gen.error';
 import { JoinArgOptions, JoinTypes } from './crud-gen.input';
 import {
   IExtraArg,
-  AgGridFindManyOptions,
+  CrudGenFindManyOptions,
   FilterInput,
 } from './crud-gen.interface';
 import {
-  AgGridRepository,
-  AgGridRepositoryFactory,
+  CrudGenRepository,
+  CrudGenRepositoryFactory,
 } from './crud-gen.repository';
 import {
   findOperatorTypes,
@@ -58,15 +58,15 @@ import {
 } from './generic-service.service';
 import {
   DstExtended,
-  getAgGridFieldMetadataList,
-  getAgGridObjectMetadata,
-  IAgGridFieldMetadata,
+  getCrudGenFieldMetadataList,
+  getCrudGenObjectMetadata,
+  ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
   isDstExtended,
 } from './object.decorator';
 export const columnConversion = (
   key: string,
-  data: IFieldMapper | { [key: string]: IAgGridFieldMetadata } | undefined,
+  data: IFieldMapper | { [key: string]: ICrudGenFieldMetadata } | undefined,
 ): string => {
   if (data) {
     const dst = data[key]?.dst ?? key;
@@ -108,7 +108,7 @@ export const forceFilters = (
   // typeORM where property can be a string as type but we do not allow to use
   // string with this filter. Should never happen though
   if (typeof where === 'string') {
-    throw new AgGridStringWhereError();
+    throw new CrudGenStringWhereError();
   }
   for (const property of properties) {
     if (property.value) {
@@ -124,7 +124,7 @@ export const forceFilters = (
   if (where) {
     return where;
   } else {
-    throw new AgGridNotPossibleError();
+    throw new CrudGenNotPossibleError();
   }
 };
 
@@ -194,7 +194,7 @@ export function whereObjectToSqlString<Entity>(
         /**
          * @todo handle the else (?) but it should not happen
          */
-        throw new AgGridConditionNotSupportedError();
+        throw new CrudGenConditionNotSupportedError();
       }
     } else if (isFindOperator(operation)) {
       //If it is a normal filter then we simply convert it and add the operator
@@ -211,7 +211,7 @@ export function whereObjectToSqlString<Entity>(
         fieldMap,
       )} ${operation} ${operator}`;
     } else {
-      throw new AgGridConditionNotSupportedError(JSON.stringify(operation));
+      throw new CrudGenConditionNotSupportedError(JSON.stringify(operation));
     }
   }
 
@@ -280,12 +280,12 @@ export const objectToFieldMapper = (
 
   fieldMapper.extraInfo = {};
 
-  const objectMetadata = getAgGridObjectMetadata(object as any);
+  const objectMetadata = getCrudGenObjectMetadata(object as any);
 
   if (objectMetadata) {
     fieldMapper.filterOption = objectMetadata;
 
-    const fieldMetadataList = getAgGridFieldMetadataList(object as any);
+    const fieldMetadataList = getCrudGenFieldMetadataList(object as any);
 
     if (fieldMetadataList) {
       for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -338,7 +338,7 @@ export function isIFieldAndFilterMapper(
 
 export interface IDependencyObject<Entity> {
   providers: Array<FactoryProvider | Provider>;
-  repository: ClassType<AgGridRepository<Entity>>;
+  repository: ClassType<CrudGenRepository<Entity>>;
 }
 
 export interface IProviderOverride<T = any> {
@@ -367,7 +367,7 @@ interface IDataLoaderOptions<Entity> {
   entityModel?: ClassType<Entity>;
 }
 
-export interface IAgGridDependencyFactoryOptions<Entity> {
+export interface ICrudGenDependencyFactoryOptions<Entity> {
   entityModel: ClassType<Entity>;
   resolver?:
     | Omit<IGenericResolverOptions<Entity>, 'entityModel'>
@@ -375,7 +375,7 @@ export interface IAgGridDependencyFactoryOptions<Entity> {
     | false;
   service?: IGenericServiceOptions<Entity> | IProviderOverride;
   dataloader?: IDataLoaderOptions<Entity> | IProviderOverride;
-  repository?: ClassType<AgGridRepository<Entity>>;
+  repository?: ClassType<CrudGenRepository<Entity>>;
 }
 
 export function isProviderOverride(
@@ -385,13 +385,13 @@ export function isProviderOverride(
   return !!casted.provider;
 }
 
-export function AgGridDependencyFactory<Entity>({
+export function CrudGenDependencyFactory<Entity>({
   entityModel,
   dataloader,
   resolver,
   service,
   repository,
-}: IAgGridDependencyFactoryOptions<Entity>): IDependencyObject<Entity> {
+}: ICrudGenDependencyFactoryOptions<Entity>): IDependencyObject<Entity> {
   const providers: Provider[] = [];
 
   const resolverOptions: IGenericResolverOptions<Entity> = {
@@ -459,7 +459,7 @@ export function AgGridDependencyFactory<Entity>({
 
   return {
     providers,
-    repository: repository ?? AgGridRepositoryFactory<Entity>(entityModel),
+    repository: repository ?? CrudGenRepositoryFactory<Entity>(entityModel),
   };
 }
 
@@ -496,7 +496,7 @@ export function filterTypeToNativeType(type: FilterType) {
 export interface IRelationInfo {
   relation: RelationMetadataArgs;
   join: JoinColumnMetadataArgs | undefined;
-  agField?: IAgGridFieldMetadata;
+  agField?: ICrudGenFieldMetadata;
 }
 
 export function getEntityRelations<Entity, DTO = Entity>(
@@ -515,15 +515,15 @@ export function getEntityRelations<Entity, DTO = Entity>(
       (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
-  const agGridMetadata = getAgGridFieldMetadataList(dto ?? entityModel);
+  const crudGenMetadata = getCrudGenFieldMetadataList(dto ?? entityModel);
 
   return relations.map((r: RelationMetadataArgs) => ({
     relation: r,
     join: joinColumns.find(
       (j: JoinColumnMetadataArgs) => j.propertyName === r.propertyName,
     ),
-    agField: agGridMetadata
-      ? Object.values(agGridMetadata).find((v) => v.dst === r.propertyName)
+    agField: crudGenMetadata
+      ? Object.values(crudGenMetadata).find((v) => v.dst === r.propertyName)
       : { _propertyName: r.propertyName },
   }));
 }
@@ -536,7 +536,7 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
   );
 
   // to get crud-gen fields
-  const fieldMetadataList = getAgGridFieldMetadataList(entityModel);
+  const fieldMetadataList = getCrudGenFieldMetadataList(entityModel);
 
   if (fieldMetadataList) {
     for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -573,10 +573,10 @@ export function getMappedTypeProperties<Entity>(
 }
 
 export function applyJoinArguments(
-  findManyOptions: AgGridFindManyOptions,
+  findManyOptions: CrudGenFindManyOptions,
   alias: string,
   join: { [index: string]: JoinArgOptions },
-  fieldMapper: { [key: string]: IAgGridFieldMetadata },
+  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
 ): void {
   const _joinObject: {
     alias: string;
@@ -689,13 +689,13 @@ export function formatRawSelection(
 
 /**
  * Derived fields need metadata attached in order to be processed by
- * the AgGrid Repository. Use this method to apply the proper
+ * the CrudGen Repository. Use this method to apply the proper
  * selection with metadata to a find option object
  */
 export function applySelectOnFind<T = any>(
-  findOptions: AgGridFindManyOptions,
+  findOptions: CrudGenFindManyOptions,
   field: keyof T,
-  fieldMapper: { [key: string]: IAgGridFieldMetadata },
+  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
   /**
    * If it's a nested field, you need to specify a path
    */

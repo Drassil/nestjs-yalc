@@ -159,7 +159,7 @@ export interface FilterInput {
   childExpressions?: FilterInput[];
 }
 
-export interface IAgGridFindExtraOptions {
+export interface ICrudGenFindExtraOptions {
   /** It apply limit and offset at the same level of the join instead of
    * wrapping the join with another query by applying the limit later
    */
@@ -186,12 +186,12 @@ export interface IAgGridFindExtraOptions {
   _aliasType?: string;
 }
 
-export interface AgGridFindManyOptions<T = any> extends FindManyOptions<T> {
+export interface CrudGenFindManyOptions<T = any> extends FindManyOptions<T> {
   where?: IWhereCondition;
   /** Contains useful information about the graphql request */
   info?: GraphQLResolveInfo;
-  extra?: IAgGridFindExtraOptions;
-  subQueryFilters?: AgGridFindManyOptions<T>;
+  extra?: ICrudGenFindExtraOptions;
+  subQueryFilters?: CrudGenFindManyOptions<T>;
 }
 
 export type IMultiColumnJoinOptions = {
@@ -231,7 +231,7 @@ export interface IExtraArg extends IBaseArg {
   filterCondition: GeneralFilters;
 }
 
-export interface IAgGridArgsSingleOptions {
+export interface ICrudGenArgsSingleOptions {
   /**
    * @property Options for the nestjs Args decorator
    */
@@ -251,7 +251,7 @@ export interface IAgGridArgsSingleOptions {
   entityType?: ClassType;
 }
 
-export interface IAgGridArgsOptions extends IAgGridArgsSingleOptions {
+export interface ICrudGenArgsOptions extends ICrudGenArgsSingleOptions {
   defaultValue?: IAgQueryParams;
   /**
    * Filters with direct arguments

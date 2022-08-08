@@ -1,6 +1,6 @@
 import { BaseEntity } from 'typeorm';
 import { entityFieldsEnumFactory } from '../crud-gen.enum';
-import * as AgGridHelper from '../crud-gen.helpers';
+import * as CrudGenHelper from '../crud-gen.helpers';
 
 const fixedProperty = 'columId';
 
@@ -14,7 +14,7 @@ describe('entityFieldsEnumFactory', () => {
 
   beforeEach(() => {
     mockedGetMappedTypeProperties = jest.spyOn(
-      AgGridHelper,
+      CrudGenHelper,
       'getMappedTypeProperties',
     );
 

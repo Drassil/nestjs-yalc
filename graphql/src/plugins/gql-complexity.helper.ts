@@ -83,7 +83,7 @@ export class GqlComplexityHelper {
     const notNodesField = fieldName !== 'nodes';
 
     // Process non-captilized request resources should not be supported
-    // It's still necessary to visit the selectionSet inside 'nodes' (AgGrid).
+    // It's still necessary to visit the selectionSet inside 'nodes' (CrudGen).
     // ID is used as a field name in entities, not a nested resource, it should be skipped.
     const shouldSkipFieldName =
       fieldName === 'ID' ||

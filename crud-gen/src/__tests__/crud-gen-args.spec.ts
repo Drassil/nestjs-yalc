@@ -12,26 +12,26 @@ class TestEntity extends BaseEntity {
 
 describe('Ag-grid args', () => {
   it('Should generate agQuery params', async () => {
-    const agGridArgs = agQueryParamsFactory({
+    const crudGenArgs = agQueryParamsFactory({
       sorting: [{ colId: 'somecol', sort: SortDirection.ASC }],
       filters: {},
     });
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance).toBeDefined();
   });
 
   it('Should generate agQuery params without sorting', async () => {
-    const agGridArgs = agQueryParamsFactory();
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    const crudGenArgs = agQueryParamsFactory();
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance.filters).not.toBeDefined();
   });
 
   it('Should generate agQuery params with with default values on startRow and endRow', async () => {
-    const agGridArgs = agQueryParamsFactory(undefined, TestEntity);
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    const crudGenArgs = agQueryParamsFactory(undefined, TestEntity);
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance.startRow).toBe(RowDefaultValues.START_ROW);
     expect(instance.endRow).toBe(RowDefaultValues.END_ROW);
   });
@@ -41,30 +41,30 @@ describe('Ag-grid args', () => {
       startRow: 0,
       endRow: 20,
     };
-    const agGridArgs = agQueryParamsFactory(defaultValues, TestEntity);
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    const crudGenArgs = agQueryParamsFactory(defaultValues, TestEntity);
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance.startRow).toBe(defaultValues.startRow);
     expect(instance.endRow).toBe(defaultValues.endRow);
   });
 
   it('Should generate agQuery params without pagination', async () => {
-    const agGridArgs = agQueryParamsNoPaginationFactory(
+    const crudGenArgs = agQueryParamsNoPaginationFactory(
       {
         sorting: [{ colId: 'somecol', sort: SortDirection.ASC }],
         filters: {},
       },
       TestEntity,
     );
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance).toBeDefined();
   });
 
   it('Should generate agQuery params without pagination and sorting', async () => {
-    const agGridArgs = agQueryParamsNoPaginationFactory();
-    expect(agGridArgs).toBeDefined();
-    const instance = new agGridArgs();
+    const crudGenArgs = agQueryParamsNoPaginationFactory();
+    expect(crudGenArgs).toBeDefined();
+    const instance = new crudGenArgs();
     expect(instance).toBeDefined();
   });
 });

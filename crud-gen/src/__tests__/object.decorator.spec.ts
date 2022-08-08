@@ -1,12 +1,12 @@
 import {
-  AgGridField,
-  AgGridObject,
-  getAgGridFieldMetadata,
-  getAgGridObjectMetadata,
-  hasAgGridFieldMetadata,
-  hasAgGridFieldMetadataList,
-  hasAgGridObjectMetadata,
-  IAgGridFieldMetadata,
+  CrudGenField,
+  CrudGenObject,
+  getCrudGenFieldMetadata,
+  getCrudGenObjectMetadata,
+  hasCrudGenFieldMetadata,
+  hasCrudGenFieldMetadataList,
+  hasCrudGenObjectMetadata,
+  ICrudGenFieldMetadata,
 } from '../object.decorator';
 import { TestEntityDto } from '../__mocks__/entity.mock';
 import { fixedIncludefilterOption } from '../__mocks__/filter.mocks';
@@ -16,7 +16,7 @@ import * as NestGraphql from '@nestjs/graphql';
 import { FieldOptions, ReturnTypeFunc } from '@nestjs/graphql';
 import { BaseEntity } from 'typeorm';
 
-const fixedAgGridFieldMetadata: IAgGridFieldMetadata = {
+const fixedCrudGenFieldMetadata: ICrudGenFieldMetadata = {
   gqlOptions: {},
   gqlType: () => String,
 };
@@ -25,50 +25,50 @@ describe('ObjectDecorator', () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
-  it('Should decorate properly a property with AgGridField', () => {
+  it('Should decorate properly a property with CrudGenField', () => {
     class TestObject {
-      @AgGridField(fixedAgGridFieldMetadata)
+      @CrudGenField(fixedCrudGenFieldMetadata)
       decoratedProperty = {};
 
       property = 'notDecorated';
     }
 
-    expect(hasAgGridFieldMetadataList(TestObject)).toBeTruthy();
+    expect(hasCrudGenFieldMetadataList(TestObject)).toBeTruthy();
 
-    let metadata = getAgGridFieldMetadata(TestObject, 'decoratedProperty');
+    let metadata = getCrudGenFieldMetadata(TestObject, 'decoratedProperty');
     expect([metadata.dst, metadata.src]).toEqual(
       expect.arrayContaining(['decoratedProperty', 'decoratedProperty']),
     );
 
-    metadata = getAgGridFieldMetadata(TestObject, 'property');
-    expect(hasAgGridFieldMetadata(TestObject, 'property')).toBeFalsy();
+    metadata = getCrudGenFieldMetadata(TestObject, 'property');
+    expect(hasCrudGenFieldMetadata(TestObject, 'property')).toBeFalsy();
     expect(metadata).toBeUndefined();
   });
 
-  it('Should decorate properly an object with AgGridObject', () => {
-    @AgGridObject()
+  it('Should decorate properly an object with CrudGenObject', () => {
+    @CrudGenObject()
     class TestObject {
       decoratedProperty = {};
     }
 
-    expect(hasAgGridObjectMetadata(TestObject)).toBeTruthy();
+    expect(hasCrudGenObjectMetadata(TestObject)).toBeTruthy();
   });
 
   it('Should copy the metadata from an object to another', () => {
-    @AgGridObject({ filters: fixedIncludefilterOption })
+    @CrudGenObject({ filters: fixedIncludefilterOption })
     class BaseDecoratedClass {
-      @AgGridField({})
+      @CrudGenField({})
       baseDecoratedProperty: 'string';
     }
 
-    @AgGridObject({
+    @CrudGenObject({
       copyFrom: BaseDecoratedClass,
     })
     class TestObject2 {}
 
-    expect(hasAgGridObjectMetadata(TestObject2)).toBeTruthy();
+    expect(hasCrudGenObjectMetadata(TestObject2)).toBeTruthy();
 
-    const metadata = getAgGridObjectMetadata(TestObject2);
+    const metadata = getCrudGenObjectMetadata(TestObject2);
 
     expect(metadata).toEqual({
       copyFrom: BaseDecoratedClass,
@@ -77,16 +77,16 @@ describe('ObjectDecorator', () => {
   });
 
   it('Should decorate properly a property with a custom gqlOptions', () => {
-    const metadata = getAgGridFieldMetadata(TestEntityDto, 'id');
+    const metadata = getCrudGenFieldMetadata(TestEntityDto, 'id');
     expect([metadata.dst, metadata.src]).toEqual(
       expect.arrayContaining(['id']),
     );
-    expect(hasAgGridFieldMetadata(TestEntityDto, 'id')).toBeTruthy();
+    expect(hasCrudGenFieldMetadata(TestEntityDto, 'id')).toBeTruthy();
   });
 
-  it('Should AgGridField work properly with default values', () => {
+  it('Should CrudGenField work properly with default values', () => {
     jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
       .mockReturnValue({});
 
     const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
@@ -95,12 +95,12 @@ describe('ObjectDecorator', () => {
     let gqlOptions: FieldOptions | undefined = undefined;
     let gqlType: ReturnTypeFunc | undefined = () => BaseEntity;
 
-    let agGridFieldDecorator = AgGridField({
+    let crudGenFieldDecorator = CrudGenField({
       gqlType,
       gqlOptions,
     });
 
-    agGridFieldDecorator({}, 'propertyKey');
+    crudGenFieldDecorator({}, 'propertyKey');
 
     expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
       gqlType,
@@ -111,12 +111,12 @@ describe('ObjectDecorator', () => {
     gqlOptions = { name: 'name' };
     gqlType = undefined;
 
-    agGridFieldDecorator = AgGridField({
+    crudGenFieldDecorator = CrudGenField({
       gqlType,
       gqlOptions,
     });
 
-    agGridFieldDecorator({}, 'propertyKey');
+    crudGenFieldDecorator({}, 'propertyKey');
     expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
       gqlOptions,
       gqlOptions,

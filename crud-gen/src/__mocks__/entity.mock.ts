@@ -7,7 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { AgGridField, AgGridObject } from '../object.decorator';
+import { CrudGenField, CrudGenObject } from '../object.decorator';
 
 @Entity()
 export class TestEntity extends BaseEntity {
@@ -15,9 +15,9 @@ export class TestEntity extends BaseEntity {
   id: number;
 }
 
-@AgGridObject()
+@CrudGenObject()
 export class TestEntityDto extends TestEntity {
-  @AgGridField({ gqlOptions: { name: 'entityId' } })
+  @CrudGenField({ gqlOptions: { name: 'entityId' } })
   id: number;
 }
 

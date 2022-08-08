@@ -1,5 +1,5 @@
 import { MissingArgumentsError } from '../missing-arguments.error';
-import { AgGridErrors } from '../strings.enum';
+import { CrudGenErrors } from '../strings.enum';
 
 describe('Missing arguments error', () => {
   const error = new MissingArgumentsError();
@@ -9,7 +9,7 @@ describe('Missing arguments error', () => {
   });
 
   it('should have the correct message', () => {
-    expect(error.message).toEqual(AgGridErrors.REQUIRED_ARGS);
+    expect(error.message).toEqual(CrudGenErrors.REQUIRED_ARGS);
   });
 
   it('should set the custom message', () => {

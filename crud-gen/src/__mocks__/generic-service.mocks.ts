@@ -1,12 +1,12 @@
 import { BaseEntity } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
-import { AgGridField, AgGridObject } from '../object.decorator';
+import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
+import { CrudGenField, CrudGenObject } from '../object.decorator';
 import { JsonTransformer } from '../transformers.helpers';
 
-@AgGridObject({})
+@CrudGenObject({})
 export class ReadEntity {
-  @AgGridField({
+  @CrudGenField({
     dst: {
       name: 'jsonProperty',
       transformer: JsonTransformer('data', 'sub.jsonProperty'),
@@ -14,11 +14,11 @@ export class ReadEntity {
   })
   jsonProperty: string;
 
-  @AgGridField({})
+  @CrudGenField({})
   noTransform: string;
 
   // should never happen
-  @AgGridField({ dst: undefined })
+  @CrudGenField({ dst: undefined })
   noDest: string;
 }
 
@@ -29,5 +29,5 @@ export class WriteEntity {
 export class MockedEntity extends BaseEntity {}
 
 export const baseEntityRepository = createMock<
-  AgGridRepository<MockedEntity>
+  CrudGenRepository<MockedEntity>
 >();

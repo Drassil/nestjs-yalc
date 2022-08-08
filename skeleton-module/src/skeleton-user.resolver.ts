@@ -1,4 +1,4 @@
-import { AgGridDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
+import { CrudGenDependencyFactory } from 'crud-gen/src/crud-gen.helpers';
 import { resolverFactory } from 'crud-gen/src/generic-resolver.resolver';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import returnValue from '@nestjs-yalc/utils/returnValue';
@@ -140,7 +140,7 @@ export class SkeletonUserResolver extends resolverFactory({
 }
 
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
-  AgGridDependencyFactory<SkeletonUser>({
+  CrudGenDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {

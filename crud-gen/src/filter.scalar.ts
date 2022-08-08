@@ -6,7 +6,7 @@ import {
   isMulticolumnJoinOptions,
 } from './crud-gen-type-checker.utils';
 import { CustomWhereKeys } from './crud-gen.enum';
-import { AgGridBadFilterTypeError } from './crud-gen.error';
+import { CrudGenBadFilterTypeError } from './crud-gen.error';
 import {
   FilterInput,
   IFilterInputOld,
@@ -84,6 +84,6 @@ export class FilterScalar implements CustomScalar<string, FilterInput> {
     if (ast.kind === Kind.STRING) {
       return this.parseValue(ast.value);
     }
-    throw new AgGridBadFilterTypeError();
+    throw new CrudGenBadFilterTypeError();
   }
 }

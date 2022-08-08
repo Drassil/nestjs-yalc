@@ -4,7 +4,7 @@ jest.mock('../crud-gen.args', () => ({
   agQueryParamsNoPaginationFactory: jest.fn(),
 }));
 
-import * as agGridArgsDecorator from '../crud-gen-args.decorator';
+import * as crudGenArgsDecorator from '../crud-gen-args.decorator';
 import {
   Equal,
   LessThan,
@@ -30,19 +30,19 @@ import {
 import {
   FilterInput,
   FilterModel,
-  IAgGridArgsOptions,
+  ICrudGenArgsOptions,
   ICombinedSimpleModel,
 } from '../crud-gen.interface';
 import * as graphql from '@nestjs/graphql';
-import * as AgGridInput from '../crud-gen.input';
-import * as GqlAgGridDecorator from '../gqlfields.decorator';
-import * as AgGridHelpers from '../crud-gen.helpers';
+import * as CrudGenInput from '../crud-gen.input';
+import * as GqlCrudGenDecorator from '../gqlfields.decorator';
+import * as CrudGenHelpers from '../crud-gen.helpers';
 import {
-  AgGridFilterNotSupportedError,
-  AgGridFilterProhibited,
-  AgGridInvalidArgumentError,
-  AgGridInvalidOperatorError,
-  AgGridError,
+  CrudGenFilterNotSupportedError,
+  CrudGenFilterProhibited,
+  CrudGenInvalidArgumentError,
+  CrudGenInvalidOperatorError,
+  CrudGenError,
 } from '../crud-gen.error';
 import { DateHelper } from '@nestjs-yalc/utils/date.helper';
 import { GraphQLResolveInfo } from 'graphql';
@@ -224,7 +224,7 @@ const infoObj = {
   ],
 };
 
-const fixedDataFilterToInclude: IAgGridArgsOptions = {
+const fixedDataFilterToInclude: ICrudGenArgsOptions = {
   fieldMap: {
     field: fixedIFieldMapper,
     filterOption: fixedIncludefilterOption,
@@ -246,7 +246,7 @@ describe('Ag-grid args decorator', () => {
   it('Check getTextFilter functionality', async () => {
     let testgetTextFilter;
     for (const test of switchCaseTextTests) {
-      testgetTextFilter = agGridArgsDecorator.getTextFilter(
+      testgetTextFilter = crudGenArgsDecorator.getTextFilter(
         test.filter,
         firstTextParameter,
       );
@@ -258,7 +258,7 @@ describe('Ag-grid args decorator', () => {
   it('Check getNumberFilter functionality', async () => {
     let testgetTextFilter;
     for (const test of switchCaseNumberTests) {
-      testgetTextFilter = agGridArgsDecorator.getNumberFilter(
+      testgetTextFilter = crudGenArgsDecorator.getNumberFilter(
         test.filter,
         firstNumberParameter,
         secondNumberParameter,
@@ -271,7 +271,7 @@ describe('Ag-grid args decorator', () => {
   it('Check getDateFilter functionality', async () => {
     let testgetTextFilter;
     for (const test of switchCaseDateTests) {
-      testgetTextFilter = agGridArgsDecorator.getDateFilter(
+      testgetTextFilter = crudGenArgsDecorator.getDateFilter(
         test.filter,
         firstDateParameter,
         secondDateParameter,
@@ -282,7 +282,7 @@ describe('Ag-grid args decorator', () => {
   });
 
   it('Check inDate filter functionality', async () => {
-    const testGetStringFilter = agGridArgsDecorator.getDateFilter(
+    const testGetStringFilter = crudGenArgsDecorator.getDateFilter(
       GeneralFilters.INDATE,
       firstDateParameter,
       firstDateParameterPlus1Day,
@@ -294,7 +294,7 @@ describe('Ag-grid args decorator', () => {
   });
 
   it('Check inDate filter functionality whith only 1 date', async () => {
-    const testGetStringFilter = agGridArgsDecorator.getDateFilter(
+    const testGetStringFilter = crudGenArgsDecorator.getDateFilter(
       GeneralFilters.INDATE,
       firstDateParameter,
     );
@@ -306,24 +306,24 @@ describe('Ag-grid args decorator', () => {
 
   it('Check get filters errors', async () => {
     expect(() =>
-      agGridArgsDecorator.getTextFilter('ImAnError', firstTextParameter),
+      crudGenArgsDecorator.getTextFilter('ImAnError', firstTextParameter),
     ).toThrowError(
-      new AgGridFilterNotSupportedError(`filter: ImAnError type: TEXT`),
+      new CrudGenFilterNotSupportedError(`filter: ImAnError type: TEXT`),
     );
     expect(() =>
-      agGridArgsDecorator.getNumberFilter('ImAnError', firstNumberParameter),
+      crudGenArgsDecorator.getNumberFilter('ImAnError', firstNumberParameter),
     ).toThrowError(
-      new AgGridFilterNotSupportedError(`filter: ImAnError type: NUMBER`),
+      new CrudGenFilterNotSupportedError(`filter: ImAnError type: NUMBER`),
     );
     expect(() =>
-      agGridArgsDecorator.getDateFilter('ImAnError', firstDateParameter),
+      crudGenArgsDecorator.getDateFilter('ImAnError', firstDateParameter),
     ).toThrowError(
-      new AgGridFilterNotSupportedError(`filter: ImAnError type: DATE`),
+      new CrudGenFilterNotSupportedError(`filter: ImAnError type: DATE`),
     );
   });
 
-  it('Check AgGridArgsFactory functionality', async () => {
-    const testData = agGridArgsDecorator.AgGridArgsFactory(
+  it('Check CrudGenArgsFactory functionality', async () => {
+    const testData = crudGenArgsDecorator.CrudGenArgsFactory(
       fixedArgsOptions,
       mockedExecutionContext,
     );
@@ -331,10 +331,10 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toBeDefined();
   });
 
-  describe('Check mapAgGridParams', () => {
+  describe('Check mapCrudGenParams', () => {
     // Mocked function
     const objectToFieldMapper = jest.spyOn(
-      AgGridHelpers,
+      CrudGenHelpers,
       'objectToFieldMapper',
     );
 
@@ -347,7 +347,7 @@ describe('Ag-grid args decorator', () => {
     ];
 
     const resultFn = (params) => () =>
-      agGridArgsDecorator.mapAgGridParams(
+      crudGenArgsDecorator.mapCrudGenParams(
         params,
         mockedGqlExecutionContext,
         fixedArgsQueryParams,
@@ -355,7 +355,7 @@ describe('Ag-grid args decorator', () => {
       );
 
     it.each(testData)('Should map on %s', (name, args) => {
-      const result = agGridArgsDecorator.mapAgGridParams(
+      const result = crudGenArgsDecorator.mapCrudGenParams(
         fixedArgsOptions,
         mockedGqlExecutionContext,
         args,
@@ -366,7 +366,7 @@ describe('Ag-grid args decorator', () => {
     });
 
     it('Should throw error with bad extraArgs property', () => {
-      const params: IAgGridArgsOptions = {
+      const params: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -386,7 +386,7 @@ describe('Ag-grid args decorator', () => {
     });
 
     it('Should work properly with extraArgs property', () => {
-      const params: IAgGridArgsOptions = {
+      const params: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -407,7 +407,7 @@ describe('Ag-grid args decorator', () => {
     });
 
     it('Should work properly with extraArgs property with middleware ', () => {
-      const params: IAgGridArgsOptions = {
+      const params: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -428,7 +428,7 @@ describe('Ag-grid args decorator', () => {
     });
 
     it('Should add extraArgs with VIRTUAL filter in extra field of findManyOptions', () => {
-      const params: IAgGridArgsOptions = {
+      const params: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         extraArgs: {
           virtualArg: {
@@ -446,7 +446,7 @@ describe('Ag-grid args decorator', () => {
       expect(argsKeys).toContain('virtualArg');
     });
 
-    it('Check mapAgGridParams functionality with fieldType defined', async () => {
+    it('Check mapCrudGenParams functionality with fieldType defined', async () => {
       objectToFieldMapper.mockReturnValue({
         filterOption: {} as any,
         field: {},
@@ -468,7 +468,7 @@ describe('Ag-grid args decorator', () => {
   });
 
   it('Check filters with undefined data', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
+    const testData = crudGenArgsDecorator.mapCrudGenParams(
       undefined,
       mockedGqlExecutionContext,
       fixedArgsNOTFilter,
@@ -478,8 +478,8 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toBeDefined();
   });
 
-  it('Check mapAgGridParams functionality with default values', async () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
+  it('Check mapCrudGenParams functionality with default values', async () => {
+    const testData = crudGenArgsDecorator.mapCrudGenParams(
       fixedDataWithDefault,
       mockedGqlExecutionContext,
       { filters: {}, startRow: undefined, endRow: 5 },
@@ -489,9 +489,9 @@ describe('Ag-grid args decorator', () => {
     expect(testData).toBeDefined();
   });
 
-  it('Check mapAgGridParams throws error if row selected is too high', () => {
+  it('Check mapCrudGenParams throws error if row selected is too high', () => {
     try {
-      agGridArgsDecorator.mapAgGridParams(
+      crudGenArgsDecorator.mapCrudGenParams(
         fixedArgsOptions,
         mockedGqlExecutionContext,
         { filters: {}, startRow: 0, endRow: 500 },
@@ -500,7 +500,7 @@ describe('Ag-grid args decorator', () => {
     } catch (error) {
       const { maxRow } = fixedArgsOptions.options;
       expect(error).toEqual(
-        new AgGridError(
+        new CrudGenError(
           `Invalid max number of row selected: cannot exeed max ${maxRow}`,
         ),
       );
@@ -508,7 +508,7 @@ describe('Ag-grid args decorator', () => {
   });
 
   it('Check default functionality with sorting ASC', () => {
-    const testData = agGridArgsDecorator.mapAgGridParams(
+    const testData = crudGenArgsDecorator.mapCrudGenParams(
       { ...fixedDataWithDefault, defaultValue: undefined },
       mockedGqlExecutionContext,
       { filters: {}, startRow: undefined, endRow: 5 },
@@ -529,10 +529,10 @@ describe('Ag-grid args decorator', () => {
 
     it.each(testData)('Check conversion with %s filter', (name, filter) => {
       try {
-        const result = agGridArgsDecorator.resolveFilter(filter);
+        const result = crudGenArgsDecorator.resolveFilter(filter);
         expect(result).toBeDefined();
       } catch (error) {
-        expect(error).toBeInstanceOf(AgGridFilterNotSupportedError);
+        expect(error).toBeInstanceOf(CrudGenFilterNotSupportedError);
       }
     });
   });
@@ -540,31 +540,35 @@ describe('Ag-grid args decorator', () => {
     const testData: [
       string,
       FilterModel | ICombinedSimpleModel,
-      AgGridError?,
+      CrudGenError?,
     ][] = [
       ['simple', fixedSimpleTextFilter, undefined],
-      ['undefined', fixedUndefinedTextFilter, new AgGridInvalidArgumentError()],
+      [
+        'undefined',
+        fixedUndefinedTextFilter,
+        new CrudGenInvalidArgumentError(),
+      ],
       ['combined OR', fixedCombinedOrTextFilter, undefined],
       ['combined AND', fixedCombinedAndTextFilter, undefined],
       [
         'combined invalid operator',
         <ICombinedSimpleModel>fixedCombinedInvalidOperatorTextFilter,
-        new AgGridInvalidOperatorError(),
+        new CrudGenInvalidOperatorError(),
       ],
       [
         'combined invalid args',
         fixedCombinedInvalidArgsTextFilter,
-        new AgGridInvalidArgumentError(),
+        new CrudGenInvalidArgumentError(),
       ],
       ['not type in text', fixedNotTextFilter, undefined],
     ];
 
     it.each(testData)(`Should convert %s Filter`, (name, filter, error) => {
       if (error) {
-        const result = () => agGridArgsDecorator.convertFilter(filter);
+        const result = () => crudGenArgsDecorator.convertFilter(filter);
         expect(result).toThrowError(error);
       } else {
-        const result = agGridArgsDecorator.convertFilter(filter);
+        const result = crudGenArgsDecorator.convertFilter(filter);
         expect(result).toBeDefined();
       }
     });
@@ -572,23 +576,26 @@ describe('Ag-grid args decorator', () => {
 
   it('should check filterSwitch is working properly', async () => {
     // with SET
-    let testData = agGridArgsDecorator.filterSwitch(fixedSetFilter);
+    let testData = crudGenArgsDecorator.filterSwitch(fixedSetFilter);
 
     expect(testData).toStrictEqual(In(fixedSetFilter.values));
 
     // with TEXT
-    testData = agGridArgsDecorator.filterSwitch(
+    testData = crudGenArgsDecorator.filterSwitch(
       fixedSimpleTextFilter,
       'contains',
     );
     expect(testData).toStrictEqual(Like(`%${fixedSimpleTextFilter.filter}%`));
 
     // with Date
-    testData = agGridArgsDecorator.filterSwitch(fixedSimpleDateFilter, 'equal');
+    testData = crudGenArgsDecorator.filterSwitch(
+      fixedSimpleDateFilter,
+      'equal',
+    );
     expect(testData).toStrictEqual(Equal(`${fixedSimpleDateFilter.dateFrom}`));
 
     // With number
-    testData = agGridArgsDecorator.filterSwitch(
+    testData = crudGenArgsDecorator.filterSwitch(
       fixedSimpleNumberFilter,
       'equal',
     );
@@ -597,12 +604,12 @@ describe('Ag-grid args decorator', () => {
     // with INVALID
 
     expect(() =>
-      agGridArgsDecorator.filterSwitch(fixedSimpleBadFilter),
-    ).toThrow(AgGridFilterNotSupportedError);
+      crudGenArgsDecorator.filterSwitch(fixedSimpleBadFilter),
+    ).toThrow(CrudGenFilterNotSupportedError);
   });
 
   it('Check removeSymbolicSelection work', async () => {
-    const testData = agGridArgsDecorator.removeSymbolicSelection(
+    const testData = crudGenArgsDecorator.removeSymbolicSelection(
       [`second_${fixedKey}`, `third_${fixedKey}`],
       fixedIFieldMapper,
       '',
@@ -613,12 +620,15 @@ describe('Ag-grid args decorator', () => {
 
   describe('Check createWhere', () => {
     it('Should work with void where', async () => {
-      const testData = agGridArgsDecorator.createWhere(null, fixedIFieldMapper);
+      const testData = crudGenArgsDecorator.createWhere(
+        null,
+        fixedIFieldMapper,
+      );
       expect(testData).toEqual({ filters: {} });
     });
 
     it(`Should work properly with filterInput object`, () => {
-      const testData = agGridArgsDecorator.createWhere(
+      const testData = crudGenArgsDecorator.createWhere(
         fixedJoinOptionsAndOrObject,
         fixedIFieldMapper,
         'alias',
@@ -640,7 +650,7 @@ describe('Ag-grid args decorator', () => {
       };
 
       expect(() =>
-        agGridArgsDecorator.createWhere(badFilter, fixedIFieldMapper),
+        crudGenArgsDecorator.createWhere(badFilter, fixedIFieldMapper),
       ).toThrowError(
         `Field can't use more than one expression type on same expression: text,number`,
       );
@@ -655,7 +665,7 @@ describe('Ag-grid args decorator', () => {
       };
 
       expect(() =>
-        agGridArgsDecorator.createWhere(badFilter2, fixedIFieldMapper),
+        crudGenArgsDecorator.createWhere(badFilter2, fixedIFieldMapper),
       ).toThrowError('Expression not found! It should never happen');
 
       const badFilter3: FilterInput = {
@@ -668,15 +678,15 @@ describe('Ag-grid args decorator', () => {
       };
 
       expect(() =>
-        agGridArgsDecorator.createWhere(badFilter3, fixedIFieldMapper),
-      ).toThrowError(AgGridFilterNotSupportedError);
+        crudGenArgsDecorator.createWhere(badFilter3, fixedIFieldMapper),
+      ).toThrowError(CrudGenFilterNotSupportedError);
     });
   });
 
   it('Check checkFilterScope with where and include option', async () => {
     expect.assertions(1);
     try {
-      const testData = agGridArgsDecorator.checkFilterScope(
+      const testData = crudGenArgsDecorator.checkFilterScope(
         fixedWhereTransformed,
         fixedIncludefilterOption,
       );
@@ -689,7 +699,7 @@ describe('Ag-grid args decorator', () => {
   it('Check checkFilterScope with where and exclude option', async () => {
     expect.assertions(1);
     try {
-      const testData = agGridArgsDecorator.checkFilterScope(
+      const testData = crudGenArgsDecorator.checkFilterScope(
         fixedWhereTransformed,
         fixedExcludefilterOption,
       );
@@ -702,31 +712,31 @@ describe('Ag-grid args decorator', () => {
   it('Check checkFilterScope with not included filter', async () => {
     expect.assertions(1);
     try {
-      agGridArgsDecorator.checkFilterScope(
+      crudGenArgsDecorator.checkFilterScope(
         fixedWhereTransformedWithNotInclude,
         fixedIncludefilterOption,
       );
     } catch (error) {
-      expect(error).toEqual(new AgGridFilterProhibited());
+      expect(error).toEqual(new CrudGenFilterProhibited());
     }
   });
 
   it('Check checkFilterScope with excluded filter', async () => {
     expect.assertions(1);
     try {
-      agGridArgsDecorator.checkFilterScope(
+      crudGenArgsDecorator.checkFilterScope(
         fixedWhereTransformedWithExcluded,
         fixedExcludefilterOption,
       );
     } catch (error) {
-      expect(error).toEqual(new AgGridFilterProhibited());
+      expect(error).toEqual(new CrudGenFilterProhibited());
     }
   });
 
   it('Check checkFilterScope with where and include option', async () => {
     expect.assertions(1);
     try {
-      const testData = agGridArgsDecorator.checkFilterScope(
+      const testData = crudGenArgsDecorator.checkFilterScope(
         fixedWhereTransformedNested,
         fixedIncludefilterOption,
       );
@@ -737,64 +747,66 @@ describe('Ag-grid args decorator', () => {
   });
 
   // Not the prettiest test, but since a lot is actually a decorator under the hood i think this is fine, we do not call this directly normally
-  it('should be able to use the AgGridArgs to combine param decorators', () => {
+  it('should be able to use the CrudGenArgs to combine param decorators', () => {
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
     //Without params type
-    let decorator = agGridArgsDecorator.AgGridArgs(fixedArgsOptions);
+    let decorator = crudGenArgsDecorator.CrudGenArgs(fixedArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
     //With params type
-    decorator = agGridArgsDecorator.AgGridArgs(fixedArgsOptions);
+    decorator = crudGenArgsDecorator.CrudGenArgs(fixedArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
   });
 
-  it('should be able to use the AgGridArgsNoPagination to combine param decorators', () => {
+  it('should be able to use the CrudGenArgsNoPagination to combine param decorators', () => {
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
     //With params type
-    const argsOptions: IAgGridArgsOptions = {
+    const argsOptions: ICrudGenArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
-    let decorator = agGridArgsDecorator.AgGridArgsNoPagination(argsOptions);
+    let decorator = crudGenArgsDecorator.CrudGenArgsNoPagination(argsOptions);
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
     //Without params type
-    decorator = agGridArgsDecorator.AgGridArgsNoPagination({});
+    decorator = crudGenArgsDecorator.CrudGenArgsNoPagination({});
     expect(decorator).toEqual(expect.any(Function));
     decorator('', '', 0);
     expect(returnFunc).toHaveBeenCalled();
   });
 
-  it('Should combine decorators with AgGridCombineDecorators', () => {
-    jest.spyOn(AgGridInput, 'agJoinArgFactory').mockReturnValueOnce({});
+  it('Should combine decorators with CrudGenCombineDecorators', () => {
+    jest.spyOn(CrudGenInput, 'agJoinArgFactory').mockReturnValueOnce({});
 
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
-    const argsOptions: IAgGridArgsOptions = {
+    const argsOptions: ICrudGenArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
-    const decorator = agGridArgsDecorator.AgGridCombineDecorators(argsOptions);
+    const decorator = crudGenArgsDecorator.CrudGenCombineDecorators(
+      argsOptions,
+    );
     decorator({}, 'key', 0);
     expect(decorator).toEqual(expect.any(Function));
   });
 
-  it('Should combine decorators with default values with AgGridCombineDecorators', () => {
+  it('Should combine decorators with default values with CrudGenCombineDecorators', () => {
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
-    const defaultArgsOptions: IAgGridArgsOptions = {
+    const defaultArgsOptions: ICrudGenArgsOptions = {
       ...fixedArgsOptions,
       extraArgs: {
         ['default']: {
@@ -803,25 +815,25 @@ describe('Ag-grid args decorator', () => {
       },
       gql: undefined,
     };
-    const decorator = agGridArgsDecorator.AgGridCombineDecorators(
+    const decorator = crudGenArgsDecorator.CrudGenCombineDecorators(
       defaultArgsOptions,
     );
     expect(decorator).toEqual(expect.any(Function));
   });
 
-  describe('Check AgGridArgsSingleDecoratorMapper', () => {
-    const qqlAgGridFieldsMapper = jest.spyOn(
-      GqlAgGridDecorator,
-      'GqlAgGridFieldsMapper',
+  describe('Check CrudGenArgsSingleDecoratorMapper', () => {
+    const qqlCrudGenFieldsMapper = jest.spyOn(
+      GqlCrudGenDecorator,
+      'GqlCrudGenFieldsMapper',
     );
 
     const objectToFieldMapper = jest.spyOn(
-      AgGridHelpers,
+      CrudGenHelpers,
       'objectToFieldMapper',
     );
 
     beforeEach(() => {
-      qqlAgGridFieldsMapper.mockReturnValueOnce({
+      qqlCrudGenFieldsMapper.mockReturnValueOnce({
         keys: ['field'],
         keysMeta: { field: {} },
       });
@@ -829,17 +841,17 @@ describe('Ag-grid args decorator', () => {
     });
 
     afterEach(() => {
-      qqlAgGridFieldsMapper.mockReset();
+      qqlCrudGenFieldsMapper.mockReset();
       objectToFieldMapper.mockReset();
     });
 
     it('Should map to FindManyOptions', () => {
-      const argsOptions: IAgGridArgsOptions = {
+      const argsOptions: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         fieldType: BaseEntity,
         entityType: BaseEntity,
       };
-      const result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+      const result = crudGenArgsDecorator.CrudGenArgsSingleDecoratorMapper(
         argsOptions,
         fixedArgsQueryParams,
         mockedInfo,
@@ -849,7 +861,7 @@ describe('Ag-grid args decorator', () => {
     });
 
     it('Should map to findManyOptions with bad arguments', () => {
-      const argsOptions: IAgGridArgsOptions = {
+      const argsOptions: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
         entityType: BaseEntity,
       };
@@ -858,23 +870,23 @@ describe('Ag-grid args decorator', () => {
         ...fixedArgsQueryParams,
         join: null,
       };
-      const result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+      const result = crudGenArgsDecorator.CrudGenArgsSingleDecoratorMapper(
         argsOptions,
         queryParam,
         mockedInfo,
       );
 
       expect(result.select).toEqual(['field']);
-      expect(qqlAgGridFieldsMapper).toHaveBeenCalled();
+      expect(qqlCrudGenFieldsMapper).toHaveBeenCalled();
       expect(objectToFieldMapper).toHaveBeenCalled();
     });
 
     it('Should return an empty findManyOptions with bad arguments', () => {
-      const argsOptions: IAgGridArgsOptions = {
+      const argsOptions: ICrudGenArgsOptions = {
         ...fixedArgsOptions,
       };
 
-      let result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+      let result = crudGenArgsDecorator.CrudGenArgsSingleDecoratorMapper(
         argsOptions,
         fixedArgsQueryParams,
         mockedInfo,
@@ -882,24 +894,24 @@ describe('Ag-grid args decorator', () => {
 
       expect(result).toEqual({});
 
-      result = agGridArgsDecorator.AgGridArgsSingleDecoratorMapper(
+      result = crudGenArgsDecorator.CrudGenArgsSingleDecoratorMapper(
         null,
         fixedArgsQueryParams,
         mockedInfo,
       );
       expect(result).toEqual({});
-      expect(qqlAgGridFieldsMapper).not.toHaveBeenCalled();
+      expect(qqlCrudGenFieldsMapper).not.toHaveBeenCalled();
       expect(objectToFieldMapper).not.toHaveBeenCalled();
     });
   });
 
-  it('Should be able to use the AgGridArgsSingle', () => {
+  it('Should be able to use the CrudGenArgsSingle', () => {
     const ArgsFunc = jest.spyOn(graphql, 'Args');
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
     const joinArgFactory = jest
-      .spyOn(AgGridInput, 'agJoinArgFactory')
+      .spyOn(CrudGenInput, 'agJoinArgFactory')
       .mockReturnValueOnce({});
 
     const checkExpect = () => {
@@ -908,25 +920,25 @@ describe('Ag-grid args decorator', () => {
       expect(joinArgFactory).toHaveBeenCalled();
     };
 
-    const argsOptions: IAgGridArgsOptions = {
+    const argsOptions: ICrudGenArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
 
-    let decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    let decorator = crudGenArgsDecorator.CrudGenArgsSingle(argsOptions);
     checkExpect();
 
     joinArgFactory.mockReturnValueOnce(null);
-    decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    decorator = crudGenArgsDecorator.CrudGenArgsSingle(argsOptions);
     checkExpect();
 
     argsOptions.entityType = null;
-    decorator = agGridArgsDecorator.AgGridArgsSingle(argsOptions);
+    decorator = crudGenArgsDecorator.CrudGenArgsSingle(argsOptions);
     checkExpect;
   });
 
-  it('Should be call AgGridArgsSingleDecoratorFactory correctly', () => {
-    const decorator = agGridArgsDecorator.AgGridArgsSingleDecoratorFactory(
+  it('Should be call CrudGenArgsSingleDecoratorFactory correctly', () => {
+    const decorator = crudGenArgsDecorator.CrudGenArgsSingleDecoratorFactory(
       fixedArgsOptions,
       mockedGqlExecutionContext,
     );
@@ -969,7 +981,7 @@ describe('Ag-grid args decorator', () => {
 
     it('Should work properly', () => {
       testData.forEach((test) => {
-        const result = agGridArgsDecorator.getFindOperator(
+        const result = crudGenArgsDecorator.getFindOperator(
           test.type,
           test.name,
           test.arg1,

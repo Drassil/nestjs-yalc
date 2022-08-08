@@ -4,9 +4,9 @@ import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
 import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
 import {
-  AgGridConditionNotSupportedError,
-  AgGridNotPossibleError,
-  AgGridStringWhereError,
+  CrudGenConditionNotSupportedError,
+  CrudGenNotPossibleError,
+  CrudGenStringWhereError,
 } from '../crud-gen.error';
 import {
   forceFilterWorker,
@@ -17,8 +17,8 @@ import {
   isAskingForCount,
   isIFieldAndFilterMapper,
   objectToFieldMapper,
-  IAgGridDependencyFactoryOptions,
-  AgGridDependencyFactory,
+  ICrudGenDependencyFactoryOptions,
+  CrudGenDependencyFactory,
   filterTypeToNativeType,
   traverseFiltersAndApplyFunction,
   isFilterExpressionInput,
@@ -34,12 +34,12 @@ import {
 import { JoinArgOptions, JoinTypes } from '../crud-gen.input';
 import { IWhereCondition } from '../crud-gen.type';
 import * as ObjectDecorator from '../object.decorator';
-import * as AgGridHelpers from '../crud-gen.helpers';
+import * as CrudGenHelpers from '../crud-gen.helpers';
 
 import {
   FilterOption,
   FilterOptionType,
-  IAgGridFieldMetadata,
+  ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
 } from '../object.decorator';
 import {
@@ -298,7 +298,7 @@ describe('Ag-grid helpers', () => {
     try {
       forceFilters('string', [{ key: 'any', value: 'any' }], {});
     } catch (error) {
-      expect(error).toEqual(new AgGridStringWhereError());
+      expect(error).toEqual(new CrudGenStringWhereError());
     }
   });
 
@@ -306,7 +306,7 @@ describe('Ag-grid helpers', () => {
     try {
       forceFilters(undefined, [], {});
     } catch (error) {
-      expect(error).toEqual(new AgGridNotPossibleError());
+      expect(error).toEqual(new CrudGenNotPossibleError());
     }
   });
 
@@ -356,7 +356,7 @@ describe('Ag-grid helpers', () => {
       whereObjectToSqlString<BaseEntity>(mockedQueryBuilder, {
         filters,
       });
-    }).toThrowError(AgGridConditionNotSupportedError);
+    }).toThrowError(CrudGenConditionNotSupportedError);
   });
 
   it('should throw error on wrong filter', async () => {
@@ -371,7 +371,7 @@ describe('Ag-grid helpers', () => {
       whereObjectToSqlString<BaseEntity>(mockedQueryBuilder, {
         filters,
       });
-    }).toThrowError(AgGridConditionNotSupportedError);
+    }).toThrowError(CrudGenConditionNotSupportedError);
   });
 
   it('should run isAskingForCount', async () => {
@@ -434,14 +434,14 @@ describe('Ag-grid helpers', () => {
     });
     it('should convert an Entity object to a field mapper already cached', () => {
       jest
-        .spyOn(ObjectDecorator, 'getAgGridObjectMetadata')
+        .spyOn(ObjectDecorator, 'getCrudGenObjectMetadata')
         .mockReturnValueOnce(fixedObjectMetadata);
 
-      const spiedgetAgGridFieldMetadataList = jest.spyOn(
+      const spiedgetCrudGenFieldMetadataList = jest.spyOn(
         ObjectDecorator,
-        'getAgGridFieldMetadataList',
+        'getCrudGenFieldMetadataList',
       );
-      spiedgetAgGridFieldMetadataList.mockReturnValueOnce(fixedFieldMetaData);
+      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(fixedFieldMetaData);
 
       const fieldMapper = objectToFieldMapper(BaseEntity);
       expect(fieldMapper).toBeDefined();
@@ -452,12 +452,12 @@ describe('Ag-grid helpers', () => {
 
     it('Should convert an Entity object to a field mapper different fieldMetada configuration ', () => {
       jest
-        .spyOn(ObjectDecorator, 'getAgGridObjectMetadata')
+        .spyOn(ObjectDecorator, 'getCrudGenObjectMetadata')
         .mockReturnValue(fixedObjectMetadata);
 
-      const spiedgetAgGridFieldMetadataList = jest.spyOn(
+      const spiedgetCrudGenFieldMetadataList = jest.spyOn(
         ObjectDecorator,
-        'getAgGridFieldMetadataList',
+        'getCrudGenFieldMetadataList',
       );
 
       // Dst equals to src if undefined
@@ -468,18 +468,18 @@ describe('Ag-grid helpers', () => {
         },
       };
 
-      spiedgetAgGridFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
+      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
       let fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
 
       // src setted to undefined
       customFieldMetadata.propertyName.src = undefined;
-      spiedgetAgGridFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
+      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
       fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
 
       // undefined fileldMetadata
-      spiedgetAgGridFieldMetadataList.mockReturnValueOnce(undefined);
+      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(undefined);
       fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
     });
@@ -505,9 +505,9 @@ describe('Ag-grid helpers', () => {
     // });
   });
 
-  describe('AgGridDependencyFactory', () => {
+  describe('CrudGenDependencyFactory', () => {
     // Object with override on provider
-    const fixedAgGridDependencyFactoryOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
+    const fixedCrudGenDependencyFactoryOptions: ICrudGenDependencyFactoryOptions<TestEntity> = {
       entityModel: TestEntity,
       dataloader: {
         databaseKey: 'id',
@@ -535,16 +535,16 @@ describe('Ag-grid helpers', () => {
     };
 
     it('Should create a dependencyObject properly', () => {
-      const dependecyObject = AgGridDependencyFactory<TestEntity>(
-        fixedAgGridDependencyFactoryOptions,
+      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
+        fixedCrudGenDependencyFactoryOptions,
       );
 
       expect(dependecyObject).toBeDefined();
     });
 
     it('Should create a dependencyObject properly with no override', () => {
-      const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
-        ...fixedAgGridDependencyFactoryOptions,
+      const customOptions: ICrudGenDependencyFactoryOptions<TestEntity> = {
+        ...fixedCrudGenDependencyFactoryOptions,
         service: {
           dbConnection: 'id',
           entityModel: undefined,
@@ -555,22 +555,22 @@ describe('Ag-grid helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
         customOptions,
       );
 
       expect(dependecyObject).toBeDefined();
     });
     it('Should create a dependecyObject with default values', () => {
-      const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
-        ...fixedAgGridDependencyFactoryOptions,
+      const customOptions: ICrudGenDependencyFactoryOptions<TestEntity> = {
+        ...fixedCrudGenDependencyFactoryOptions,
         resolver: undefined,
         service: undefined,
         dataloader: undefined,
         repository: undefined,
       };
 
-      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
         customOptions,
       );
 
@@ -578,8 +578,8 @@ describe('Ag-grid helpers', () => {
     });
 
     it('Should create a dependencyObject properly with defined entityModel', () => {
-      const customOptions: IAgGridDependencyFactoryOptions<TestEntity> = {
-        ...fixedAgGridDependencyFactoryOptions,
+      const customOptions: ICrudGenDependencyFactoryOptions<TestEntity> = {
+        ...fixedCrudGenDependencyFactoryOptions,
         service: {
           dbConnection: 'id',
           entityModel: TestEntity,
@@ -590,7 +590,7 @@ describe('Ag-grid helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject = AgGridDependencyFactory<TestEntity>(
+      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
         customOptions,
       );
 
@@ -670,7 +670,7 @@ describe('Ag-grid helpers', () => {
   });
 
   it('Should get mapped type property with denyFilter false', () => {
-    jest.spyOn(AgGridHelpers, 'objectToFieldMapper').mockReturnValueOnce({
+    jest.spyOn(CrudGenHelpers, 'objectToFieldMapper').mockReturnValueOnce({
       field: {
         id: {
           denyFilter: false,
@@ -684,12 +684,12 @@ describe('Ag-grid helpers', () => {
   });
 
   it('Should get the column properties from an crud-gen field with mode derived', () => {
-    const spiedgetAgGridFieldMetadataList = jest.spyOn(
+    const spiedgetCrudGenFieldMetadataList = jest.spyOn(
       ObjectDecorator,
-      'getAgGridFieldMetadataList',
+      'getCrudGenFieldMetadataList',
     );
 
-    const fieldMetadataList: { [key: string]: IAgGridFieldMetadata } = {
+    const fieldMetadataList: { [key: string]: ICrudGenFieldMetadata } = {
       propertyName: {
         mode: 'derived',
       },
@@ -697,7 +697,7 @@ describe('Ag-grid helpers', () => {
         mode: 'regular',
       },
     };
-    spiedgetAgGridFieldMetadataList.mockReturnValue(fieldMetadataList);
+    spiedgetCrudGenFieldMetadataList.mockReturnValue(fieldMetadataList);
     const columns = getTypeProperties(TestEntity);
 
     const result = columns.find((e) => e.propertyName === 'propertyName');
@@ -826,7 +826,7 @@ describe('Ag-grid helpers', () => {
   });
 
   it('Should getEntityRelations properly with DTO', () => {
-    const res = AgGridHelpers.getEntityRelations(
+    const res = CrudGenHelpers.getEntityRelations(
       TestEntityRelation,
       TestEntityDto,
     );
@@ -835,7 +835,7 @@ describe('Ag-grid helpers', () => {
   });
 
   it('Should getEntityRelations properly without DTO', () => {
-    const res = AgGridHelpers.getEntityRelations(TestEntityRelation);
+    const res = CrudGenHelpers.getEntityRelations(TestEntityRelation);
 
     expect(res.join).not.toBeUndefined();
   });

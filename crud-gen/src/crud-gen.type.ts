@@ -6,7 +6,7 @@ import { IExtraArg, ICombinedWhereModel } from './crud-gen.interface';
 import { Operators } from './crud-gen.enum';
 
 @ObjectType()
-export class PageDataAgGrid {
+export class PageDataCrudGen {
   @Field()
   public count!: number;
 
@@ -20,13 +20,13 @@ export class PageDataAgGrid {
 export interface IConnection {
   name: string;
   nodes: any[];
-  pageData: PageDataAgGrid;
+  pageData: PageDataCrudGen;
 }
 
 export const typeMap: {
   [key: string]: { new (name: string): IConnection };
 } = {};
-export default function AgGridGqlType<T>(type: Type<T>): any {
+export default function CrudGenGqlType<T>(type: Type<T>): any {
   const { name } = type;
   if (typeMap[`${name}`]) return typeMap[`${name}`];
 
@@ -37,8 +37,8 @@ export default function AgGridGqlType<T>(type: Type<T>): any {
 
     @Field(returnValue([type]), { nullable: true })
     public nodes!: T[];
-    @Field(returnValue(PageDataAgGrid), { nullable: true })
-    public pageData!: PageDataAgGrid;
+    @Field(returnValue(PageDataCrudGen), { nullable: true })
+    public pageData!: PageDataCrudGen;
   }
   typeMap[`${name}`] = Connection;
 
@@ -51,7 +51,7 @@ export interface IGqlSelectedFields<T> {
   fields: (keyof T)[];
 }
 
-export interface IAgGridArgs<T>
+export interface ICrudGenArgs<T>
   extends FindManyOptions,
     IGqlSelectedFields<T> {}
 

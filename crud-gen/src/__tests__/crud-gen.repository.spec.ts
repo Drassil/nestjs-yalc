@@ -5,8 +5,8 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import {
-  AgGridRepository,
-  AgGridRepositoryFactory,
+  CrudGenRepository,
+  CrudGenRepositoryFactory,
 } from '../crud-gen.repository';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
 import { SortDirection } from '../crud-gen.enum';
@@ -14,7 +14,7 @@ import { DeepMocked } from '@golevelup/ts-jest';
 import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper';
 import { Alias } from 'typeorm/query-builder/Alias';
 import * as Typeorm from 'typeorm';
-import * as AgGridHelpers from '../crud-gen.helpers';
+import * as CrudGenHelpers from '../crud-gen.helpers';
 
 jest.mock('typeorm');
 jest.mock('typeorm/find-options/FindOptionsUtils');
@@ -99,12 +99,12 @@ const fakeFindOptionsExtended = {
 
 const getManyResult = [BaseEntity];
 
-describe('AgGrid Repoository', () => {
-  let newAgGridRepository: AgGridRepository<BaseEntity>;
+describe('CrudGen Repoository', () => {
+  let newCrudGenRepository: CrudGenRepository<BaseEntity>;
   let mockedQueryBuilder: DeepMocked<SelectQueryBuilder<BaseEntity>>;
 
   beforeEach(() => {
-    newAgGridRepository = new AgGridRepository();
+    newCrudGenRepository = new CrudGenRepository();
 
     mockedQueryBuilder = mockQueryBuilder<BaseEntity>();
     mockedQueryBuilder.getCount = jest.fn().mockReturnValue(1);
@@ -117,7 +117,7 @@ describe('AgGrid Repoository', () => {
       .mockReturnValue('SELECT * FROM fakeTable');
 
     jest
-      .spyOn(newAgGridRepository, 'createQueryBuilder')
+      .spyOn(newCrudGenRepository, 'createQueryBuilder')
       .mockImplementation(() => mockedQueryBuilder);
 
     jest
@@ -130,31 +130,31 @@ describe('AgGrid Repoository', () => {
   });
 
   it('Should be defined', () => {
-    expect(newAgGridRepository).toBeDefined();
+    expect(newCrudGenRepository).toBeDefined();
   });
 
-  it('getManyAgGrid should work', async () => {
+  it('getManyCrudGen should work', async () => {
     jest
-      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
-    const testData = newAgGridRepository.getManyAgGrid({});
+    const testData = newCrudGenRepository.getManyCrudGen({});
     await expect(testData).resolves.toEqual(getManyResult);
   });
 
-  it('countAgGrid should work', async () => {
+  it('countCrudGen should work', async () => {
     jest
-      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
-    const testData = newAgGridRepository.countAgGrid({});
+    const testData = newCrudGenRepository.countCrudGen({});
     await expect(testData).resolves.toEqual(1);
   });
 
-  it('getManyAndCountAgGrid should work', async () => {
+  it('getManyAndCountCrudGen should work', async () => {
     jest
-      .spyOn(newAgGridRepository, 'getAgGridQueryBuilder')
+      .spyOn(newCrudGenRepository, 'getCrudGenQueryBuilder')
       .mockReturnValue(mockedQueryBuilder);
 
-    let testData = await newAgGridRepository.getManyAndCountAgGrid({
+    let testData = await newCrudGenRepository.getManyAndCountCrudGen({
       take: 100,
     });
     expect(testData).toEqual([getManyResult, getManyResult.length]);
@@ -167,7 +167,7 @@ describe('AgGrid Repoository', () => {
       },
     };
 
-    testData = await newAgGridRepository.getManyAndCountAgGrid(findOptions);
+    testData = await newCrudGenRepository.getManyAndCountCrudGen(findOptions);
     expect(testData).toEqual([
       getManyResult,
       getManyResult.length + findOptions.skip,
@@ -182,13 +182,13 @@ describe('AgGrid Repoository', () => {
       subQueryFilters: {},
     };
 
-    testData = await newAgGridRepository.getManyAndCountAgGrid(findOptions);
+    testData = await newCrudGenRepository.getManyAndCountCrudGen(findOptions);
     expect(testData).toEqual([
       getManyResult,
       getManyResult.length + findOptions.skip,
     ]);
 
-    testData = await newAgGridRepository.getManyAndCountAgGrid({
+    testData = await newCrudGenRepository.getManyAndCountCrudGen({
       extra: {
         skipCount: true,
       },
@@ -202,13 +202,13 @@ describe('AgGrid Repoository', () => {
     // we do not know if there are further elements, so it returns -1
     expect(testData).toEqual([getManyResult, -1]);
 
-    testData = await newAgGridRepository.getManyAndCountAgGrid({
+    testData = await newCrudGenRepository.getManyAndCountCrudGen({
       extra: { skipCount: false },
     });
     expect(testData).toEqual([getManyResult, getManyResult.length]);
   });
 
-  it('getFormattedAgGridQueryBuilder should return a queryBuilder', () => {
+  it('getFormattedCrudGenQueryBuilder should return a queryBuilder', () => {
     jest
       .spyOn(QueryBuilderHelper, 'applyOrderToJoinedQueryBuilder')
       .mockReturnValue([
@@ -218,7 +218,7 @@ describe('AgGrid Repoository', () => {
         },
       ]);
 
-    let testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+    let testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
       {},
       {
         parent: { userId: { dst: 'guid' } },
@@ -227,7 +227,7 @@ describe('AgGrid Repoository', () => {
     );
     expect(testData).toEqual(mockedQueryBuilder);
 
-    testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+    testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
       fakeFindOptions,
       {
         parent: { userId: { dst: 'guid' } },
@@ -239,7 +239,7 @@ describe('AgGrid Repoository', () => {
     expect(testData).toEqual(mockedQueryBuilder);
   });
 
-  it('getAgGridQueryBuilder should return a queryBuilder with a rawSelection passed', () => {
+  it('getCrudGenQueryBuilder should return a queryBuilder with a rawSelection passed', () => {
     jest
       .spyOn(QueryBuilderHelper, 'applyOrderToJoinedQueryBuilder')
       .mockReturnValue([
@@ -249,7 +249,7 @@ describe('AgGrid Repoository', () => {
         },
       ]);
 
-    const testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+    const testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
       { select: ['data -> $.test'] },
       {
         parent: { userId: { dst: 'guid' } },
@@ -259,7 +259,7 @@ describe('AgGrid Repoository', () => {
     expect(testData).toEqual(mockedQueryBuilder);
   });
 
-  describe('Check getAgGridQueryBuilder with the join logic and derived field', () => {
+  describe('Check getCrudGenQueryBuilder with the join logic and derived field', () => {
     beforeEach(() => {
       jest
         .spyOn(QueryBuilderHelper, 'applyOrderToJoinedQueryBuilder')
@@ -272,7 +272,7 @@ describe('AgGrid Repoository', () => {
     });
 
     it('Should work properly with join and derived mode in findOptions ', () => {
-      const testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+      const testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
         fakeFindOptionsExtended,
         {
           parent: { userId: { dst: 'guid' } },
@@ -286,7 +286,7 @@ describe('AgGrid Repoository', () => {
 
       tempFindOptions.extra._keysMeta.value.isNested = undefined;
 
-      let testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+      let testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
         tempFindOptions,
         {
           parent: { userId: { dst: 'guid' } },
@@ -297,7 +297,7 @@ describe('AgGrid Repoository', () => {
 
       tempFindOptions.extra._keysMeta.value = undefined;
 
-      testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+      testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
         tempFindOptions,
         {
           parent: { userId: { dst: 'guid' } },
@@ -312,7 +312,7 @@ describe('AgGrid Repoository', () => {
       tempFindOptions.extra._fieldMapper.key.relation = undefined;
       tempFindOptions.join.innerJoinAndSelect = undefined;
 
-      const testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+      const testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
         tempFindOptions,
         {
           parent: { userId: { dst: 'guid' } },
@@ -327,7 +327,7 @@ describe('AgGrid Repoository', () => {
         extra: undefined,
       };
 
-      const testData = newAgGridRepository.getFormattedAgGridQueryBuilder(
+      const testData = newCrudGenRepository.getFormattedCrudGenQueryBuilder(
         tempFindOptions,
         {
           parent: { userId: { dst: 'guid' } },
@@ -337,7 +337,7 @@ describe('AgGrid Repoository', () => {
       expect(testData).toEqual(mockedQueryBuilder);
     });
   });
-  it('getAgGridQueryBuilder should return a queryBuilder', () => {
+  it('getCrudGenQueryBuilder should return a queryBuilder', () => {
     jest
       .spyOn(QueryBuilderHelper, 'applyOrderToJoinedQueryBuilder')
       .mockReturnValue([
@@ -347,7 +347,7 @@ describe('AgGrid Repoository', () => {
         },
       ]);
 
-    let testData = newAgGridRepository.getAgGridQueryBuilder(
+    let testData = newCrudGenRepository.getCrudGenQueryBuilder(
       {
         ...fakeFindOptionsWithSubQuery,
       },
@@ -363,7 +363,7 @@ describe('AgGrid Repoository', () => {
     alias.metadata = new EntityMetadata({} as any);
     mockedQueryBuilder.expressionMap.mainAlias = alias;
 
-    testData = newAgGridRepository.getAgGridQueryBuilder(
+    testData = newCrudGenRepository.getCrudGenQueryBuilder(
       {
         ...fakeFindOptionsWithSubQuery,
       },
@@ -382,7 +382,7 @@ describe('AgGrid Repoository', () => {
       .fn()
       .mockReturnValue(newQueryBuilder);
 
-    testData = newAgGridRepository.getAgGridQueryBuilder(
+    testData = newCrudGenRepository.getCrudGenQueryBuilder(
       {
         ...fakeFindOptionsWithSubQuery,
       },
@@ -395,9 +395,9 @@ describe('AgGrid Repoository', () => {
     expect(testData).toEqual(mockedQueryBuilder);
   });
 
-  it('getOneAgGrid should return an entity correctly', async () => {
+  it('getOneCrudGen should return an entity correctly', async () => {
     jest
-      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
 
     QueryBuilderHelper.applyOperationToQueryBuilder = jest
@@ -408,13 +408,13 @@ describe('AgGrid Repoository', () => {
         return fn();
       });
 
-    const result = await newAgGridRepository.getOneAgGrid({});
+    const result = await newCrudGenRepository.getOneCrudGen({});
     expect(result).toStrictEqual(BaseEntity);
   });
 
-  it('getOneAgGrid should return an entity correctly with fail', async () => {
+  it('getOneCrudGen should return an entity correctly with fail', async () => {
     jest
-      .spyOn(newAgGridRepository, 'getFormattedAgGridQueryBuilder')
+      .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
 
     QueryBuilderHelper.applyOperationToQueryBuilder = jest
@@ -425,19 +425,19 @@ describe('AgGrid Repoository', () => {
         return fn();
       });
 
-    const result = await newAgGridRepository.getOneAgGrid({}, true);
+    const result = await newCrudGenRepository.getOneCrudGen({}, true);
     expect(result).toStrictEqual(BaseEntity);
   });
 
-  it('AGGridRepoFactory should return the repo already cached', () => {
+  it('CrudGenRepoFactory should return the repo already cached', () => {
     const spiedEntityRepository = jest
       .spyOn(Typeorm, 'EntityRepository')
       .mockImplementationOnce(() => jest.fn());
 
-    let result = AgGridRepositoryFactory<BaseEntity>(BaseEntity);
+    let result = CrudGenRepositoryFactory<BaseEntity>(BaseEntity);
     expect(result).toBeDefined();
 
-    result = AgGridRepositoryFactory<BaseEntity>(BaseEntity);
+    result = CrudGenRepositoryFactory<BaseEntity>(BaseEntity);
     expect(result).toBeDefined();
 
     expect(spiedEntityRepository).toBeCalledTimes(1);
@@ -445,14 +445,14 @@ describe('AgGrid Repoository', () => {
 
   it('Should check generateFilterOnPrimaryColumn with ids as number', () => {
     const ids = 2;
-    newAgGridRepository.metadata = {
+    newCrudGenRepository.metadata = {
       primaryColumns: [
         {
           propertyName: 'id',
         },
       ],
     } as any;
-    const result = newAgGridRepository.generateFilterOnPrimaryColumn(ids);
+    const result = newCrudGenRepository.generateFilterOnPrimaryColumn(ids);
     expect(result).toEqual({
       id: ` = '2'`,
     });
@@ -462,27 +462,27 @@ describe('AgGrid Repoository', () => {
     const ids = {
       id: '2',
     };
-    newAgGridRepository.metadata = {
+    newCrudGenRepository.metadata = {
       primaryColumns: [
         {
           propertyName: 'id',
         },
       ],
     } as any;
-    const result = newAgGridRepository.generateFilterOnPrimaryColumn(ids);
+    const result = newCrudGenRepository.generateFilterOnPrimaryColumn(ids);
     expect(result).toEqual({
       id: ` = '2'`,
     });
   });
   it('Should check genereteSelectOnFind', () => {
-    jest.spyOn(AgGridHelpers, 'objectToFieldMapper').mockReturnValue({});
+    jest.spyOn(CrudGenHelpers, 'objectToFieldMapper').mockReturnValue({});
     jest
-      .spyOn(AgGridHelpers, 'applySelectOnFind')
+      .spyOn(CrudGenHelpers, 'applySelectOnFind')
       .mockImplementation((findOptions, field, fieldMapperField) => {
         findOptions.select = [];
         findOptions.select.push('id');
         findOptions.select.push('data -> $.field');
       });
-    newAgGridRepository.generateSelectOnFind(['id'], BaseEntity);
+    newCrudGenRepository.generateSelectOnFind(['id'], BaseEntity);
   });
 });

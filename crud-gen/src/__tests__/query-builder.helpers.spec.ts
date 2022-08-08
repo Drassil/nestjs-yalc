@@ -22,7 +22,7 @@ describe('QueryBuilderHelper', () => {
 
   it('getMany works correctly', async () => {
     jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
       .mockReturnValueOnce({
         first: {
           mode: 'derived',
@@ -50,7 +50,7 @@ describe('QueryBuilderHelper', () => {
     ]);
 
     jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
       .mockReturnValueOnce(undefined);
     jest.spyOn(testQb, 'getRawAndEntities').mockResolvedValueOnce({
       entities: [{ first: 'defined', second: 'undefined', third: undefined }],
@@ -68,7 +68,7 @@ describe('QueryBuilderHelper', () => {
 
   it('getOne works correctly', async () => {
     jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
       .mockReturnValueOnce({
         first: {
           mode: 'derived',
@@ -94,7 +94,7 @@ describe('QueryBuilderHelper', () => {
     });
 
     jest
-      .spyOn(ObjectDecorator, 'getAgGridFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
       .mockReturnValueOnce(undefined);
     jest.spyOn(testQb, 'getRawAndEntities').mockResolvedValueOnce({
       entities: [{ first: 'defined', second: 'undefined', third: undefined }],

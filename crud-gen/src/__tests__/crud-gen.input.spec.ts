@@ -5,13 +5,13 @@ import {
   SortModel,
   sortModelFactory,
 } from '../crud-gen.input';
-import * as AgGridEnum from '../crud-gen.enum';
-import * as AgGridHelpers from '../crud-gen.helpers';
+import * as CrudGenEnum from '../crud-gen.enum';
+import * as CrudGenHelpers from '../crud-gen.helpers';
 import { TestEntity, TestEntityRelation } from '../__mocks__/entity.mock';
 
 describe('Dynamic user input dto test', () => {
   const spiedEntityFieldsEnumFactory = jest.spyOn(
-    AgGridEnum,
+    CrudGenEnum,
     'entityFieldsEnumFactory',
   );
 
@@ -78,7 +78,7 @@ describe('Dynamic user input dto test', () => {
 
   it('Should return the JoinOptionInput already cached', () => {
     const spiedgetEntityRelations = jest.spyOn(
-      AgGridHelpers,
+      CrudGenHelpers,
       'getEntityRelations',
     );
     const result = agJoinArgFactory(TestEntityRelation);

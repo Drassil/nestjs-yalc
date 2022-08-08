@@ -1,4 +1,4 @@
-export enum EventAgGrid {
+export enum EventCrudGen {
   START_TRANSACTION = 'START_TRANSACTION',
   END_TRANSACTION = 'END_TRANSACTION',
 }

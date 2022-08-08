@@ -1,5 +1,5 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
+import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import { ModuleRef } from '@nestjs/core';
 import 'reflect-metadata';
@@ -11,13 +11,13 @@ import {
 } from '../skeleton-user.service';
 
 describe('Test skeleton user resolver', () => {
-  let mockedRepository: DeepMocked<AgGridRepository<SkeletonUser>>;
+  let mockedRepository: DeepMocked<CrudGenRepository<SkeletonUser>>;
   let mockedDataloader: DeepMocked<GQLDataLoader<SkeletonUser>>;
   let mockedModuleRef: DeepMocked<ModuleRef>;
   let userService: SkeletonUserService;
 
   beforeEach(() => {
-    mockedRepository = createMock<AgGridRepository<SkeletonUser>>();
+    mockedRepository = createMock<CrudGenRepository<SkeletonUser>>();
     mockedDataloader = createMock<GQLDataLoader<SkeletonUser>>();
     mockedModuleRef = createMock<ModuleRef>();
     const serviceFactory = skeletonUserServiceFactory('test');

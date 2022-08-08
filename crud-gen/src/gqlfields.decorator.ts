@@ -13,7 +13,7 @@ import { ClassType } from '@nestjs-yalc/types/globals';
 import { GraphQLResolveInfo } from 'graphql';
 import { removeSymbolicSelection } from './crud-gen-args.decorator';
 import {
-  IAgGridFieldMetadata,
+  ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
 } from './object.decorator';
 
@@ -22,12 +22,12 @@ export interface IGqlAgSingleParams {
 }
 
 export interface IKeyMeta {
-  fieldMapper: FieldMapperProperty | IAgGridFieldMetadata;
+  fieldMapper: FieldMapperProperty | ICrudGenFieldMetadata;
   isNested?: boolean;
   rawSelect: string;
 }
 
-export const GqlAgGridFieldsMapper = (
+export const GqlCrudGenFieldsMapper = (
   data: IFieldMapper | ReturnTypeFuncValue | ClassType,
   info: GraphQLResolveInfo,
 ): { keys: string[]; keysMeta: { [key: string]: IKeyMeta } } => {
@@ -194,7 +194,7 @@ export const GqlInfoGenerator = (
 ): string[] => {
   const gqlCtx = GqlExecutionContext.create(ctx);
   const info = gqlCtx.getInfo();
-  return GqlAgGridFieldsMapper(data, info).keys;
+  return GqlCrudGenFieldsMapper(data, info).keys;
 };
 
 export const GqlFieldsMap = createParamDecorator(GqlInfoGenerator);

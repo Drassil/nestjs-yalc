@@ -20,13 +20,13 @@ import {
 } from 'typeorm';
 import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
-import { AgGridRepository } from 'crud-gen/src/crud-gen.repository';
-import { AgGridFindManyOptions } from 'crud-gen/src/crud-gen.interface';
+import { CrudGenRepository } from 'crud-gen/src/crud-gen.repository';
+import { CrudGenFindManyOptions } from 'crud-gen/src/crud-gen.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
 import { getProviderToken } from './crud-gen.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
-import { getAgGridFieldMetadataList, isDstExtended } from './object.decorator';
+import { getCrudGenFieldMetadataList, isDstExtended } from './object.decorator';
 
 /**
  *
@@ -53,8 +53,8 @@ export function GenericServiceFactory<Entity>(
         typeof entity === 'function' ? entity.name : entity.toString(),
       ),
     useFactory: (
-      repository: AgGridRepository<any>,
-      repositoryWrite: AgGridRepository<any>,
+      repository: CrudGenRepository<any>,
+      repositoryWrite: CrudGenRepository<any>,
     ) => {
       return new serviceClass(repository, repositoryWrite);
     },
@@ -95,7 +95,7 @@ export function validateSupportedError(
 export class GenericService<EntityRead, EntityWrite = EntityRead> {
   protected entityRead: EntityClassOrSchema;
   protected entityWrite: EntityClassOrSchema;
-  protected repositoryWrite: AgGridRepository<EntityWrite>;
+  protected repositoryWrite: CrudGenRepository<EntityWrite>;
 
   /**
    *
@@ -104,14 +104,14 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * need to write on another source
    */
   constructor(
-    protected repository: AgGridRepository<EntityRead>,
-    repositoryWrite?: AgGridRepository<EntityWrite>,
+    protected repository: CrudGenRepository<EntityRead>,
+    repositoryWrite?: CrudGenRepository<EntityWrite>,
   ) {
     this.repositoryWrite =
       repositoryWrite ??
-      ((<unknown>this.repository) as AgGridRepository<EntityWrite>);
+      ((<unknown>this.repository) as CrudGenRepository<EntityWrite>);
 
-    // Extracts the target Entity from the AgGridRepository
+    // Extracts the target Entity from the CrudGenRepository
     this.entityRead = this.repository.target as EntityClassOrSchema;
     this.entityWrite = this.repositoryWrite.target as EntityClassOrSchema;
   }
@@ -124,13 +124,15 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
     const connectionName = getConnectionName(dbName);
     const connection = getConnection(connectionName);
     this.setRepositoryRead(
-      connection.getRepository(this.entityRead) as AgGridRepository<EntityRead>,
+      connection.getRepository(
+        this.entityRead,
+      ) as CrudGenRepository<EntityRead>,
     );
 
     this.setRepositoryWrite(
       connection.getRepository(
         this.entityWrite,
-      ) as AgGridRepository<EntityWrite>,
+      ) as CrudGenRepository<EntityWrite>,
     );
   }
 
@@ -139,17 +141,17 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param repository
    */
   protected setRepository(
-    repository: AgGridRepository<EntityRead | EntityWrite>,
+    repository: CrudGenRepository<EntityRead | EntityWrite>,
   ): void {
-    this.setRepositoryRead(repository as AgGridRepository<EntityRead>);
-    this.setRepositoryWrite(repository as AgGridRepository<EntityWrite>);
+    this.setRepositoryRead(repository as CrudGenRepository<EntityRead>);
+    this.setRepositoryWrite(repository as CrudGenRepository<EntityWrite>);
   }
 
   /**
    * Changes the Service repository for read operations
    * @param repository
    */
-  protected setRepositoryRead(repository: AgGridRepository<EntityRead>): void {
+  protected setRepositoryRead(repository: CrudGenRepository<EntityRead>): void {
     this.repository = repository;
   }
 
@@ -158,7 +160,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param repository
    */
   protected setRepositoryWrite(
-    repository: AgGridRepository<EntityWrite>,
+    repository: CrudGenRepository<EntityWrite>,
   ): void {
     this.repositoryWrite = repository;
   }
@@ -166,14 +168,14 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
   /**
    * Returns the Service repository (read)
    */
-  getRepository(): AgGridRepository<EntityRead> {
+  getRepository(): CrudGenRepository<EntityRead> {
     return this.repository;
   }
 
   /**
    * Returns the Service repository (write)
    */
-  getRepositoryWrite(): AgGridRepository<EntityWrite> {
+  getRepositoryWrite(): CrudGenRepository<EntityWrite> {
     return this.repositoryWrite;
   }
 
@@ -291,17 +293,17 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    */
   async createEntity(
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity?: true,
   ): Promise<EntityRead>;
   async createEntity(
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity?: boolean,
   ): Promise<EntityRead | boolean>;
   async createEntity(
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity = true,
   ): Promise<EntityRead | boolean> {
     /**
@@ -329,7 +331,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     return !returnEntity
       ? true
-      : this.repository.getOneAgGrid(
+      : this.repository.getOneCrudGen(
           { ...findOptions, where: { filters } },
           true,
           ReplicationMode.MASTER,
@@ -347,19 +349,19 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
   async updateEntity(
     conditions: FindConditions<EntityRead>,
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity?: true,
   ): Promise<EntityRead>;
   async updateEntity(
     conditions: FindConditions<EntityRead>,
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity?: boolean,
   ): Promise<EntityRead | boolean>;
   async updateEntity(
     conditions: FindConditions<EntityRead>,
     input: DeepPartial<EntityRead>,
-    findOptions?: AgGridFindManyOptions<EntityRead>,
+    findOptions?: CrudGenFindManyOptions<EntityRead>,
     returnEntity = true,
   ): Promise<EntityRead | boolean> {
     const result = await this.validateConditions(conditions);
@@ -390,7 +392,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     return !returnEntity
       ? true
-      : this.repository.getOneAgGrid(
+      : this.repository.getOneCrudGen(
           { ...findOptions, where: { filters } },
           true,
           ReplicationMode.MASTER,
@@ -445,20 +447,20 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param relations Related entities to load as part of the results
    * @param databaseName The database name, to open a new database connection
    */
-  async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<EntityRead>,
+  async getEntityListCrudGen(
+    findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount?: false,
     relations?: string[],
     databaseName?: string,
   ): Promise<EntityRead[]>;
-  async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<EntityRead>,
+  async getEntityListCrudGen(
+    findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount: true,
     relations?: string[],
     databaseName?: string,
   ): Promise<[EntityRead[], number]>;
-  async getEntityListAgGrid(
-    findOptions: AgGridFindManyOptions<EntityRead>,
+  async getEntityListCrudGen(
+    findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount = false,
     relations?: string[],
     databaseName?: string,
@@ -468,8 +470,8 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
     if (relations) findOptions.relations = relations;
 
     return withCount
-      ? this.repository.getManyAndCountAgGrid(findOptions)
-      : this.repository.getManyAgGrid(findOptions);
+      ? this.repository.getManyAndCountCrudGen(findOptions)
+      : this.repository.getManyCrudGen(findOptions);
   }
 
   protected mapEntityR2W(
@@ -491,7 +493,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     const newEntityWrite = new entity();
 
-    const fieldMetadataList = getAgGridFieldMetadataList(this.entityRead);
+    const fieldMetadataList = getCrudGenFieldMetadataList(this.entityRead);
 
     for (const propertyName of Object.keys(entityRead)) {
       const fieldMetadata = fieldMetadataList?.[propertyName];

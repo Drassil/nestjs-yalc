@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { AgGridErrors } from './strings.enum';
+import { CrudGenErrors } from './strings.enum';
 
 export class ArgumentsError extends BadRequestException {
   constructor(message: string) {
@@ -9,6 +9,6 @@ export class ArgumentsError extends BadRequestException {
 
 export class MissingArgumentsError extends ArgumentsError {
   constructor(message?: string) {
-    super(message ?? AgGridErrors.REQUIRED_ARGS);
+    super(message ?? CrudGenErrors.REQUIRED_ARGS);
   }
 }

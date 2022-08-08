@@ -20,7 +20,7 @@ export function isDstExtended(dst: string | DstExtended): dst is DstExtended {
   return !!_dst.name && !!_dst.transformer;
 }
 
-export interface IAgGridFieldMetadata<T = any>
+export interface ICrudGenFieldMetadata<T = any>
   extends Omit<FieldMapperProperty, 'dst'> {
   dst?: string | DstExtended;
   src?: string;
@@ -73,24 +73,26 @@ export interface IAgGridFieldMetadata<T = any>
   _propertyName?: string;
 }
 
-export const AGGRID_OBJECT_METADATA_KEY = Symbol('AGGRID_OBJECT_METADATA_KEY');
-export const AGGRID_FIELD_METADATA_KEY = Symbol('AGGRID_FIELD_METADATA_KEY');
+export const CRUDGEN_OBJECT_METADATA_KEY = Symbol(
+  'CRUDGEN_OBJECT_METADATA_KEY',
+);
+export const CRUDGEN_FIELD_METADATA_KEY = Symbol('CRUDGEN_FIELD_METADATA_KEY');
 
 export function getPrototype(target: Record<string, unknown> | ClassType): any {
   return isClass(target) || !target.prototype ? target : target.prototype;
 }
 
-export const AgGridField = <T = any>({
+export const CrudGenField = <T = any>({
   gqlType,
   gqlOptions,
   ...options
-}: IAgGridFieldMetadata<T>): PropertyDecorator => {
+}: ICrudGenFieldMetadata<T>): PropertyDecorator => {
   return (target: any, property: string | symbol) => {
     const classConstructor = target.constructor;
     const propertyName = property.toString();
 
     const metadata =
-      Reflect.getMetadata(AGGRID_FIELD_METADATA_KEY, classConstructor) || {};
+      Reflect.getMetadata(CRUDGEN_FIELD_METADATA_KEY, classConstructor) || {};
 
     // create new object reference to avoid this issue: https://github.com/rbuckton/reflect-metadata/issues/62
     const newMetadata: any = { ...metadata };
@@ -108,7 +110,7 @@ export const AgGridField = <T = any>({
     };
 
     Reflect.defineMetadata(
-      AGGRID_FIELD_METADATA_KEY,
+      CRUDGEN_FIELD_METADATA_KEY,
       newMetadata,
       classConstructor,
     );
@@ -125,23 +127,23 @@ export const AgGridField = <T = any>({
   };
 };
 
-export const getAgGridFieldMetadataList = (
+export const getCrudGenFieldMetadataList = (
   target: Record<string, unknown> | ClassType,
-): { [key: string]: IAgGridFieldMetadata } | undefined => {
-  return Reflect.getMetadata(AGGRID_FIELD_METADATA_KEY, getPrototype(target));
+): { [key: string]: ICrudGenFieldMetadata } | undefined => {
+  return Reflect.getMetadata(CRUDGEN_FIELD_METADATA_KEY, getPrototype(target));
 };
 
-export const hasAgGridFieldMetadataList = (
+export const hasCrudGenFieldMetadataList = (
   target: Record<string, unknown> | ClassType,
 ): boolean => {
-  return Reflect.hasMetadata(AGGRID_FIELD_METADATA_KEY, getPrototype(target));
+  return Reflect.hasMetadata(CRUDGEN_FIELD_METADATA_KEY, getPrototype(target));
 };
 
-export const getAgGridFieldMetadata = (
+export const getCrudGenFieldMetadata = (
   target: Record<string, unknown> | ClassType,
   propertyName: string | symbol,
-): IAgGridFieldMetadata | undefined => {
-  const metadata = getAgGridFieldMetadataList(target);
+): ICrudGenFieldMetadata | undefined => {
+  const metadata = getCrudGenFieldMetadataList(target);
 
   const name = propertyName.toString();
 
@@ -150,45 +152,47 @@ export const getAgGridFieldMetadata = (
   return metadata[name];
 };
 
-export const hasAgGridFieldMetadata = (
+export const hasCrudGenFieldMetadata = (
   target: Record<string, unknown> | ClassType,
   propertyName: string,
 ): boolean => {
   const metadata = Reflect.getMetadata(
-    AGGRID_FIELD_METADATA_KEY,
+    CRUDGEN_FIELD_METADATA_KEY,
     getPrototype(target),
   );
 
   return metadata && !!metadata[propertyName];
 };
 
-export const AgGridObject = (options?: AgGridObjectOptions): ClassDecorator => {
+export const CrudGenObject = (
+  options?: CrudGenObjectOptions,
+): ClassDecorator => {
   return (target) => {
     let metadata = options ?? {};
 
     if (metadata.copyFrom) {
       const copyFrom = metadata.copyFrom;
-      metadata = { ...metadata, ...getAgGridObjectMetadata(copyFrom) };
+      metadata = { ...metadata, ...getCrudGenObjectMetadata(copyFrom) };
 
-      const fieldMetadata = { ...getAgGridFieldMetadataList(copyFrom) };
+      const fieldMetadata = { ...getCrudGenFieldMetadataList(copyFrom) };
 
-      Reflect.defineMetadata(AGGRID_FIELD_METADATA_KEY, fieldMetadata, target);
+      Reflect.defineMetadata(CRUDGEN_FIELD_METADATA_KEY, fieldMetadata, target);
     }
 
-    Reflect.defineMetadata(AGGRID_OBJECT_METADATA_KEY, metadata, target);
+    Reflect.defineMetadata(CRUDGEN_OBJECT_METADATA_KEY, metadata, target);
   };
 };
 
-export const getAgGridObjectMetadata = (
+export const getCrudGenObjectMetadata = (
   target: Record<string, unknown> | ClassType,
 ): FilterOption => {
-  return Reflect.getMetadata(AGGRID_OBJECT_METADATA_KEY, getPrototype(target));
+  return Reflect.getMetadata(CRUDGEN_OBJECT_METADATA_KEY, getPrototype(target));
 };
 
-export const hasAgGridObjectMetadata = (
+export const hasCrudGenObjectMetadata = (
   target: Record<string, unknown> | ClassType,
 ): boolean => {
-  return Reflect.hasMetadata(AGGRID_OBJECT_METADATA_KEY, getPrototype(target));
+  return Reflect.hasMetadata(CRUDGEN_OBJECT_METADATA_KEY, getPrototype(target));
 };
 
 /**
@@ -207,9 +211,9 @@ export type FilterOption = {
   fields: string[];
 };
 
-export type AgGridObjectOptions = {
+export type CrudGenObjectOptions = {
   /**
-   * Copy agGrid decorator metadata from another class
+   * Copy crudGen decorator metadata from another class
    * Useful when the classes are similar but they don't share the prototype
    * E.G. when you use OmitType or similar techniques
    */

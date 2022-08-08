@@ -4,8 +4,8 @@ jest.mock('rxjs/operators');
 import { CallHandler } from '@nestjs/common';
 import * as RxjsOperators from 'rxjs/operators';
 import {
-  AgGridInterceptor,
-  agGridInterceptorWorker,
+  CrudGenInterceptor,
+  crudGenInterceptorWorker,
 } from '../crud-gen.interceptor';
 import { createMock } from '@golevelup/ts-jest';
 import {
@@ -35,7 +35,7 @@ const infoObj = {
 };
 
 describe('AG-Grid Interceptor test', () => {
-  let agGridInterceptor: AgGridInterceptor;
+  let crudGenInterceptor: CrudGenInterceptor;
   const callHandler = createMock<CallHandler>();
   const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
   const mockGetArgs = mockCreate.mockImplementation(() => ({
@@ -71,42 +71,42 @@ describe('AG-Grid Interceptor test', () => {
   };
 
   beforeEach(async () => {
-    agGridInterceptor = new AgGridInterceptor();
+    crudGenInterceptor = new CrudGenInterceptor();
   });
 
   it('t1', async () => {
     const mockMap = jest.spyOn(RxjsOperators, 'map');
-    agGridInterceptor.intercept(mockedExecutionContext, callHandler);
+    crudGenInterceptor.intercept(mockedExecutionContext, callHandler);
 
     expect(mockMap).toHaveBeenCalledTimes(1);
     expect(mockedExecutionContext.switchToHttp()).toBeDefined();
     expect(callHandler.handle).toBeCalledTimes(1);
   });
 
-  it('Check AgGridInterceptorWorker with endRow', async () => {
-    const TestedAgGridInterceptorWorker = agGridInterceptorWorker(
+  it('Check CrudGenInterceptorWorker with endRow', async () => {
+    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(
       endRowTest.startRow,
       endRowTest.endRow,
     );
 
-    expect(TestedAgGridInterceptorWorker([1, 1])).toEqual(testReturnsOffset);
+    expect(TestedCrudGenInterceptorWorker([1, 1])).toEqual(testReturnsOffset);
     expect(mockGetArgs).toHaveBeenCalled();
   });
 
-  it('Check AgGridInterceptorWorker with no endRow', async () => {
-    const TestedAgGridInterceptorWorker = agGridInterceptorWorker(
+  it('Check CrudGenInterceptorWorker with no endRow', async () => {
+    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(
       noOffsetTest.startRow,
       noOffsetTest.endRow,
     );
 
-    expect(TestedAgGridInterceptorWorker([1, 1])).toEqual(testReturnsNoOffset);
+    expect(TestedCrudGenInterceptorWorker([1, 1])).toEqual(testReturnsNoOffset);
     expect(mockGetArgs).toHaveBeenCalled();
   });
 
-  it('Check AgGridInterceptorWorker with no pagination', async () => {
-    const TestedAgGridInterceptorWorker = agGridInterceptorWorker(null, null);
+  it('Check CrudGenInterceptorWorker with no pagination', async () => {
+    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(null, null);
 
-    expect(TestedAgGridInterceptorWorker([1, 1])).toEqual(testReturnsNoParams);
+    expect(TestedCrudGenInterceptorWorker([1, 1])).toEqual(testReturnsNoParams);
     expect(mockGetArgs).toHaveBeenCalled();
   });
 });

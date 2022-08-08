@@ -11,6 +11,6 @@ export enum FilterErrors {
   BAD_FILTER = 'This is not a valid filter',
 }
 
-export enum AgGridErrors {
+export enum CrudGenErrors {
   REQUIRED_ARGS = 'You should provide at least one of the arguments',
 }

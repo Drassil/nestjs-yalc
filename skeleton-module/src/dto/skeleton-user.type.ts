@@ -5,16 +5,16 @@ import {
   OmitType,
   PartialType,
 } from '@nestjs/graphql';
-import { AgGridField, AgGridObject } from 'crud-gen/src/object.decorator';
+import { CrudGenField, CrudGenObject } from 'crud-gen/src/object.decorator';
 import { SkeletonUser } from '../persistance/skeleton-user.entity';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import { SkeletonPhoneType } from './skeleton-phone.type';
 
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonUserType extends SkeletonUser {
-  @AgGridField<SkeletonPhoneType>({
+  @CrudGenField<SkeletonPhoneType>({
     relation: {
       type: () => SkeletonPhoneType,
       relationType: 'one-to-many',
@@ -29,7 +29,7 @@ export class SkeletonUserType extends SkeletonUser {
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @AgGridField({
+  @CrudGenField({
     gqlType: returnValue(UUIDScalar),
     gqlOptions: {
       name: 'ID',
@@ -39,7 +39,7 @@ export class SkeletonUserType extends SkeletonUser {
   })
   guid: string;
 
-  @AgGridField({
+  @CrudGenField({
     gqlOptions: {
       description: "It's the combination of firstName and lastName",
     },
@@ -52,7 +52,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
@@ -60,14 +60,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonUserType })
+@CrudGenObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonUserType })
+@CrudGenObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,

@@ -1,61 +1,61 @@
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
 import { FilterErrors } from './strings.enum';
 
-export class AgGridError extends GqlError {
+export class CrudGenError extends GqlError {
   constructor(message?: string, public systemMessage?: string) {
     super(message, systemMessage);
   }
 }
 
-export class AgGridInvalidArgumentError extends AgGridError {
+export class CrudGenInvalidArgumentError extends CrudGenError {
   constructor() {
     super(FilterErrors.INVALID_ARGUMENT);
   }
 }
 
-export class AgGridInvalidOperatorError extends AgGridError {
+export class CrudGenInvalidOperatorError extends CrudGenError {
   constructor() {
     super(FilterErrors.INVALID_OPERATOR);
   }
 }
 
-export class AgGridInvalidPropertyError extends AgGridError {
+export class CrudGenInvalidPropertyError extends CrudGenError {
   constructor() {
     super(FilterErrors.INVALID_PROPERTY);
   }
 }
 
-export class AgGridConditionNotSupportedError extends AgGridError {
+export class CrudGenConditionNotSupportedError extends CrudGenError {
   constructor(info?: string) {
     super(FilterErrors.INVALID_CONDITION + (info ? `: ${info}` : ''));
   }
 }
 
-export class AgGridFilterNotSupportedError extends AgGridError {
+export class CrudGenFilterNotSupportedError extends CrudGenError {
   constructor(info?: string) {
     super(FilterErrors.FILTER_NOT_SUPPORTED + (info ? `: ${info}` : ''));
   }
 }
 
-export class AgGridBadFilterTypeError extends AgGridError {
+export class CrudGenBadFilterTypeError extends CrudGenError {
   constructor() {
     super(FilterErrors.BAD_FILTER_TYPE);
   }
 }
 
-export class AgGridNotPossibleError extends AgGridError {
+export class CrudGenNotPossibleError extends CrudGenError {
   constructor() {
     super(FilterErrors.NOT_POSSIBLE_EXCEPTION);
   }
 }
 
-export class AgGridStringWhereError extends AgGridError {
+export class CrudGenStringWhereError extends CrudGenError {
   constructor() {
     super(FilterErrors.STRING_WHERE);
   }
 }
 
-export class AgGridFilterProhibited extends AgGridError {
+export class CrudGenFilterProhibited extends CrudGenError {
   constructor() {
     super(FilterErrors.FILTER_PROHIBITED);
   }

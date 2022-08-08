@@ -23,12 +23,12 @@ import {
   TestEntityRelation,
   TestEntityRelation2,
 } from '../__mocks__/entity.mock';
-import * as AgGridObjectDecorator from '../object.decorator';
-import * as AgGridHelpers from '../crud-gen.helpers';
+import * as CrudGenObjectDecorator from '../object.decorator';
+import * as CrudGenHelpers from '../crud-gen.helpers';
 
-import { IAgGridFieldMetadata } from '../object.decorator';
+import { ICrudGenFieldMetadata } from '../object.decorator';
 import { BaseEntity } from 'typeorm';
-import { AgGridFindManyOptions } from '../crud-gen.interface';
+import { CrudGenFindManyOptions } from '../crud-gen.interface';
 import { FilterType } from '../crud-gen.enum';
 import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
 import { IRelationInfo } from '../crud-gen.helpers';
@@ -50,7 +50,7 @@ const queriesName = {
   delete: `${prefix}delete${entityName}`,
 };
 
-const fixedMetadataList: { [key: string]: IAgGridFieldMetadata } = {
+const fixedMetadataList: { [key: string]: ICrudGenFieldMetadata } = {
   [propertyRelationName]: {
     //dst: propertyRelationName,
     //src: propertyRelationName,
@@ -248,13 +248,13 @@ describe('Generic Resolver', () => {
   >();
   const mockedModuleRef = createMock<ModuleRef>();
 
-  const spiedAgGridMetaDataList = jest.spyOn(
-    AgGridObjectDecorator,
-    'getAgGridFieldMetadataList',
+  const spiedCrudGenMetaDataList = jest.spyOn(
+    CrudGenObjectDecorator,
+    'getCrudGenFieldMetadataList',
   );
 
   const generateResolver = (mockedMetadataList, resolverOption) => {
-    spiedAgGridMetaDataList.mockReturnValue(mockedMetadataList);
+    spiedCrudGenMetaDataList.mockReturnValue(mockedMetadataList);
     const ResolverClass = resolverFactory<TestEntityRelation>(resolverOption);
 
     const resolver: IGenericResolver = new ResolverClass(
@@ -299,7 +299,7 @@ describe('Generic Resolver', () => {
       new TestEntityRelation(),
     );
 
-    mockedGenericService.getEntityListAgGrid.mockResolvedValue([
+    mockedGenericService.getEntityListCrudGen.mockResolvedValue([
       [new TestEntityRelation()],
       1,
     ]);
@@ -381,7 +381,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-many relationship', () => {
-    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
     let mockedResolverInfoList: jest.SpyInstance;
     const oneToManyResolverInfo: IRelationInfo = {
       ...customResolverInfo,
@@ -404,7 +404,7 @@ describe('Generic Resolver', () => {
         },
         type: () => String,
       };
-      mockedResolverInfoList = jest.spyOn(AgGridHelpers, 'getEntityRelations');
+      mockedResolverInfoList = jest.spyOn(CrudGenHelpers, 'getEntityRelations');
     });
 
     afterEach(() => {
@@ -455,7 +455,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-one relationship', () => {
-    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
     const oneToOneResolverInfo: IRelationInfo = {
       ...customResolverInfo,
       relation: {
@@ -479,7 +479,7 @@ describe('Generic Resolver', () => {
         },
         type: () => String,
       };
-      mockedResolverInfoList = jest.spyOn(AgGridHelpers, 'getEntityRelations');
+      mockedResolverInfoList = jest.spyOn(CrudGenHelpers, 'getEntityRelations');
     });
 
     afterEach(() => {
@@ -535,7 +535,7 @@ describe('Generic Resolver', () => {
       const customTestEntity = {
         [propertyRelationName]: {},
       };
-      const findOptions: AgGridFindManyOptions = {
+      const findOptions: CrudGenFindManyOptions = {
         where: {
           filters: {
             ['key']: {},
@@ -550,7 +550,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader many-to-many relationship', () => {
-    let customMetadatList: { [key: string]: IAgGridFieldMetadata };
+    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
     const manyToManyResolverInfo: IRelationInfo = {
       ...customResolverInfo,
       relation: {
@@ -559,7 +559,7 @@ describe('Generic Resolver', () => {
       },
     };
     const mockedResolverInfoList = jest.spyOn(
-      AgGridHelpers,
+      CrudGenHelpers,
       'getEntityRelations',
     );
 
@@ -633,7 +633,7 @@ describe('Generic Resolver', () => {
       const customTestEntity = {
         [propertyRelationName]: {},
       };
-      const findOptions: AgGridFindManyOptions = {
+      const findOptions: CrudGenFindManyOptions = {
         where: {
           filters: {
             ['key']: {},
@@ -692,7 +692,7 @@ describe('Generic Resolver', () => {
       Object,
       'getOwnPropertyDescriptor',
     );
-    spiedAgGridMetaDataList.mockReturnValue({});
+    spiedCrudGenMetaDataList.mockReturnValue({});
     const ResolverClass = resolverFactory<TestEntityRelation>(
       baseResolverOption,
     );
@@ -719,7 +719,7 @@ describe('Generic Resolver', () => {
   });
 
   it('Should return true of false if findManyOptions has filters', () => {
-    const findManyOptions: AgGridFindManyOptions = {
+    const findManyOptions: CrudGenFindManyOptions = {
       order: {
         columnId: 'ASC',
       },
@@ -784,7 +784,7 @@ describe('Generic Resolver', () => {
     resolveInfo.findIndex = jest.fn().mockReturnValue(-1);
 
     const mockedGetEntityRelations = jest
-      .spyOn(AgGridHelpers, 'getEntityRelations')
+      .spyOn(CrudGenHelpers, 'getEntityRelations')
       .mockReturnValueOnce(resolveInfo);
 
     const resolver = generateResolver(customResolverInfo, baseResolverOption);
@@ -805,7 +805,7 @@ describe('Generic Resolver', () => {
       },
     };
 
-    spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
+    spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
     const ResolverClass = resolverFactory<TestEntityRelation>(
       baseResolverOption,
     );
@@ -826,7 +826,7 @@ describe('Generic Resolver', () => {
       },
     };
 
-    spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
+    spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
     const ResolverClass = resolverFactory<TestEntityRelation>(
       baseResolverOption,
     );
@@ -845,7 +845,7 @@ describe('Generic Resolver', () => {
       },
     };
 
-    spiedAgGridMetaDataList.mockReturnValue(fixedMetadataList);
+    spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
     const ResolverClass = resolverFactory<TestEntityRelation>(
       baseResolverOption,
     );

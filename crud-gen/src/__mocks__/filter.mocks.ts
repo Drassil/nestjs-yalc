@@ -10,7 +10,7 @@ import {
 import {
   DateFilterModel,
   FilterInput,
-  IAgGridArgsOptions,
+  ICrudGenArgsOptions,
   ICombinedSimpleModel,
   IExtraArg,
   IMultiColumnJoinOptions,
@@ -201,8 +201,8 @@ export const fixedCombinedOrNumberFilter: ICombinedSimpleModel = {
   condition2: fixedSimpleNumberFilter,
 };
 
-// AgGrid Args Options
-export const fixedArgsOptions: IAgGridArgsOptions = {
+// CrudGen Args Options
+export const fixedArgsOptions: ICrudGenArgsOptions = {
   fieldMap: fixedIFieldMapper,
   options: {
     maxRow: 200,
@@ -220,7 +220,7 @@ export const fixedArgsOptions: IAgGridArgsOptions = {
   defaultValue: {},
 };
 
-export const fixedDataWithDefault: IAgGridArgsOptions = {
+export const fixedDataWithDefault: ICrudGenArgsOptions = {
   fieldMap: fixedIFieldMapper,
   defaultValue: {
     sorting: [

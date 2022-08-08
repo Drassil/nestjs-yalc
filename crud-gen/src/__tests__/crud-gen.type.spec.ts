@@ -8,23 +8,23 @@ class Test {
 class TestConnection implements $.IConnection {
   name = '';
   nodes = [];
-  pageData = new $.PageDataAgGrid();
+  pageData = new $.PageDataCrudGen();
 }
 
-describe('AgGrid Gql type test', () => {
+describe('CrudGen Gql type test', () => {
   it('Check creation', async () => {
-    const testAGGridType = $.default<Test>(Test);
-    const classed = new testAGGridType();
+    const testCrudGenType = $.default<Test>(Test);
+    const classed = new testCrudGenType();
 
-    expect(testAGGridType).toBeDefined();
+    expect(testCrudGenType).toBeDefined();
     expect(classed).toBeDefined();
   });
 
   it('Check already existing typemap', async () => {
     $.typeMap['Test'] = TestConnection;
-    const testAGGridType = $.default<Test>(Test);
+    const testCrudGenType = $.default<Test>(Test);
 
-    expect(testAGGridType).toBeDefined();
+    expect(testCrudGenType).toBeDefined();
     delete $.typeMap['Test'];
   });
 });

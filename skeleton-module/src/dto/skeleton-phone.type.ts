@@ -1,14 +1,14 @@
 import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
-import { AgGridField, AgGridObject } from 'crud-gen/src/object.decorator';
+import { CrudGenField, CrudGenObject } from 'crud-gen/src/object.decorator';
 import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { SkeletonUserType } from './skeleton-user.type';
 
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonPhoneType extends SkeletonPhone {
-  @AgGridField({
+  @CrudGenField({
     gqlType: /* istanbul ignore next */ () => SkeletonUserType,
     // relation: {
     //   relationType: 'one-to-many',
@@ -16,7 +16,7 @@ export class SkeletonPhoneType extends SkeletonPhone {
   })
   SkeletonUser?: SkeletonUserType;
 
-  @AgGridField({ gqlType: returnValue(UUIDScalar) })
+  @CrudGenField({ gqlType: returnValue(UUIDScalar) })
   userId: string;
 }
 
@@ -24,7 +24,7 @@ export class SkeletonPhoneType extends SkeletonPhone {
  * Here all the input type for Graphql
  */
 @InputType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonPhoneCreateInput extends OmitType(
   SkeletonPhoneType,
   ['SkeletonUser'] as const,
@@ -32,14 +32,14 @@ export class SkeletonPhoneCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonPhoneType })
+@CrudGenObject({ copyFrom: SkeletonPhoneType })
 export class SkeletonPhoneCondition extends PartialType(
   SkeletonPhoneCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonPhoneType })
+@CrudGenObject({ copyFrom: SkeletonPhoneType })
 export class SkeletonPhoneUpdateInput extends OmitType(
   SkeletonPhoneType,
   ['userId', 'SkeletonUser'] as const,

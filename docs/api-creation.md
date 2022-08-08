@@ -1,4 +1,4 @@
-# API Creation with AgGrid system
+# API Creation with CrudGen system
 
 This project is backed by NestJS therefore the creation of a REST endpoint and GraphQL operations can be generally done by following the NestJS documentation creating the providers and injecting them into the related app (this is also explained in our legacy endpoint creation guide).
 Generally speaking, a CRUD endpoint is always composed by the following components:
@@ -54,7 +54,7 @@ This is used to avoid defining graphql `@Field` decorators on property types tha
 
 To create a simple MySQL CRUD API you need 2 files: the Entity and the Resolver Factory (The DTO file is optional but strongly suggested)
 
-The bare minimum configuration to create a CRUD is by setting up an entity and generating the needed components by using the `AgGridDependencyFactory` method.
+The bare minimum configuration to create a CRUD is by setting up an entity and generating the needed components by using the `CrudGenDependencyFactory` method.
 
 So if we want to implement a CRUD API to manage a collection of phone numbers we can use the following code.
 
@@ -64,7 +64,7 @@ First create the entity `user-phone.entity.ts`
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -84,7 +84,7 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
 Then create the related resolver `user-phone.resolver.ts`
 
 ```typescript
-export const userPhoneProvidersDeps = AgGridDependencyFactory<UserPhone>({
+export const userPhoneProvidersDeps = CrudGenDependencyFactory<UserPhone>({
   // if DTOs are not configured, the entity will be used to
   // define the graphql types
   entityModel: UserPhone,
@@ -96,13 +96,13 @@ export const userPhoneProvidersDeps = AgGridDependencyFactory<UserPhone>({
 });
 ```
 
-The `AgGridDependencyFactory` will generate at runtime the Resolver, the Service, the Dataloader, the Repository and, in this case,
+The `CrudGenDependencyFactory` will generate at runtime the Resolver, the Service, the Dataloader, the Repository and, in this case,
 the DTOs injecting them within the `userPhoneProvidersDeps`variable that has this interface:
 
 ```typescript
 export interface IDependencyObject<Entity> {
   providers: Array<FactoryProvider | Provider>;
-  repository: ClassType<AgGridRepository<Entity>>;
+  repository: ClassType<CrudGenRepository<Entity>>;
 }
 ```
 
@@ -142,7 +142,7 @@ That's it! This is the bare minimum code to create a full featured GraphQL CRUD 
 - `updateUserPhone(input, conditions):` update a single UserPhone by passing the input and the conditions to select the resource to update
 - `deleteUserPhone(conditions):` delete a single UserPhone by passing the conditions needed to select the resource to delete
 
-Please refer to the documentation on how to use NestJS-Yalc AgGrid library to learn how to configure the query and mutation parameters properly.
+Please refer to the documentation on how to use NestJS-Yalc CrudGen library to learn how to configure the query and mutation parameters properly.
 
 **NOTE:** You can use our library based on **graphq-sofa** in order to expose RestAPI endpoints based on the queries and mutations generated above.
 
@@ -161,7 +161,7 @@ To make the endpoints complete, we want to define more configurations to:
 - Define default values for query/mutation arguments
 - Define Custom Queries and Mutations
 
-Every single piece of the `AgGridDependencyFactory` is extremely configurable.
+Every single piece of the `CrudGenDependencyFactory` is extremely configurable.
 
 In the following example we are going to create a `skeleton-user.resolver.ts` file to show you all the configurations available
 on this system and connect this resource
@@ -177,18 +177,18 @@ via 2 strategies:
 1. **Dataloader fetching:** high performance and cache possibility, no data intersection available
 2. **Join:** lower performance but data intersection available.
 
-To define a field as a relationship and enable the 2 features above, we should use both the TypeORM and the AgGrid decorators.
+To define a field as a relationship and enable the 2 features above, we should use both the TypeORM and the CrudGen decorators.
 
 Example (`skeleton-user.entity.ts`):
 
 ```typescript
 @Entity('user')
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @AgGridField({ gqlType: returnValue(UUIDScalar), isRequired: true })
+  @CrudGenField({ gqlType: returnValue(UUIDScalar), isRequired: true })
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
   guid: string;
 
@@ -204,7 +204,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar')
   password: string;
 
-  @AgGridField({
+  @CrudGenField({
     dst: `CONCAT(firstName,' ', lastName)`,
     mode: 'derived',
     isSymbolic: true,
@@ -214,7 +214,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
     denyFilter: true,
   })
   // virtual column, not selectable
-  // handled by the @AgGridField
+  // handled by the @CrudGenField
   @Column({
     select: false,
     insert: false,
@@ -223,7 +223,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   })
   fullName: string;
 
-  @AgGridField<UserPhone>({
+  @CrudGenField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -243,7 +243,7 @@ while in the `UserPhone` entity (`user-phone.entity.ts`):
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -258,7 +258,7 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar', { length: 36 })
   userId: string;
 
-  @AgGridField<UserPhone>({
+  @CrudGenField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -272,14 +272,14 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
 }
 ```
 
-**NOTE 1:** most of the time you can avoid to use the `@AgGridField` decorator since the AgGrid system is able to automatically detect it by the TypeORM decorators, however, with the `@AgGridField` you can specify more options to include some edge cases. You could even only use AgGridField instead
+**NOTE 1:** most of the time you can avoid to use the `@CrudGenField` decorator since the CrudGen system is able to automatically detect it by the TypeORM decorators, however, with the `@CrudGenField` you can specify more options to include some edge cases. You could even only use CrudGenField instead
 if you only need the dataloader and not the join feature.
 
-**NOTE 2:** It's a good practice to define the `@AgGridField` within a DTO instead of an entity. It's always better to separate this 2 concepts. In the example above we used the entities for simplicity
+**NOTE 2:** It's a good practice to define the `@CrudGenField` within a DTO instead of an entity. It's always better to separate this 2 concepts. In the example above we used the entities for simplicity
 
 #### Define DTO with field visibility, validation, mapping, and value manipulation
 
-So far, we've seen how to generate CRUD Graphql operations by using the `AgGridDependencyFactory` and an `Entity`. However, we do not want to couple the
+So far, we've seen how to generate CRUD Graphql operations by using the `CrudGenDependencyFactory` and an `Entity`. However, we do not want to couple the
 persistence layer with the presentation layer. Therefore, we should create a DTO class to define what's the structure of the data we want to expose.
 
 In GraphQL DTOs are represented by the GraphQL Types (response payload) and Inputs (argument payload). To define a DTO we normally want to reuse
@@ -287,15 +287,15 @@ what should not be changed from the entity and redefine some properties instead 
 
 We can create a `skeleton-user.type.ts` with the following code and move all the GraphQL related decorators within this file.
 
-Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@AgGridObject` one.
+Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@CrudGenObject` one.
 
 Example:
 
 ```typescript
 @ObjectType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonUserType extends SkeletonUser {
-  @AgGridField<UserPhone>({
+  @CrudGenField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -310,7 +310,7 @@ export class SkeletonUserType extends SkeletonUser {
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @AgGridField({
+  @CrudGenField({
     gqlType: returnValue(UUIDScalar),
     gqlOptions: {
       name: 'ID',
@@ -320,7 +320,7 @@ export class SkeletonUserType extends SkeletonUser {
   })
   guid: string;
 
-  @AgGridField({
+  @CrudGenField({
     gqlOptions: {
       description: "It's the combination of firstName and lastName",
     },
@@ -333,7 +333,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@AgGridObject()
+@CrudGenObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone'] as const,
@@ -341,14 +341,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonUserType })
+@CrudGenObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@AgGridObject({ copyFrom: SkeletonUserType })
+@CrudGenObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone'] as const,
@@ -358,20 +358,20 @@ export class SkeletonUserUpdateInput extends OmitType(
 
 In the example above we've achieved the following:
 
-1. We've moved most of the `@AgGridField` into the DTO, since they are decorators related to GraphQL. Only the configurations related to TypeORM remained in the entity.
+1. We've moved most of the `@CrudGenField` into the DTO, since they are decorators related to GraphQL. Only the configurations related to TypeORM remained in the entity.
 2. We're hiding the information about the user `password` because we do not want to expose such information to the final user.
 3. We're exposing the `guid` database field as `ID` in GraphQL and added the description for the graphql playground. Our system will automatically map it.
 4. We're creating some input types that will be used to define the parameters needed for our mutations, notice that we use PartialType/OmitType from the
    nestjs/graphql library to remove properties from the extended type that we do not need
 
 There are many other features available NestJS-Yalc/crud-gen, including JSON field handling, middlewares, default values and many other. Please, refer
-to the documentation of the `@AgGridField` and `@AgGridObject` decorator to know more.
+to the documentation of the `@CrudGenField` and `@CrudGenObject` decorator to know more.
 
-As last step, we have to define our DTO and the entity within the `AgGridDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
+As last step, we have to define our DTO and the entity within the `CrudGenDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
 
 ```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
-  AgGridDependencyFactory<SkeletonUser>({
+  CrudGenDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {
@@ -433,7 +433,7 @@ Example on how to apply the RoleAuth on the query:
 
 ```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
-  AgGridDependencyFactory<SkeletonUser>({
+  CrudGenDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {
@@ -504,7 +504,7 @@ Some of the available features:
 
 #### Define Extra arguments/input for autogenerated queries/mutations
 
-The generated CRUD operations are already providing the default arguments to filter resources via AgGrid rules, however, there are cases where you want to define
+The generated CRUD operations are already providing the default arguments to filter resources via CrudGen rules, however, there are cases where you want to define
 required filters or extra inputs.
 
 To do so you can add extraArgs to queries and extraInputs to mutations
@@ -590,16 +590,16 @@ NOTE: Obviously, this is just an example to show the potentialities.
 
 #### Define Custom Queries and Mutations
 
-So far, we've learned that `AgGridDependencyFactory` is able to generate highly configurable GraphQL operations.
+So far, we've learned that `CrudGenDependencyFactory` is able to generate highly configurable GraphQL operations.
 But there are cases where you can't avoid writing your own resolver or services.
 
 Although, is always suggested to check if there's the possibility to solve your problem by using one of the available decorators or
-creating a custom one, in this section we will learn how to implement our own mutations and queries by using the `AgGridDependencyFactory`.
+creating a custom one, in this section we will learn how to implement our own mutations and queries by using the `CrudGenDependencyFactory`.
 
-As stated at the beginning of this documentation, the `AgGridDependencyFactory` is a very flexible system, in fact you can literally replace
+As stated at the beginning of this documentation, the `CrudGenDependencyFactory` is a very flexible system, in fact you can literally replace
 every dependency with your own implementation of the `Resolver`, `Service`, `Dataloader` and `Repository`.
 
-It's also important to know that NestJS-yalc/Ag-Grid provides factory methods for every of the above elements, it means that you can
+It's also important to know that NestJS-yalc/Crud-Gen provides factory methods for every of the above elements, it means that you can
 create your own class while still automatically generate the base to extend.
 
 In the following example, we will create:
@@ -624,7 +624,7 @@ export const skeletonUserServiceFactory = (
     implements SkeletonUserService {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
-      protected repository: AgGridRepository<SkeletonUser>,
+      protected repository: CrudGenRepository<SkeletonUser>,
     ) {
       super(repository);
     }
@@ -732,11 +732,11 @@ export class SkeletonUserResolver extends resolverFactory({
 }
 ```
 
-lastly, we need to update the `AgGridDependencyFactory` in this way to inject the newly created service and resolver:
+lastly, we need to update the `CrudGenDependencyFactory` in this way to inject the newly created service and resolver:
 
 ```typescript
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
-  AgGridDependencyFactory<SkeletonUser>({
+  CrudGenDependencyFactory<SkeletonUser>({
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {
@@ -755,4 +755,4 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
   });
 ```
 
-As you've noticed, the `AgGridDependencyFactory` is very extensible and allows you to fulfill any needs.
+As you've noticed, the `CrudGenDependencyFactory` is very extensible and allows you to fulfill any needs.
