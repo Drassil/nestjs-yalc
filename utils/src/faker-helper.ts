@@ -49,6 +49,18 @@ export class FakerHelper {
     return `${yyyy}-${mm}-${dd}`;
   };
 
+  // Date is returned in format YYYY-MM-DD
+  randomDatePast = (): string => {
+    const date = faker.date.past();
+    return date.toISOString().slice(0, 10);
+  };
+
+  // Date is returned in format YYYY-MM-DD
+  randomDateFuture = (): string => {
+    const date = faker.date.future();
+    return date.toISOString().slice(0, 10);
+  };
+
   // Returns one of three values:
   // * a date in the past (expired lock)
   // * a date in the future (locked till then)

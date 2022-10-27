@@ -107,6 +107,26 @@ describe('faker helper test', () => {
     expect(parseInt(splitted[2])).toEqual(currentDay);
   });
 
+  it('should generate valid date in the past', () => {
+    jest.clearAllMocks();
+
+    const date = fakerHelper.randomDatePast();
+
+    expect(date.split('-').length).toBe(3);
+    expect(new Date(date).getTime()).toBeLessThan(Date.now());
+    expect(new Date(date).getTime()).not.toBeGreaterThan(Date.now());
+  });
+
+  it('should generate valid date in the future', () => {
+    jest.clearAllMocks();
+
+    const date = fakerHelper.randomDateFuture();
+
+    expect(date.split('-').length).toBe(3);
+    expect(new Date(date).getTime()).toBeGreaterThan(Date.now());
+    expect(new Date(date).getTime()).not.toBeLessThan(Date.now());
+  });
+
   it('should generate valid lock dates in the past', () => {
     jest.clearAllMocks();
     jest.spyOn(faker.datatype, 'number').mockReturnValue(0);
