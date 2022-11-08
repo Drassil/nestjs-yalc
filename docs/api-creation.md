@@ -33,7 +33,7 @@ https://drive.google.com/file/d/1h2Te2SZhuIp-PxElkW99YquYa_VChfH3/view?usp=shari
 
 - The code below needs the `@nestjs/graphql` plugin installed with the following configurations:
 
-- **All the examples below are contained in `skeleton-module` folder available in this repo.** It's a fully working module that you can import in your system to test it.
+- **All the examples below are contained in `examples/skeleton-module` folder available in this repo.** It's a fully working module that you can import in your system to test it.
 
 This is used to avoid defining graphql `@Field` decorators on property types that can be detected automatically (read the NestJS doc to know more about it)
 

@@ -1,0 +1,93 @@
+import { IDbConfObject } from '@nestjs-yalc/database/conf.interface';
+import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
+import { ClassType } from '@nestjs-yalc/types';
+import { envIsTrue } from '@nestjs-yalc/utils/env.helper';
+import { EntitySchema } from 'typeorm';
+import { Seeder } from 'typeorm-seeding';
+import { getPrefixedEnv, ENV_PREFIX } from './conf.helper';
+
+type DbConfigObjectParams = {
+  realmAlias?: string;
+  entities: Array<ClassType | string | EntitySchema<any>>;
+  seeds?: { new (): Seeder }[];
+  sourceDir?: string;
+  migrationsDir?: string;
+  connectionName?: string;
+  type: DbType;
+};
+
+export function getRealmDbName(realmName: string, dbName: string) {
+  return `${realmName}_${dbName}`;
+}
+
+export function getRealmDbConnectionName(realmName: string, dbName: string) {
+  return getConnectionName(getRealmDbName(realmName, dbName));
+}
+
+export function realmDbConfFactory({
+  realmAlias,
+  entities,
+  seeds,
+  sourceDir,
+  migrationsDir,
+  connectionName = 'default',
+  type,
+}: DbConfigObjectParams) {
+  const connName = getRealmDbConnectionName(
+    realmAlias ?? 'default',
+    connectionName,
+  );
+
+  const dbConf: IDbConfObject = () => {
+    const _realmAlias = realmAlias || process.env.AC_API_REALM || undefined;
+    const prefix = `${ENV_PREFIX}${type}_`;
+
+    const dbName = getPrefixedEnv(prefix, 'MYSQL_DB_NAME', _realmAlias);
+
+    dbConf.dbName = dbName;
+
+    const noSelDb = envIsTrue(process.env.TYPEORM_NO_SEL_DB || 'false');
+    const sync = getPrefixedEnv(prefix, 'TYPEORM_SYNCHRONIZE', _realmAlias);
+    const logging = getPrefixedEnv(prefix, 'TYPEORM_LOGGING', _realmAlias);
+    const dbPort = getPrefixedEnv(prefix, 'MYSQL_PORT', _realmAlias);
+
+    const host =
+      global.__JEST_DISABLE_DB !== true
+        ? getPrefixedEnv(prefix, 'MYSQL_HOST', _realmAlias)
+        : 'jest-db-disabled';
+
+    const port = dbPort ? parseInt(dbPort, 10) : 3306;
+    const username =
+      getPrefixedEnv(prefix, 'MYSQL_USER', _realmAlias) || 'root';
+    const password =
+      getPrefixedEnv(prefix, 'MYSQL_PASSWORD', _realmAlias) ??
+      getPrefixedEnv(prefix, 'MYSQL_ROOT_PASSWORD', _realmAlias);
+
+    return {
+      host,
+      port,
+      username,
+      password,
+      type: 'mysql',
+      extra: {
+        decimalNumbers: true,
+      },
+      synchronize: envIsTrue(sync || 'false'),
+      logging: envIsTrue(logging || 'false'),
+      name: connectionName,
+      database: noSelDb ? undefined : dbName,
+      entities: noSelDb ? undefined : entities,
+      seeds,
+      factories: sourceDir ? [`${sourceDir}/**/*.factory.{ts,js}`] : undefined,
+      migrations: migrationsDir ? [`${migrationsDir}/**/*.{ts,js}`] : undefined,
+      cli: {
+        migrationsDir,
+      },
+    };
+  };
+
+  dbConf.connName = connName;
+  dbConf.dbName = connName;
+
+  return dbConf;
+}

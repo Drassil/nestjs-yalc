@@ -26,8 +26,7 @@
     "jest",
     "logger",
     "types",
-    "utils",
-    "skeleton-module"
+    "utils"
   ],
   "dependencies": {
     "@apollo/federation": "^0.33.3",

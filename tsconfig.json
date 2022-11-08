@@ -104,10 +104,10 @@
         "kafka/src/*"
       ],
       "@nestjs-yalc/skeleton-module": [
-        "skeleton-module/src"
+        "examples/skeleton-module/src"
       ],
       "@nestjs-yalc/skeleton-module/*": [
-        "skeleton-module/src/*"
+        "examples/skeleton-module/src/*"
       ]
     }
   },
