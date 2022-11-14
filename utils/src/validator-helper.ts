@@ -1,4 +1,4 @@
-import { ErrorsEnum } from '@nestjs-yalc/errors/errors.enum';
+import { ErrorsEnum } from '@nestjs-yalc/errors';
 
 export function stringIsInEnumOrThrow<T>(
   toCheck: string,
