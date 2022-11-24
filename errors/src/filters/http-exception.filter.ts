@@ -14,7 +14,6 @@ import {
 import { ExceptionContextEnum } from '../errors.enum';
 import { EntityError } from '@nestjs-yalc/crud-gen/entity.error';
 import { FastifyReply as FResponse } from 'fastify';
-import * as Sentry from '@sentry/node';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
 import { BadRequestError } from '../input-validation.error';
 
@@ -38,7 +37,6 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
 
   catch(error: Error | HttpErrorType, host: ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
-    Sentry.captureException(error);
 
     // TODO: Validate when monitoring is in place if we need an eventEmitter here instead of log
     switch (true) {

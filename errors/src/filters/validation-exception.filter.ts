@@ -3,14 +3,12 @@ import { UUIDValidationError } from '@nestjs-yalc/graphql/scalars/uuid-validatio
 import { Catch, LoggerService } from '@nestjs/common';
 import { GqlExceptionFilter } from '@nestjs/graphql';
 import { InputValidationError } from '../input-validation.error';
-import * as Sentry from '@sentry/node';
 
 @Catch(UUIDValidationError, CrudGenError)
 export class ValidationExceptionFilter implements GqlExceptionFilter {
   constructor(private logger: LoggerService) {}
 
   catch(error: Error) {
-    Sentry.captureException(error);
     const newError = new InputValidationError(
       error.message,
       (<CrudGenError>error).systemMessage,

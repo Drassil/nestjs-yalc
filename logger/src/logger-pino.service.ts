@@ -1,27 +1,8 @@
 import { LogLevel } from '@nestjs/common';
-import { default as pino, stdTimeFunctions } from 'pino';
+import { default as pino, Logger, stdTimeFunctions } from 'pino';
 import { LoggerAbstractService } from './logger-abstract.service';
 
-const dest = pino.destination({ sync: false });
-export const logger = pino(
-  {
-    // base: {
-    //   memorySize: process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE,
-    //   region: process.env.AWS_REGION,
-    //   runtime: process.env.AWS_EXECUTION_ENV,
-    //   version: process.env.AWS_LAMBDA_FUNCTION_VERSION,
-    // },
-    // name: process.env.AWS_LAMBDA_FUNCTION_NAME,
-    // level: process.env.LOG_LEVEL || 'info',
-    formatters: {
-      level: (label) => {
-        return { level: label };
-      },
-    },
-    timestamp: stdTimeFunctions.isoTime,
-  },
-  dest,
-);
+let logger: Logger;
 
 export const FLUSH_INTERVAL = 10000;
 
@@ -36,6 +17,29 @@ export class PinoLogger extends LoggerAbstractService {
       verbose: (message) => logger.trace({ context }, `${message}`),
     });
 
+    if (!logger) {
+      const dest = pino.destination({ sync: false });
+      logger = pino(
+        {
+          // base: {
+          //   memorySize: process.env.AWS_LAMBDA_FUNCTION_MEMORY_SIZE,
+          //   region: process.env.AWS_REGION,
+          //   runtime: process.env.AWS_EXECUTION_ENV,
+          //   version: process.env.AWS_LAMBDA_FUNCTION_VERSION,
+          // },
+          // name: process.env.AWS_LAMBDA_FUNCTION_NAME,
+          // level: process.env.LOG_LEVEL || 'info',
+          formatters: {
+            level: (label) => {
+              return { level: label };
+            },
+          },
+          timestamp: stdTimeFunctions.isoTime,
+        },
+        dest,
+      );
+    }
+
     logger.level = 'trace'; // enable all. Levels are handled by the Service.
 
     // asynchronously flush every 10 seconds to keep the buffer empty
@@ -46,11 +50,14 @@ export class PinoLogger extends LoggerAbstractService {
 
     // use pino.final to create a special logger that
     // guarantees final tick writes
-    const handler = pino.final(logger, (err, finalLogger, evt) => {
-      finalLogger.info(`${evt} caught`);
-      if (err) finalLogger.error(err, 'error caused exit');
-      process.exit(err ? 1 : 0);
-    });
+    const handler = pino.final(
+      logger,
+      (err: String, finalLogger: Logger, evt: String) => {
+        finalLogger.info(`${evt} caught`);
+        if (err) finalLogger.error(err, 'error caused exit');
+        process.exit(err ? 1 : 0);
+      },
+    );
     // catch all the ways node might exit
     process.on('beforeExit', () => handler(null, 'beforeExit'));
     process.on('exit', () => handler(null, 'exit'));
