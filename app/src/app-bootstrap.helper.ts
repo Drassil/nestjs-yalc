@@ -123,7 +123,7 @@ export class AppBootstrap {
      */
     const filters = [
       new SystemExceptionFilter(this.loggerService),
-      // ...(options?.filters ?? []),
+      ...(options?.filters ?? []),
     ];
     this.app.useGlobalFilters(...filters);
 
