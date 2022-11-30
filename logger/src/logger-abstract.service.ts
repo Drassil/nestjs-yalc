@@ -1,15 +1,33 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LoggerService, LogLevel } from '@nestjs/common';
 import { LogLevelEnum } from './logger.enum';
+export interface LogMethodOptions {
+  data?: any;
+  masks?: string[];
+  context?: string;
+}
 
-export type LogMethod = (message: any, context?: string) => void;
+export type LogMethod = (
+  message: any,
+  context?: string,
+  options?: LogMethodOptions,
+) => void;
 export type LogMethodError = (
   message: any,
   trace?: string,
   context?: string,
+  options?: LogMethodOptions,
 ) => void;
 
-export abstract class LoggerAbstractService implements LoggerService {
+export interface ImprovedLoggerService extends LoggerService {
+  log: LogMethod;
+  error: LogMethodError;
+  warn: LogMethod;
+  debug?: LogMethod | undefined;
+  verbose?: LogMethod;
+}
+
+export abstract class LoggerAbstractService implements ImprovedLoggerService {
   /**
    * This constructor override its empty method based on passed
    * logLevels and this.methods
@@ -20,7 +38,7 @@ export abstract class LoggerAbstractService implements LoggerService {
   constructor(
     protected context: string,
     protected logLevels: LogLevel[] | undefined,
-    protected methods: LoggerService,
+    protected methods: ImprovedLoggerService,
   ) {
     const enabledLevels: { [key: string]: boolean } = {};
     this.logLevels?.forEach((level) => {

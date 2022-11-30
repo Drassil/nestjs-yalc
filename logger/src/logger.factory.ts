@@ -1,7 +1,8 @@
 import { ConsoleLogger } from './logger-console.service';
 import { PinoLogger } from './logger-pino.service';
-import { Logger as NestLogger, LoggerService, LogLevel } from '@nestjs/common';
+import { LoggerService, LogLevel } from '@nestjs/common';
 import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum';
+import { ImprovedNestLogger } from './logger-nest.service';
 
 export const AppLoggerFactory = (
   context: string,
@@ -18,11 +19,12 @@ export const AppLoggerFactory = (
       break;
     case LoggerTypeEnum.NEST:
     default:
-      logger = new NestLogger(context, {
+      logger = new ImprovedNestLogger(context, {
         timestamp: true,
       });
-      NestLogger.overrideLogger(loggerLevels);
-      logger.setLogLevels?.(loggerLevels); // not available on default NEST logger
+      // not available on default NEST logger
+      // ImprovedNestLogger.overrideLogger(loggerLevels);
+      logger.setLogLevels?.(loggerLevels);
       break;
   }
 

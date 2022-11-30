@@ -1,6 +1,7 @@
 import { LogLevel } from '@nestjs/common';
 import { default as pino, Logger, stdTimeFunctions } from 'pino';
 import { LoggerAbstractService } from './logger-abstract.service';
+import { maskDataInObject } from './logger.helper';
 
 let logger: Logger;
 
@@ -9,12 +10,36 @@ export const FLUSH_INTERVAL = 10000;
 export class PinoLogger extends LoggerAbstractService {
   constructor(context: string, logLevels: LogLevel[]) {
     super(context, logLevels, {
-      log: (message) => logger.info({ context }, `${message}`),
-      error: (message, trace) =>
-        logger.error({ context }, `${message} ${trace}`),
-      debug: (message) => logger.debug({ context }, `${message}`),
-      warn: (message) => logger.warn({ context }, `${message}`),
-      verbose: (message) => logger.trace({ context }, `${message}`),
+      log: (message, methodContext, options) =>
+        logger.info(
+          { context: methodContext ?? context },
+          `${message}`,
+          maskDataInObject(options?.data, options?.masks),
+        ),
+      error: (message, methodContext, trace, options) =>
+        logger.error(
+          { context: methodContext ?? context },
+          `${message} ${trace}`,
+          maskDataInObject(options?.data, options?.masks),
+        ),
+      debug: (message, methodContext, options) =>
+        logger.debug(
+          { context: methodContext ?? context },
+          `${message}`,
+          maskDataInObject(options?.data, options?.masks),
+        ),
+      warn: (message, methodContext, options) =>
+        logger.warn(
+          { context: methodContext ?? context },
+          `${message}`,
+          maskDataInObject(options?.data, options?.masks),
+        ),
+      verbose: (message, methodContext, options) =>
+        logger.trace(
+          { context: methodContext ?? context },
+          `${message}`,
+          maskDataInObject(options?.data, options?.masks),
+        ),
     });
 
     if (!logger) {
@@ -30,7 +55,7 @@ export class PinoLogger extends LoggerAbstractService {
           // name: process.env.AWS_LAMBDA_FUNCTION_NAME,
           // level: process.env.LOG_LEVEL || 'info',
           formatters: {
-            level: (label) => {
+            level: (label: string) => {
               return { level: label };
             },
           },
@@ -48,22 +73,23 @@ export class PinoLogger extends LoggerAbstractService {
       logger.flush();
     }, FLUSH_INTERVAL).unref();
 
+    // TODO: remove it if it's not needed anymore (https://github.com/pinojs/pino/pull/1240/files)
     // use pino.final to create a special logger that
     // guarantees final tick writes
-    const handler = pino.final(
-      logger,
-      (err: String, finalLogger: Logger, evt: String) => {
-        finalLogger.info(`${evt} caught`);
-        if (err) finalLogger.error(err, 'error caused exit');
-        process.exit(err ? 1 : 0);
-      },
-    );
-    // catch all the ways node might exit
-    process.on('beforeExit', () => handler(null, 'beforeExit'));
-    process.on('exit', () => handler(null, 'exit'));
-    process.on('uncaughtException', (err) => handler(err, 'uncaughtException'));
-    process.on('SIGINT', () => handler(null, 'SIGINT'));
-    process.on('SIGQUIT', () => handler(null, 'SIGQUIT'));
-    process.on('SIGTERM', () => handler(null, 'SIGTERM'));
+    // const handler = pino.destination(
+    //   logger,
+    //   (err: String, finalLogger: Logger, evt: String) => {
+    //     finalLogger.info(`${evt} caught`);
+    //     if (err) finalLogger.error(err, 'error caused exit');
+    //     process.exit(err ? 1 : 0);
+    //   },
+    // );
+    // // catch all the ways node might exit
+    // process.on('beforeExit', () => handler(null, 'beforeExit'));
+    // process.on('exit', () => handler(null, 'exit'));
+    // process.on('uncaughtException', (err) => handler(err, 'uncaughtException'));
+    // process.on('SIGINT', () => handler(null, 'SIGINT'));
+    // process.on('SIGQUIT', () => handler(null, 'SIGQUIT'));
+    // process.on('SIGTERM', () => handler(null, 'SIGTERM'));
   }
 }

@@ -1,15 +1,47 @@
 /* eslint-disable no-console */
 import { LogLevel } from '@nestjs/common';
 import { LoggerAbstractService } from './logger-abstract.service';
+import { maskDataInObject } from './logger.helper';
 
 export class ConsoleLogger extends LoggerAbstractService {
   constructor(context: string, logLevels: LogLevel[] | undefined) {
     super(context, logLevels, {
-      log: (message) => console.log(`[${context}]`, message),
-      error: (message, trace) => console.error(`[${context}]`, message, trace),
-      debug: (message) => console.debug(`[${context}]`, message),
-      warn: (message) => console.warn(`[${context}]`, message),
-      verbose: (message) => console.info(`[${context}]`, message),
+      log: (message, methodContext, options, ...rest) =>
+        console.log(
+          `[${methodContext ?? context}]`,
+          message,
+          maskDataInObject(options?.data, options?.masks),
+          ...rest,
+        ),
+      error: (message, methodContext, trace, options, ...rest) =>
+        console.error(
+          `[${methodContext ?? context}]`,
+          message,
+          trace,
+          maskDataInObject(options?.data, options?.masks),
+          ...rest,
+        ),
+      debug: (message, methodContext, options, ...rest) =>
+        console.debug(
+          `[${methodContext ?? context}]`,
+          message,
+          maskDataInObject(options?.data, options?.masks),
+          ...rest,
+        ),
+      warn: (message, methodContext, options, ...rest) =>
+        console.warn(
+          `[${methodContext ?? context}]`,
+          message,
+          maskDataInObject(options?.data, options?.masks),
+          ...rest,
+        ),
+      verbose: (message, methodContext, options, ...rest) =>
+        console.info(
+          `[${methodContext ?? context}]`,
+          message,
+          maskDataInObject(options?.data, options?.masks),
+          ...rest,
+        ),
     });
   }
 }

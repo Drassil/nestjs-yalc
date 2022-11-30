@@ -83,15 +83,22 @@ export const coverageThreshold = (
   return coverage;
 };
 
-export const globalsE2E = (tsConfPath = '') => ({
-  'ts-jest': {
-    astTransformers: {
-      before: [path.join(__dirname, 'gql-plugin.js')],
+export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
+  const conf: any = {
+    'ts-jest': {
+      diagnostics: false,
+      tsconfig: path.resolve(tsConfPath),
     },
-    diagnostics: false,
-    tsconfig: path.resolve(tsConfPath),
-  },
-});
+  };
+
+  if (withGqlPlugin) {
+    conf['ts-jest'].astTransformers = {
+      before: [path.join(__dirname, 'gql-plugin.js')],
+    };
+  }
+
+  return conf;
+};
 
 const defaultConf = (dirname: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
