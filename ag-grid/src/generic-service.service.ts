@@ -1,25 +1,10 @@
-import {
-  ConditionsTooBroadError,
-  NoResultsFoundError,
-} from './conditions.error';
-import {
-  CreateEntityError,
-  DeleteEntityError,
-  EntityError,
-  UpdateEntityError,
-} from './entity.error';
+import { ConditionsTooBroadError, NoResultsFoundError } from './conditions.error';
+import { CreateEntityError, DeleteEntityError, EntityError, UpdateEntityError } from './entity.error';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { FactoryProvider, Injectable } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
-import {
-  DeepPartial,
-  getConnection,
-  ObjectLiteral,
-  QueryFailedError,
-} from 'typeorm';
-import { FindConditions } from 'typeorm';
-import { FindManyOptions } from 'typeorm';
+import { DeepPartial, FindConditions, FindManyOptions, getConnection, ObjectLiteral, QueryFailedError } from 'typeorm';
 import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
 import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
 import { ClassType } from '@nestjs-yalc/types/globals';
@@ -27,6 +12,7 @@ import { getProviderToken } from './ag-grid.helpers';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
 import { isClass } from '@nestjs-yalc/utils/class.helper';
 import { getAgGridFieldMetadataList, isDstExtended } from './object.decorator';
+import { UpsertOptions } from 'typeorm/repository/UpsertOptions';
 
 /**
  *
@@ -337,6 +323,61 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
   }
 
   /**
+   * Upsert an entity based in the provided data and returns it
+   * @param entity
+   * @throws CreateEntityError
+   */
+  async upsertEntity(
+    input: DeepPartial<EntityRead>,
+    upsertOptions: UpsertOptions<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: true,
+  ): Promise<EntityRead>;
+  async upsertEntity(
+    input: DeepPartial<EntityRead>,
+    upsertOptions: UpsertOptions<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity?: boolean,
+  ): Promise<EntityRead | boolean>;
+  async upsertEntity(
+    input: DeepPartial<EntityRead>,
+    upsertOptions: UpsertOptions<EntityRead>,
+    findOptions?: AgGridFindManyOptions<EntityRead>,
+    returnEntity = true,
+  ): Promise<EntityRead | boolean> {
+    /**
+     * This is needed to keep the prototype of the
+     * entity in order to allow the beforeInsert to be executed
+     */
+    let entityHydrated = this.mapEntityR2W(input);
+    const entity = this.entityWrite;
+    if (isClass(entity)) {
+      const inputValues = entityHydrated;
+      entityHydrated = new entity();
+      Object.assign(entityHydrated, inputValues);
+    }
+
+    const newEntity = this.repositoryWrite.create(entityHydrated);
+    const { identifiers } = await this.repositoryWrite
+      .upsert(newEntity, upsertOptions)
+      .catch(validateSupportedError(CreateEntityError));
+    /**
+     * Create where condition for the identifiers
+     * @todo maybe conversion is needed here as well
+     */
+    const ids = identifiers[0];
+    const filters = this.repository.generateFilterOnPrimaryColumn(ids);
+
+    return !returnEntity
+      ? true
+      : this.repository.getOneAgGrid(
+          { ...findOptions, where: { filters } },
+          true,
+          ReplicationMode.MASTER,
+        );
+  }
+
+  /**
    * Updates an entity based in the provided conditions and return the updated entity
    * @param conditions The conditions to update
    * @param input The data to update
@@ -414,6 +455,23 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
       .catch(validateSupportedError(DeleteEntityError));
 
     return !!result.affected && result.affected > 0;
+  }
+
+  /**
+   * Deletes all entities that match the provided conditions and returns how many entities where affected
+   * @param conditions The conditions to delete
+   * @throws DeleteEntityError
+   */
+  async deleteEntities(
+    conditions: FindConditions<EntityRead>,
+  ): Promise<number> {
+    const mappedConditions = this.mapEntityR2W(conditions);
+
+    const result = await this.repositoryWrite
+      .delete(mappedConditions)
+      .catch(validateSupportedError(DeleteEntityError));
+
+    return result.affected || 0;
   }
 
   /**
