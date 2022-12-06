@@ -481,6 +481,16 @@ describe('GenericService', () => {
     expect(baseEntityRepository.delete).toHaveBeenCalled();
   });
 
+  it('should return 0 when delete entities did not affect any rows', async () => {
+    const deleteResult = new DeleteResult();
+
+    baseEntityRepository.delete.mockResolvedValueOnce(deleteResult);
+
+    const result = await service.deleteEntities({});
+    expect(result).toBe(0);
+    expect(baseEntityRepository.delete).toHaveBeenCalled();
+  });
+
   it('should handle an insertion error', async () => {
     baseEntityRepository.insert.mockRejectedValueOnce(
       new QueryFailedError('', [], ''),
