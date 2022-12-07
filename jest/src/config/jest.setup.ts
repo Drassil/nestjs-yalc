@@ -12,17 +12,21 @@ if (!process.env.LISTENING_TO_UNHANDLED_REJECTION) {
   process.env.LISTENING_TO_UNHANDLED_REJECTION = 'true';
 }
 
-jest.mock('@nestjs/graphql', () => {
-  class Fake {}
-  return {
-    ...jest.requireActual<any>('@nestjs/graphql'),
-    InputType: () => jest.fn(),
-    OmitType: () => Fake,
-    PickType: () => Fake,
-    PartialType: () => Fake,
-    IntersectionType: () => Fake,
-  };
-});
+try {
+  jest.mock('@nestjs/graphql', () => {
+    class Fake {}
+    return {
+      ...jest.requireActual<any>('@nestjs/graphql'),
+      InputType: () => jest.fn(),
+      OmitType: () => Fake,
+      PickType: () => Fake,
+      PartialType: () => Fake,
+      IntersectionType: () => Fake,
+    };
+  });
+} catch (e) {
+  // console.debug("Can't mock @nestjs/graphql. Not installed?");
+}
 
 // jest.mock('@nestjs/common', () => {
 //   return {

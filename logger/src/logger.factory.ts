@@ -3,12 +3,13 @@ import { PinoLogger } from './logger-pino.service';
 import { LoggerService, LogLevel } from '@nestjs/common';
 import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum';
 import { ImprovedNestLogger } from './logger-nest.service';
+import { ImprovedLoggerService } from './logger-abstract.service';
 
 export const AppLoggerFactory = (
   context: string,
   loggerLevels: LogLevel[] = LOG_LEVEL_DEFAULT,
   loggerType?: string,
-): LoggerService => {
+): ImprovedLoggerService => {
   let logger: LoggerService;
   switch (loggerType) {
     case LoggerTypeEnum.CONSOLE:
