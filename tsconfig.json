@@ -120,6 +120,9 @@
   ],
   "ts-node": {
     "transpileOnly": true,
-    "files": true
+    "files": true,
+    "compilerOptions": {
+      "esModuleInterop": false
+    }
   }
 }
