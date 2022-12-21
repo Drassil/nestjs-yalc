@@ -131,6 +131,7 @@ export const decryptSsmVariable = async (
       },
       (err, data) => {
         if (err || !data.Parameter?.Value) {
+          console.error('Error while decrypting ssm variable', err);
           resolve('');
         } else {
           resolve(data.Parameter.Value);
