@@ -1,6 +1,5 @@
 /* eslint-disable no-var */
 import { LogLevel } from '@nestjs/common';
-import { NODE_ENV } from './global.enum';
 
 declare global {
   var __JEST_DISABLE_DB: boolean;
@@ -8,11 +7,7 @@ declare global {
 
   namespace NodeJS {
     interface ProcessEnv {
-      NODE_ENV?:
-        | NODE_ENV.DEVELOPMENT
-        | NODE_ENV.PRODUCTION
-        | NODE_ENV.TEST
-        | NODE_ENV.PIPELINE;
+      NODE_ENV?: 'development' | 'production' | 'test' | 'pipeline';
       NEST_LOGGER_LEVELS?: LogLevel | string;
       TYPEORM_LOGGING?: 'true' | 'false';
     }
