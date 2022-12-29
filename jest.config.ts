@@ -1,6 +1,7 @@
 import {
   IAppProjSetting,
   IOptions,
+  IProjectInfo,
   jestConfGenerator,
 } from './jest/src/config/jest-conf.generator';
 
@@ -8,13 +9,17 @@ const tsProjects = require('./tsconfig.json');
 
 const appProjectsSettings: { [key: string]: IAppProjSetting } = {};
 
-let projectList: { [key: string]: string } = {};
+const projectList: { [key: string]: IProjectInfo } = {};
 
 Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
   const path: string = tsProjects.compilerOptions.paths[k][0];
 
   if (!k.endsWith('*')) {
-    projectList[k] = path.replace('/src', '');
+    projectList[k] = {
+      path: path.replace('/src', ''),
+      sourcePath: path,
+      type: 'library',
+    };
   }
 });
 
