@@ -5,10 +5,6 @@ inputs:
     description: 'Working directory'
     required: true
 runs:
-  using: 'composite'
-  steps:
-    nestjs-yalc-checks:
-      needs: [EnvSetup]
-      uses: ./github/workflows/libs.yml
-      with:
-        working-directory: ${{ inputs.working-directory }}
+  uses: ./github/workflows/libs.yml
+  with:
+    working-directory: ${{ inputs.working-directory }}
