@@ -32,7 +32,6 @@ jobs:
 
       - name: Setup
         id: setup
-        if: ${{ fromJSON(inputs.setup_node) }}
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
@@ -59,7 +58,6 @@ jobs:
 
       - name: Setup
         id: setup
-        if: ${{ fromJSON(inputs.setup_node) }}
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
@@ -81,7 +79,6 @@ jobs:
 
       - name: Setup
         id: setup
-        if: ${{ fromJSON(inputs.setup_node) }}
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
