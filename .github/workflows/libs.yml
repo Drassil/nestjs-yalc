@@ -42,11 +42,11 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
-          package_json_dir: ${{ inputs.working-directory || github.workspace}}
+          package_json_dir: ${{ github.workspace }}${{ inputs.working-directory }}
         uses: drassil/gh-actions-collection/node-setup@master
 
       - name: Lint check
-        working-directory: ${{ inputs.working-directory || github.workspace}}
+        working-directory: ${{ github.workspace }}${{ inputs.working-directory }}
         run: npm run lint:no-fix;
 
   test-unit-common:
@@ -64,11 +64,11 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
-          package_json_dir: ${{ inputs.working-directory || github.workspace}}
+          package_json_dir: ${{ github.workspace }}${{ inputs.working-directory }}
         uses: drassil/gh-actions-collection/node-setup@master
 
       - name: Test coverage
-        working-directory: ${{ inputs.working-directory || github.workspace}}
+        working-directory: ${{ github.workspace }}${{ inputs.working-directory }}
         run: |
           npm config set jestworkers=2
           npm run test:cov
