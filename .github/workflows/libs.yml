@@ -11,9 +11,9 @@ env:
   NODE_VERSION: 16
   # other
   GITHUB_TOKEN: ${{ secrets.READ_PACKAGE_TOKEN }}
-  NODE_ENV: "pipeline"
-  JWT_SECRET_PVT: "dummydummy"
-  JWT_SECRET_PUB: "dummydummy"
+  NODE_ENV: 'pipeline'
+  JWT_SECRET_PVT: 'dummydummy'
+  JWT_SECRET_PUB: 'dummydummy'
 jobs:
   #===========================
   #
@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Cache global npm
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-${{ env.PROJECT_ID }}-global-node-modules
         with:
@@ -41,13 +41,16 @@ jobs:
             ${{ runner.os }}-build-
             ${{ runner.os }}-
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
       - name: Cache local node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-${{ env.PROJECT_ID }}-modules
         with:
-          path: "node_modules"
+          path: 'node_modules'
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
       - name: Run install
         run: npm ci
@@ -69,14 +72,19 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
       - name: Restore node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-${{ env.PROJECT_ID }}-modules
         with:
-          path: "node_modules"
+          path: 'node_modules'
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Run install
+        run: npm ci
       - name: Lint check
         run: npm run lint:no-fix;
 
@@ -90,13 +98,18 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
       - name: Restore node_modules cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-${{ env.PROJECT_ID }}-modules
         with:
-          path: "node_modules"
+          path: 'node_modules'
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+      - name: Run install
+        run: npm ci
       - name: Test coverage
         run: npm run test:cov
