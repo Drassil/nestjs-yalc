@@ -148,6 +148,7 @@ export class AppBootstrap {
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
     const domain = this.getConf()?.domain || 'localhost';
     await this.app.listen(port, host, () => {
+      // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/
         http://127.0.0.1:${port}${apiPrefix}/

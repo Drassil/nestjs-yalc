@@ -131,6 +131,7 @@ export const decryptSsmVariable = async (
       },
       (err, data) => {
         if (err || !data.Parameter?.Value) {
+          // eslint-disable-next-line no-console
           console.error('Error while decrypting ssm variable', err);
           resolve('');
         } else {

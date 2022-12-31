@@ -5,11 +5,7 @@ import { maskDataInObject } from './logger.helper';
 export class ImprovedNestLogger extends ConsoleLogger {
   log(message: any): void;
   log(message: any, ...optionalParams: any[]): void;
-  log(
-    message: unknown,
-    options?: LogMethodOptions,
-    ...rest: unknown[]
-  ): void {
+  log(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
     const masked = maskDataInObject(options?.data, options?.masks);
     super.log(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
@@ -18,11 +14,7 @@ export class ImprovedNestLogger extends ConsoleLogger {
     );
   }
 
-  error(
-    message: any,
-    stack?: string | undefined,
-,
-  ): void;
+  error(message: any, stack?: string | undefined): void;
   error(message: any, ...optionalParams: any[]): void;
   error(
     message: unknown,
@@ -71,11 +63,7 @@ export class ImprovedNestLogger extends ConsoleLogger {
 
   warn(message: any): void;
   warn(message: any, ...optionalParams: any[]): void;
-  warn(
-    message: unknown,
-    options?: LogMethodOptions,
-    ...rest: unknown[]
-  ): void {
+  warn(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
     const masked = maskDataInObject(options?.data, options?.masks);
     super.warn(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
