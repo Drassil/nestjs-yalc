@@ -1,5 +1,12 @@
 name: libs pipeline
 on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Path where nestjs-yalc is installed'
+        required: false
+        type: string
+
   workflow_dispatch:
   push:
     branches:
@@ -35,9 +42,11 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
+          package_json_dir: ${{ inputs.working-directory || github.workspace}}
         uses: drassil/gh-actions-collection/node-setup@master
 
       - name: Lint check
+        working-directory: ${{ inputs.working-directory || github.workspace}}
         run: npm run lint:no-fix;
 
   test-unit-common:
@@ -55,9 +64,11 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
           install_command: ci
+          package_json_dir: ${{ inputs.working-directory || github.workspace}}
         uses: drassil/gh-actions-collection/node-setup@master
 
       - name: Test coverage
+        working-directory: ${{ inputs.working-directory || github.workspace}}
         run: |
           npm config set jestworkers=2
           npm run test:cov
