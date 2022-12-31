@@ -31,44 +31,12 @@ jobs:
     name: Linter checks
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-          submodules: 'recursive'
-
-      - name: Setup
-        id: setup
-        with:
-          node_version: ${{ env.NODE_VERSION }}
-          install_command: ci
-          package_json_dir: ${{ github.workspace }}/${{ inputs.working-directory }}
-        uses: drassil/gh-actions-collection/node-setup@master
-
-      - name: Lint check
-        working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}
-        run: npm run lint:no-fix;
+      - name: Lint
+        uses: .github/actions/lint
 
   test-unit-common:
     name: Common libs unit tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-          submodules: 'recursive'
-
-      - name: Setup
-        id: setup
-        with:
-          node_version: ${{ env.NODE_VERSION }}
-          install_command: ci
-          package_json_dir: ${{ github.workspace }}/${{ inputs.working-directory }}
-        uses: drassil/gh-actions-collection/node-setup@master
-
-      - name: Test coverage
-        working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}
-        run: |
-          npm config set jestworkers=2
-          npm run test:cov
+      - name: Test
+        uses: .github/actions/test
