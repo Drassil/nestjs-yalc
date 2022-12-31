@@ -31,6 +31,12 @@ jobs:
     name: Linter checks
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
+
       - name: Lint
         uses: ./.github/actions/lint
 
@@ -38,5 +44,11 @@ jobs:
     name: Common libs unit tests
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+          submodules: 'recursive'
+
       - name: Test
         uses: ./.github/actions/test
