@@ -1,4 +1,4 @@
-import pMap, { Mapper, Options } from 'p-map';
+import * as pMap from 'p-map';
 
 export const PROMISE_CONCURRENCY_LIMIT = 1000;
 
@@ -13,10 +13,10 @@ export const PROMISE_CONCURRENCY_LIMIT = 1000;
 */
 export function promiseMap<Element, NewElement>(
   input: Iterable<Element>,
-  mapper: Mapper<Element, NewElement>,
-  options?: Options,
+  mapper: pMap.Mapper<Element, NewElement>,
+  options?: pMap.Options,
 ): Promise<NewElement[]> {
-  return pMap(input, mapper, {
+  return pMap.default(input, mapper, {
     concurrency: options?.concurrency ?? PROMISE_CONCURRENCY_LIMIT,
     stopOnError: options?.stopOnError ?? true,
   });

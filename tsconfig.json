@@ -1,10 +1,13 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "strictPropertyInitialization": false,
@@ -13,7 +16,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "target": "es2017",
     "sourceMap": true,
     "resolveJsonModule": true,
     "rootDir": ".",
@@ -120,9 +122,6 @@
   ],
   "ts-node": {
     "transpileOnly": true,
-    "files": true,
-    "compilerOptions": {
-      "esModuleInterop": false
-    }
+    "files": true
   }
 }

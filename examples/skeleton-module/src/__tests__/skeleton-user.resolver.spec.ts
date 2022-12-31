@@ -4,7 +4,7 @@ import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
 import { ModuleRef } from '@nestjs/core';
 import 'reflect-metadata';
 import { lowerCaseEmailMiddleware, SkeletonUserResolver } from '../index';
-import { SkeletonUser } from '../persistance/skeleton-user.entity';
+import { SkeletonUser } from '../skeleton-user.entity';
 import {
   SkeletonUserService,
   skeletonUserServiceFactory,

@@ -8,35 +8,39 @@ let logger: Logger;
 export const FLUSH_INTERVAL = 10000;
 
 export class PinoLogger extends LoggerAbstractService {
+  getLogger(): Logger {
+    return logger;
+  }
+
   constructor(context: string, logLevels: LogLevel[]) {
     super(context, logLevels, {
-      log: (message, methodContext, options) =>
+      log: (message, options) =>
         logger.info(
-          { context: methodContext ?? context },
+          { context: options?.context ?? context },
           `${message}`,
           maskDataInObject(options?.data, options?.masks),
         ),
-      error: (message, methodContext, trace, options) =>
+      error: (message, trace, options) =>
         logger.error(
-          { context: methodContext ?? context },
+          { context: options?.context ?? context },
           `${message} ${trace}`,
           maskDataInObject(options?.data, options?.masks),
         ),
-      debug: (message, methodContext, options) =>
+      debug: (message, options) =>
         logger.debug(
-          { context: methodContext ?? context },
+          { context: options?.context ?? context },
           `${message}`,
           maskDataInObject(options?.data, options?.masks),
         ),
-      warn: (message, methodContext, options) =>
+      warn: (message, options) =>
         logger.warn(
-          { context: methodContext ?? context },
+          { context: options?.context ?? context },
           `${message}`,
           maskDataInObject(options?.data, options?.masks),
         ),
-      verbose: (message, methodContext, options) =>
+      verbose: (message, options) =>
         logger.trace(
-          { context: methodContext ?? context },
+          { context: options?.context ?? context },
           `${message}`,
           maskDataInObject(options?.data, options?.masks),
         ),

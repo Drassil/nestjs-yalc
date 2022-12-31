@@ -3,10 +3,10 @@ import {
   CrudGenField,
   CrudGenObject,
 } from '@nestjs-yalc/crud-gen/object.decorator';
-import { SkeletonPhone } from '../persistance/skeleton-phone.entity';
+import { SkeletonPhone } from './skeleton-phone.entity';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
 import returnValue from '@nestjs-yalc/utils/returnValue';
-import { SkeletonUserType } from './skeleton-user.type';
+import { SkeletonUserType } from './skeleton-user.dto';
 
 @ObjectType()
 @CrudGenObject()

@@ -7,7 +7,8 @@ import defaultConf, {
   coverageThreshold,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
-import yargs from 'yargs';
+import _yargs from 'yargs';
+const yargs = _yargs.default;
 
 interface IAppDep {
   name: string;

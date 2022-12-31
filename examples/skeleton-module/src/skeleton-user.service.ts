@@ -1,5 +1,5 @@
 import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service';
-import { SkeletonUser } from './persistance/skeleton-user.entity';
+import { SkeletonUser } from './skeleton-user.entity';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
@@ -18,7 +18,8 @@ export const skeletonUserServiceFactory = (
   @Injectable()
   class SkeletonUserService
     extends GenericService<SkeletonUser>
-    implements SkeletonUserService {
+    implements SkeletonUserService
+  {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
       protected repository: CrudGenRepository<SkeletonUser>,

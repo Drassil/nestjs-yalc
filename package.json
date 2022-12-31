@@ -6,7 +6,7 @@
     "lint": "npm run lint:no-fix -- --fix",
     "lint:no-fix": "eslint -c .eslintrc.js \"**/src/**/*.ts\" --max-warnings=0",
     "lint:path": "eslint -c .eslintrc.js $npm_config_lintpath\"/**/*.ts\" --max-warnings=0",
-    "test": "jest --logHeapUsage",
+    "test": "npx jest --logHeapUsage",
     "test:watch": "npm run test -- --watch",
     "test:cov": "npm run test -- --coverage",
     "test:cov:serve": "npx http-server -c-1 ./docs/compodoc/jestcoverage/",

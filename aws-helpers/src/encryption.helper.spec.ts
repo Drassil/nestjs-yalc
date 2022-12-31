@@ -3,7 +3,7 @@ jest.mock('aws-sdk');
 import { createMock } from '@golevelup/ts-jest';
 import * as $ from './encryption.helper';
 import * as AWS from 'aws-sdk';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 
 // Please let me know if you know how to solve this as unknown as void.
 jest

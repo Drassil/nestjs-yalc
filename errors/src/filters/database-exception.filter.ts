@@ -6,9 +6,8 @@ import {
   LoggerService,
 } from '@nestjs/common';
 // We can import more errors from the typeorm/error folder if necessary, nothing is exported though, so use explicit paths.
-import { EntityNotFoundError, ConnectionNotFoundError } from 'typeorm/error';
+import { EntityNotFoundError, ConnectionNotFoundError } from 'typeorm';
 import { ExceptionContextEnum } from '../errors.enum';
-import * as Sentry from '@sentry/node';
 
 @Catch(EntityNotFoundError, ConnectionNotFoundError)
 export class DatabaseExceptionFilter implements GqlExceptionFilter {
@@ -21,10 +20,10 @@ export class DatabaseExceptionFilter implements GqlExceptionFilter {
     // Normally transactions are for performance monitoring,
     // Op and Name reflect which operation and function we are running
     // Could not get issue tracking working without, using exception filter as op.
-    const transaction = Sentry.startTransaction({
-      op: 'DatabaseExceptionFilter', // operation (encode)
-      name: 'Caught Error', // name (parseAvatarImage)
-    });
+    // const transaction = Sentry.startTransaction({
+    //   op: 'DatabaseExceptionFilter', // operation (encode)
+    //   name: 'Caught Error', // name (parseAvatarImage)
+    // });
 
     // TODO: Validate when monitoring is in place if we need an eventEmitter here instead of log
     switch (true) {
@@ -34,15 +33,15 @@ export class DatabaseExceptionFilter implements GqlExceptionFilter {
       case error instanceof EntityNotFoundError:
         this.logger.error(error, ExceptionContextEnum.DATABASE);
         error = new InternalServerErrorException(error);
-        Sentry.captureException(error);
+        // Sentry.captureException(error);
         break;
       // Log critically any other error, because those are not expected normally
       default:
         this.logger.error(error, error.stack, ExceptionContextEnum.DATABASE);
-        Sentry.captureException(error);
+        // Sentry.captureException(error);
         break;
     }
-    transaction.finish();
+    // transaction.finish();
 
     return error;
   }

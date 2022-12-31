@@ -6,38 +6,38 @@ import { maskDataInObject } from './logger.helper';
 export class ConsoleLogger extends LoggerAbstractService {
   constructor(context: string, logLevels: LogLevel[] | undefined) {
     super(context, logLevels, {
-      log: (message, methodContext, options, ...rest) =>
+      log: (message, options, ...rest) =>
         console.log(
-          `[${methodContext ?? context}]`,
+          `[${options?.context ?? context}]`,
           message,
           maskDataInObject(options?.data, options?.masks),
           ...rest,
         ),
-      error: (message, methodContext, trace, options, ...rest) =>
+      error: (message, trace, options, ...rest) =>
         console.error(
-          `[${methodContext ?? context}]`,
+          `[${options?.context ?? context}]`,
           message,
           trace,
           maskDataInObject(options?.data, options?.masks),
           ...rest,
         ),
-      debug: (message, methodContext, options, ...rest) =>
+      debug: (message, options, ...rest) =>
         console.debug(
-          `[${methodContext ?? context}]`,
+          `[${options?.context ?? context}]`,
           message,
           maskDataInObject(options?.data, options?.masks),
           ...rest,
         ),
-      warn: (message, methodContext, options, ...rest) =>
+      warn: (message, options, ...rest) =>
         console.warn(
-          `[${methodContext ?? context}]`,
+          `[${options?.context ?? context}]`,
           message,
           maskDataInObject(options?.data, options?.masks),
           ...rest,
         ),
-      verbose: (message, methodContext, options, ...rest) =>
+      verbose: (message, options, ...rest) =>
         console.info(
-          `[${methodContext ?? context}]`,
+          `[${options?.context ?? context}]`,
           message,
           maskDataInObject(options?.data, options?.masks),
           ...rest,

@@ -1,4 +1,4 @@
-import * as _DataLoader from 'dataloader';
+import _DataLoader from 'dataloader';
 import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
 import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
 import { In } from 'typeorm';
@@ -27,7 +27,7 @@ export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
  * Only used internally to add extra data to the Dataloader result
  */
 class _DataLoaderWithCount<
-  Entity extends Record<string, any>
+  Entity extends Record<string, any>,
 > extends _DataLoader<string, Entity[], string> {
   private count: number;
 
@@ -265,11 +265,11 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
   }
 }
 
-export const getFn = <Entity>(service: GenericService<Entity>) => async (
-  findManyOptions: CrudGenFindManyOptions,
-) => {
-  return service.getEntityListCrudGen(findManyOptions, true);
-};
+export const getFn =
+  <Entity>(service: GenericService<Entity>) =>
+  async (findManyOptions: CrudGenFindManyOptions) => {
+    return service.getEntityListCrudGen(findManyOptions, true);
+  };
 
 export function DataLoaderFactory<Entity>(
   defaultSearchKey: keyof Entity,

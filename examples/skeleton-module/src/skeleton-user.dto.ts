@@ -9,10 +9,10 @@ import {
   CrudGenField,
   CrudGenObject,
 } from '@nestjs-yalc/crud-gen/object.decorator';
-import { SkeletonUser } from '../persistance/skeleton-user.entity';
+import { SkeletonUser } from './skeleton-user.entity';
 import returnValue from '@nestjs-yalc/utils/returnValue';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
-import { SkeletonPhoneType } from './skeleton-phone.type';
+import { SkeletonPhoneType } from './skeleton-phone.dto';
 
 @ObjectType()
 @CrudGenObject()

@@ -24,7 +24,40 @@ Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
 });
 
 const options: IOptions = {
-  skipProjects: ['types', 'graphql'],
+  // TODO: re-enable everything except types
+  skipProjects: ['types', 'graphql', 'app', 'crud-gen'],
+  defaultCoverageThreshold: {
+    branches: 100,
+    functions: 100,
+    lines: 100,
+    statements: 100,
+  },
+  confOverrides: {
+    '@nestjs-yalc/aws-helpers': {
+      coverageThreshold: {
+        branches: 100,
+        functions: 95.23,
+        lines: 91.66,
+        statements: 92.59,
+      },
+    },
+    '@nestjs-yalc/logger': {
+      coverageThreshold: {
+        branches: 60.13,
+        functions: 88.23,
+        lines: 88.7,
+        statements: 89.31,
+      },
+    },
+    '@nestjs-yalc/utils': {
+      coverageThreshold: {
+        branches: 92,
+        functions: 86.95,
+        lines: 83.69,
+        statements: 84.46,
+      },
+    },
+  },
 };
 
 export default jestConfGenerator(

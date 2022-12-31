@@ -7,15 +7,10 @@ export interface LogMethodOptions {
   context?: string;
 }
 
-export type LogMethod = (
-  message: any,
-  context?: string,
-  options?: LogMethodOptions,
-) => void;
+export type LogMethod = (message: any, options?: LogMethodOptions) => void;
 export type LogMethodError = (
   message: any,
   trace?: string,
-  context?: string,
   options?: LogMethodOptions,
 ) => void;
 

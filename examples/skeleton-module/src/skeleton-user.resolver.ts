@@ -10,8 +10,8 @@ import {
   SkeletonUserCreateInput,
   SkeletonUserUpdateInput,
   SkeletonUserCondition,
-} from './dto/skeleton-user.type';
-import { SkeletonUser } from './persistance/skeleton-user.entity';
+} from './skeleton-user.dto';
+import { SkeletonUser } from './skeleton-user.entity';
 import { RoleAuth, RoleEnum } from './role.guard';
 import {
   skeletonUserServiceFactory,

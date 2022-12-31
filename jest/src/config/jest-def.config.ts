@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import * as path from 'path';
+import * as readTsConfig from 'get-tsconfig';
 import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
 
@@ -14,12 +15,13 @@ export const coveragePathIgnorePatterns = [
 
 export const globals = (tsConfPath = '') => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const tsConfig = require(path.resolve(tsConfPath));
+  const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+
   return {
     __JEST_DISABLE_DB: true,
     'ts-jest': {
       tsconfig: {
-        ...tsConfig.compilerOptions,
+        ...(tsConfig?.config.compilerOptions ?? {}),
         emitDecoratorMetadata: false,
         experimentalDecorators: false,
       },
@@ -100,6 +102,11 @@ export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
   return conf;
 };
 
+/**
+ * for both unit and e2e
+ * @param dirname
+ * @returns
+ */
 const defaultConf = (dirname: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
@@ -112,18 +119,25 @@ const defaultConf = (dirname: string) => {
       '<rootDir>/docs/',
       '<rootDir>/node_modules/',
     ],
-    preset: 'ts-jest',
+    preset: 'ts-jest/presets/default-esm',
     coverageProvider: 'v8',
     testEnvironment: 'node',
     moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
     testRegex: '.*\\.spec\\.ts$',
     transform: {
-      '^.+\\.(t|j)s$': 'ts-jest',
+      '^.+\\.(t|j)s$': [
+        'ts-jest',
+        {
+          useESM: true,
+        },
+      ],
     },
     moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
       prefix: dirname,
     }),
     errorOnDeprecated: true,
+    extensionsToTreatAsEsm: ['.ts'],
+    transformIgnorePatterns: [],
   };
 };
 

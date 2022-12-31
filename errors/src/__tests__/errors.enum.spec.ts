@@ -7,7 +7,6 @@ describe('errors enum test', () => {
       'UNAUTHORIZED',
       'FORBIDDEN_RESOURCE',
       'INVALID_VALUE',
-      'INVALID_PHONE',
     ]);
   });
 
