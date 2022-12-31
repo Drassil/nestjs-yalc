@@ -17,37 +17,11 @@ env:
 jobs:
   #===========================
   #
-  #  PREPARE PIPELINE
-  #
-  #============================
-  prepare-pipeline:
-    name: Prepare pipeline
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
-          submodules: 'recursive'
-
-      - name: Setup
-        id: setup
-        with:
-          node_version: ${{ env.NODE_VERSION }}
-          install_command: ci
-        uses: drassil/gh-actions-collection/node-setup@master
-
-      - name: Check npm version
-        run: npm --version
-
-  #===========================
-  #
   #  RUN PARALLEL JOBS
   #
   #============================
   linter:
     name: Linter checks
-    needs: prepare-pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -68,7 +42,6 @@ jobs:
 
   test-unit-common:
     name: Common libs unit tests
-    needs: prepare-pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
