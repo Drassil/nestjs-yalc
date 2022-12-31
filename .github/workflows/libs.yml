@@ -50,7 +50,7 @@ jobs:
           path: "node_modules"
           key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
       - name: Run install
-        run: npm install
+        run: npm ci
       - name: Check npm version
         run: npm --version
 
