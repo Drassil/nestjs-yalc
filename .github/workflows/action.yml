@@ -1,0 +1,14 @@
+name: 'action-libs'
+description: 'Action to run the libs reusable workflow'
+inputs:
+  working-directory:
+    description: 'Working directory'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    nestjs-yalc-checks:
+      needs: [EnvSetup]
+      uses: ./github/workflows/libs.yml
+      with:
+        working-directory: ${{ inputs.working-directory }}
