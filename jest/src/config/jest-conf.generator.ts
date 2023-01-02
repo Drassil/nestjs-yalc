@@ -153,6 +153,7 @@ export function jestConfGenerator(
   const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
   const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
 
+  // eslint-disable-next-line no-console
   console.debug('possiblePath', possiblePath);
 
   let config: any = {};
