@@ -3,6 +3,8 @@
   "version": "1.3.2",
   "description": "NestJS - Yet Another Library Collection",
   "scripts": {
+    "update-lock": "npm install --workspaces=false --package-lock-only --ignore-scripts",
+    "postinstall": "npm run update-lock",
     "lint": "npm run lint:no-fix -- --fix",
     "lint:no-fix": "eslint -c .eslintrc.js \"**/src/**/*.ts\" --max-warnings=0",
     "lint:path": "eslint -c .eslintrc.js $npm_config_lintpath\"/**/*.ts\" --max-warnings=0",
