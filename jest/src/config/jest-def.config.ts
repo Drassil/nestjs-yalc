@@ -111,6 +111,17 @@ const defaultConf = (dirname: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
 
+  // We need this to make sure that some esm modules are transformed
+  // ref: https://github.com/nrwl/nx/issues/812
+  // ref: https://github.com/jaredpalmer/tsdx/issues/187#issuecomment-825536863
+  const esModules = [
+    'aggregate-error',
+    'clean-stack',
+    'escape-string-regexp',
+    'indent-string',
+    'p-map',
+  ].join('|');
+
   return {
     rootDir: dirname,
     modulePathIgnorePatterns: [
@@ -137,7 +148,9 @@ const defaultConf = (dirname: string) => {
     }),
     errorOnDeprecated: true,
     extensionsToTreatAsEsm: ['.ts'],
-    transformIgnorePatterns: [],
+    transformIgnorePatterns: [
+      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
+    ],
   };
 };
 

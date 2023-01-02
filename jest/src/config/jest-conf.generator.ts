@@ -153,7 +153,7 @@ export function jestConfGenerator(
   const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
   const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
 
-  console.debug('possiblePath', possiblePath, argv);
+  console.debug('possiblePath', possiblePath);
 
   let config: any = {};
 
