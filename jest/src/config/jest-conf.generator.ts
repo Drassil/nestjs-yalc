@@ -150,8 +150,10 @@ export function jestConfGenerator(
       // nothing to do
     }).argv;
 
-  const possiblePath = argv.path ?? argv.testPathPattern?.[0];
+  const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
   const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
+
+  console.debug('possiblePath', possiblePath, argv);
 
   let config: any = {};
 
