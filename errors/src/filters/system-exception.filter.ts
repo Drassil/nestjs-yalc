@@ -1,4 +1,5 @@
-import { Catch, LoggerService, ExceptionFilter } from '@nestjs/common';
+import { Catch, ExceptionFilter } from '@nestjs/common';
+import type { LoggerService } from '@nestjs/common';
 import { ExceptionContextEnum } from '../errors.enum';
 
 @Catch(TypeError, SyntaxError, RangeError, EvalError, ReferenceError)
