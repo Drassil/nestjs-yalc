@@ -279,8 +279,9 @@ export function AppDependencyFactory(
       JwtModule.registerAsync({
         imports: [configModule],
         useFactory: async (configService: ConfigService) => ({
-          secret: configService.get<IServiceConf>(CURAPP_CONF_ALIAS)
-            ?.jwtSecretPrivate,
+          secret:
+            configService.get<IServiceConf>(CURAPP_CONF_ALIAS)
+              ?.jwtSecretPrivate,
           signOptions: {
             expiresIn: 3600,
           },
