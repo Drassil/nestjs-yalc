@@ -1,0 +1,17 @@
+{
+  "name": "@nestjs-yalc/api-strategy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.ts",
+  "exports": {
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "aws-sdk": "^2.1048.0"
+  }
+}
