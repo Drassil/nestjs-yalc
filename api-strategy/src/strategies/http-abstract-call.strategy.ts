@@ -11,23 +11,26 @@ export interface HttpOptions {
   method?: HTTPMethods;
   signal?: AbortSignal;
   Request?: object;
-  payload?: string | object | Buffer | NodeJS.ReadableStream;
+  data?: string | object | Buffer | NodeJS.ReadableStream;
 }
+
+export interface IHttpCallStrategy<Options extends HttpOptions = HttpOptions>
+  extends IApiCallStrategy<Options, any> {}
 
 export abstract class HttpAbstractStrategy<
   Options extends HttpOptions = HttpOptions,
-> implements IApiCallStrategy
+> implements IHttpCallStrategy
 {
   abstract call(
     path: string,
-    options?: Options | { method: string },
+    options?: Options | { method?: string },
   ): Promise<any>;
 
-  get(path: string, options?: Options | { method: string }): Promise<any> {
+  get(path: string, options?: Options | { method?: string }): Promise<any> {
     return this.call(path, { ...options, method: 'GET' });
   }
 
-  post(path: string, options?: Options | { method: string }): Promise<any> {
+  post(path: string, options?: Options | { method?: string }): Promise<any> {
     return this.call(path, { ...options, method: 'POST' });
   }
 }

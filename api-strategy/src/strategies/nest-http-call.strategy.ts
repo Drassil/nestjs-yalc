@@ -29,7 +29,7 @@ export class NestHttpCallStrategy<
       headers: options?.headers,
       method: options?.method,
       signal: options?.signal,
-      data: options?.payload,
+      data: options?.data,
     };
 
     return this.httpService.axiosRef.request({

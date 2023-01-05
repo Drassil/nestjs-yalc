@@ -1,11 +1,11 @@
-export interface IApiCallStrategy {
-  call(path: string, options?: any): Promise<any>;
+export interface IApiCallStrategy<O, R> {
+  call(path: string, options?: O): Promise<R>;
   /**
    * shortcut for call(path, { method: 'GET', ...options })
    */
-  get(path: string, options?: any): Promise<any>;
+  get(path: string, options?: O): Promise<R>;
   /**
    * shortcut for call(path, { method: 'POST', ...options })
    */
-  post(path: string, options?: any): Promise<any>;
+  post(path: string, options?: O): Promise<R>;
 }

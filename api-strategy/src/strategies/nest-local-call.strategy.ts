@@ -30,7 +30,7 @@ export class NestLocalCallStrategy<
       headers: options?.headers,
       method: options?.method,
       signal: options?.signal,
-      payload: options?.payload,
+      payload: options?.data,
     };
 
     return instance.inject({ ..._options, url: `${this.baseUrl}${path}` });
