@@ -1,5 +1,6 @@
 import { IEventStrategy } from '../context-event.interface';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ClassType } from '@nestjs-yalc/types';
 
 export class NestLocalEventStrategy implements IEventStrategy {
   constructor(private eventEmitter: EventEmitter2) {}
@@ -13,13 +14,26 @@ export class NestLocalEventStrategy implements IEventStrategy {
   }
 }
 
+export interface NestLocalCallStrategyProviderOptions {
+  NestLocalStrategy?: ClassType<NestLocalEventStrategy>;
+}
+
 /**
- * Just a convenient provider to inject the NestLocalEventStrategy
+ * Just a convenient provider to inject the NestLocalCallStrategy
  */
-export const NestLocalEventStrategyProvider = (provide: string) => ({
+export const NestLocalEventStrategyProvider = (
+  provide: string,
+  options: NestLocalCallStrategyProviderOptions = {},
+) => ({
   provide,
   useFactory: (eventEmitter: EventEmitter2) => {
-    return new NestLocalEventStrategy(eventEmitter);
+    const _options = {
+      baseUrl: '',
+      NestLocalStrategy: NestLocalEventStrategy,
+      ...options,
+    };
+
+    return new _options.NestLocalStrategy(eventEmitter);
   },
   inject: [EventEmitter2],
 });

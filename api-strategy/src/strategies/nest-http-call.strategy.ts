@@ -1,8 +1,14 @@
+import { ClassType } from '@nestjs-yalc/types';
 import { HttpService } from '@nestjs/axios';
+import {
+  HttpAbstractStrategy,
+  HttpOptions,
+} from './http-abstract-call.strategy';
 import { AxiosRequestConfig } from 'axios';
-import { HttpAbstractStrategy } from './http-abstract-call.strategy';
 
-export class NestHttpCallStrategy extends HttpAbstractStrategy<AxiosRequestConfig> {
+export class NestHttpCallStrategy<
+  Options extends HttpOptions = HttpOptions,
+> extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
     private baseUrl = '',
@@ -10,12 +16,32 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy<AxiosRequestConfi
     super();
   }
 
-  call<T = any>(path: string, options: AxiosRequestConfig): Promise<T> {
+  call<T = any>(path: string, options?: Options): Promise<T> {
+    /**
+     * We need this to do a type check on the options and
+     * implement the mapping from HttpOptions to AxiosRequestConfig
+     */
+    const _options:
+      | {
+          [k: string | number | symbol]: never;
+        }
+      | AxiosRequestConfig = {
+      headers: options?.headers,
+      method: options?.method,
+      signal: options?.signal,
+      data: options?.payload,
+    };
+
     return this.httpService.axiosRef.request({
-      ...options,
+      ..._options,
       url: `${this.baseUrl}${path}`,
     });
   }
+}
+
+export interface NestHttpCallStrategyProviderOptions {
+  baseUrl?: string;
+  NestHttpStrategy?: ClassType<NestHttpCallStrategy>;
 }
 
 /**
@@ -23,11 +49,17 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy<AxiosRequestConfi
  */
 export const NestHttpCallStrategyProvider = (
   provide: string,
-  baseUrl = '',
+  options: NestHttpCallStrategyProviderOptions = {},
 ) => ({
   provide,
   useFactory: (httpAdapter: HttpService) => {
-    return new NestHttpCallStrategy(httpAdapter, baseUrl);
+    const _options = {
+      baseUrl: '',
+      NestHttpStrategy: NestHttpCallStrategy,
+      ...options,
+    };
+
+    return new _options.NestHttpStrategy(httpAdapter, _options.baseUrl);
   },
   inject: [HttpService],
 });

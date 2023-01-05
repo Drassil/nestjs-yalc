@@ -7,11 +7,11 @@ export interface IApiMessageService<Strategy extends IEventStrategy> {
   getStrategy(): Strategy;
 }
 
-export function ContextMessageServiceFactory<Strategy extends IEventStrategy>(
+export function ContextEventServiceFactory<Strategy extends IEventStrategy>(
   defaultStrategy: Strategy,
 ): ClassType<IApiMessageService<Strategy>> {
   @Injectable()
-  class ContextMessageService {
+  class ContextEventService {
     /**
      *
      * @param strategy - by default, it will use the strategy provided in the factory
@@ -27,5 +27,5 @@ export function ContextMessageServiceFactory<Strategy extends IEventStrategy>(
     }
   }
 
-  return ContextMessageService;
+  return ContextEventService;
 }

@@ -1,7 +1,22 @@
+import { HTTPMethods } from '@nestjs-yalc/types';
+import { IncomingHttpHeaders } from 'node:http';
 import { IApiCallStrategy } from '../context-call.interface';
 
-export abstract class HttpAbstractStrategy<Options>
-  implements IApiCallStrategy
+/**
+ * This options should be compliant to all the http-based call strategies
+ */
+// do not
+export interface HttpOptions {
+  headers?: IncomingHttpHeaders & { [key: string]: string };
+  method?: HTTPMethods;
+  signal?: AbortSignal;
+  Request?: object;
+  payload?: string | object | Buffer | NodeJS.ReadableStream;
+}
+
+export abstract class HttpAbstractStrategy<
+  Options extends HttpOptions = HttpOptions,
+> implements IApiCallStrategy
 {
   abstract call(
     path: string,
