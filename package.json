@@ -10,6 +10,7 @@
     "test:watch": "npm run test -- --watch",
     "test:cov": "npm run test -- --coverage",
     "test:cov:serve": "npx http-server -c-1 ./docs/compodoc/jestcoverage/",
+    "test:vscode": "node test.js ",
     "npm:update:onlylock": "npm update --package-lock-only",
     "npm:outdated": "npm outdated",
     "ncu:interactive": "npx -y npm-check-updates -i",

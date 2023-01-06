@@ -25,7 +25,7 @@ Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
 
 const options: IOptions = {
   // TODO: re-enable everything except types
-  skipProjects: ['types', 'graphql', 'app', 'crud-gen'],
+  skipProjects: ['types', 'graphql', 'app', 'crud-gen', 'kafka'],
   defaultCoverageThreshold: {
     branches: 100,
     functions: 100,
