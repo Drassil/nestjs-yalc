@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import {
   HttpAbstractStrategy,
   HttpOptions,
+  IHttpCallStrategyResponse,
 } from './http-abstract-call.strategy';
 import { AxiosRequestConfig } from 'axios';
 
@@ -16,7 +17,10 @@ export class NestHttpCallStrategy<
     super();
   }
 
-  call<T = any>(path: string, options?: Options): Promise<T> {
+  call<R = any>(
+    path: string,
+    options?: Options,
+  ): Promise<IHttpCallStrategyResponse<R>> {
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to AxiosRequestConfig

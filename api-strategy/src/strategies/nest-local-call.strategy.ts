@@ -2,6 +2,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import {
   HttpAbstractStrategy,
   HttpOptions,
+  IHttpCallStrategyResponse,
 } from './http-abstract-call.strategy';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types';
@@ -14,7 +15,10 @@ export class NestLocalCallStrategy<
     super();
   }
 
-  call(path: string, options?: Options): Promise<any> {
+  async call<R = any>(
+    path: string,
+    options?: Options,
+  ): Promise<IHttpCallStrategyResponse<R>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
 
     /**
@@ -33,7 +37,18 @@ export class NestLocalCallStrategy<
       payload: options?.data, // map data to payload
     };
 
-    return instance.inject({ ..._options, url: `${this.baseUrl}${path}` });
+    const result = await instance.inject({
+      ..._options,
+      url: `${this.baseUrl}${path}`,
+    });
+
+    return {
+      data: result.body,
+      headers: result.headers,
+      status: result.statusCode,
+      statusText: result.statusMessage,
+      request: result.payload, // TODO: double check if it's the correct value
+    };
   }
 }
 

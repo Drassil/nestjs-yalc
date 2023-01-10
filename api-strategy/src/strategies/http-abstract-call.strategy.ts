@@ -1,5 +1,5 @@
 import { HTTPMethods } from '@nestjs-yalc/types';
-import { IncomingHttpHeaders } from 'node:http';
+import { OutgoingHttpHeaders, IncomingHttpHeaders } from 'node:http2';
 import { IApiCallStrategy } from '../context-call.interface';
 
 /**
@@ -14,6 +14,15 @@ export interface HttpOptions {
   data?: string | object | Buffer | NodeJS.ReadableStream;
 }
 
+export interface IHttpCallStrategyResponse<T = any> {
+  data: T | string;
+  status: number;
+  statusText: string;
+  headers: OutgoingHttpHeaders;
+  // config: AxiosRequestConfig<D>;
+  request?: any;
+}
+
 export interface IHttpCallStrategy<Options extends HttpOptions = HttpOptions>
   extends IApiCallStrategy<Options, any> {}
 
@@ -21,16 +30,22 @@ export abstract class HttpAbstractStrategy<
   Options extends HttpOptions = HttpOptions,
 > implements IHttpCallStrategy
 {
-  abstract call(
+  abstract call<R = any>(
     path: string,
     options?: Options | { method?: string },
-  ): Promise<any>;
+  ): Promise<IHttpCallStrategyResponse<R>>;
 
-  get(path: string, options?: Options | { method?: string }): Promise<any> {
-    return this.call(path, { ...options, method: 'GET' });
+  get<R = any>(
+    path: string,
+    options?: Options | { method?: string },
+  ): Promise<IHttpCallStrategyResponse<R>> {
+    return this.call<R>(path, { ...options, method: 'GET' });
   }
 
-  post(path: string, options?: Options | { method?: string }): Promise<any> {
-    return this.call(path, { ...options, method: 'POST' });
+  post<R = any>(
+    path: string,
+    options?: Options | { method?: string },
+  ): Promise<IHttpCallStrategyResponse<R>> {
+    return this.call<R>(path, { ...options, method: 'POST' });
   }
 }
