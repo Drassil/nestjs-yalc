@@ -1,6 +1,6 @@
 import { createMock } from '@golevelup/ts-jest';
-import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
 
-import { GenericService } from '@nestjs-yalc/ag-grid/generic-service.service';
+import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {
@@ -22,7 +22,7 @@ describe('GQLDataLoader class', () => {
   }
 
   const mockLoadFn = jest.fn();
-  const mockedFindManyOptions = createMock<AgGridFindManyOptions>();
+  const mockedFindManyOptions = createMock<CrudGenFindManyOptions>();
   const mockedEventEmitter = createMock<EventEmitter2>();
   let dataLoader: GQLDataLoader<EntityTest>;
 
@@ -69,7 +69,7 @@ describe('GQLDataLoader class', () => {
     const obj = new EntityTest('asset_1');
     mockLoadFn.mockResolvedValue([[obj]]);
 
-    let findOptions = createMock<AgGridFindManyOptions<EntityTest>>();
+    let findOptions = createMock<CrudGenFindManyOptions<EntityTest>>();
     findOptions = {
       ...findOptions,
       order: { anotherField: SortDirection.ASC },
@@ -82,7 +82,7 @@ describe('GQLDataLoader class', () => {
       },
     };
 
-    let findOptions2 = createMock<AgGridFindManyOptions<EntityTest>>();
+    let findOptions2 = createMock<CrudGenFindManyOptions<EntityTest>>();
     findOptions2 = {
       ...findOptions2,
       select: ['databaseKey'], // to cover one condition
@@ -178,7 +178,7 @@ describe('GQLDataLoader class', () => {
     const genericService = createMock<GenericService>();
 
     const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
-    genericService.getEntityListAgGrid.mockResolvedValue(output);
+    genericService.getEntityListCrudGen.mockResolvedValue(output);
 
     const result: FactoryProvider = DataLoaderFactory<EntityTest>(
       'databaseKey',

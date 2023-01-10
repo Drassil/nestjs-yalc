@@ -8,6 +8,12 @@ export function returnValue<T>(value: T): { (): T | ObjectType<T> } {
   return () => value;
 }
 
+export function returnAsyncValue<T>(value: T): {
+  (): Promise<T>;
+} {
+  return async () => value;
+}
+
 /**
  * Helper function for typeorm decorators
  */

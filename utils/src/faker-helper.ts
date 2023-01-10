@@ -40,12 +40,22 @@ export class FakerHelper {
       .toString();
   };
 
-  // Creates a random birthdate for people between 18-100 years of age.
+  // Creates a random birthdate for people between 18-82 years of age.
   // Date is returned in format YYYY-MM-DD
-  randomBirthDate = () => {
-    const birthDate = faker.date.past(82);
-    birthDate.setFullYear(birthDate.getFullYear() - 18);
-    const [mm, dd, yyyy] = birthDate.toLocaleString().split(',')[0].split('/');
+  randomBirthDate = (start = 18, end = 100) => {
+    const birthDate = faker.date.past(end - start);
+    birthDate.setFullYear(birthDate.getFullYear() - start);
+    // const [mm, dd, yyyy] = birthDate.format('yyyy-MM-dd').toLocaleString().split(',')[0].split('/');
+    let yyyy = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(
+      birthDate,
+    );
+    let mm = new Intl.DateTimeFormat('en', { month: 'numeric' }).format(
+      birthDate,
+    );
+    let dd = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(
+      birthDate,
+    );
+
     return `${yyyy}-${mm}-${dd}`;
   };
 

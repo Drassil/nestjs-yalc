@@ -8,13 +8,13 @@ import {
 } from 'typeorm';
 import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver';
 import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver';
-import { SortDirection } from '@nestjs-yalc/ag-grid/ag-grid.enum';
+import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum';
 import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface';
 import { isJsonSQLRaw } from './json.helpers';
-import { AgGridFindManyOptions } from '@nestjs-yalc/ag-grid/ag-grid.interface';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
 // import {
 //   IJsonVirtualFieldOptions,
 //   NYALC_JSON_VIRTUAL_FIELD_META_KEY,
@@ -241,7 +241,7 @@ export class QueryBuilderHelper {
   }
 
   public static applyOrderToJoinedQueryBuilder(
-    findOptions: AgGridFindManyOptions,
+    findOptions: CrudGenFindManyOptions,
     parentName: string,
     fieldMap?: {
       parent: IFieldMapper;

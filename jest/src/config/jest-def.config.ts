@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import * as path from 'path';
+import * as readTsConfig from 'get-tsconfig';
 import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
 
@@ -14,12 +15,13 @@ export const coveragePathIgnorePatterns = [
 
 export const globals = (tsConfPath = '') => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const tsConfig = require(path.resolve(tsConfPath));
+  const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+
   return {
     __JEST_DISABLE_DB: true,
     'ts-jest': {
       tsconfig: {
-        ...tsConfig.compilerOptions,
+        ...(tsConfig?.config.compilerOptions ?? {}),
         emitDecoratorMetadata: false,
         experimentalDecorators: false,
       },
@@ -57,7 +59,7 @@ export const coverageThreshold = (
     //  * @todo  should be removed and be set to 100% asap
     //  */
     // switch (project.name) {
-    //   case 'unit/common/ag-grid':
+    //   case 'unit/common/crud-gen':
     //     branches = 92.27;
     //     functions = 98.92;
     //     lines = 98.75;
@@ -83,19 +85,42 @@ export const coverageThreshold = (
   return coverage;
 };
 
-export const globalsE2E = (tsConfPath = '') => ({
-  'ts-jest': {
-    astTransformers: {
-      before: [path.join(__dirname, 'gql-plugin.js')],
+export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
+  const conf: any = {
+    'ts-jest': {
+      diagnostics: false,
+      tsconfig: path.resolve(tsConfPath),
     },
-    diagnostics: false,
-    tsconfig: path.resolve(tsConfPath),
-  },
-});
+  };
 
+  if (withGqlPlugin) {
+    conf['ts-jest'].astTransformers = {
+      before: [path.join(__dirname, 'gql-plugin.js')],
+    };
+  }
+
+  return conf;
+};
+
+/**
+ * for both unit and e2e
+ * @param dirname
+ * @returns
+ */
 const defaultConf = (dirname: string) => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
+
+  // We need this to make sure that some esm modules are transformed
+  // ref: https://github.com/nrwl/nx/issues/812
+  // ref: https://github.com/jaredpalmer/tsdx/issues/187#issuecomment-825536863
+  const esModules = [
+    'aggregate-error',
+    'clean-stack',
+    'escape-string-regexp',
+    'indent-string',
+    'p-map',
+  ].join('|');
 
   return {
     rootDir: dirname,
@@ -105,18 +130,27 @@ const defaultConf = (dirname: string) => {
       '<rootDir>/docs/',
       '<rootDir>/node_modules/',
     ],
-    preset: 'ts-jest',
+    preset: 'ts-jest/presets/default-esm',
     coverageProvider: 'v8',
     testEnvironment: 'node',
     moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
     testRegex: '.*\\.spec\\.ts$',
     transform: {
-      '^.+\\.(t|j)s$': 'ts-jest',
+      '^.+\\.(t|j)s$': [
+        'ts-jest',
+        {
+          useESM: true,
+        },
+      ],
     },
     moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
       prefix: dirname,
     }),
     errorOnDeprecated: true,
+    extensionsToTreatAsEsm: ['.ts'],
+    transformIgnorePatterns: [
+      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
+    ],
   };
 };
 

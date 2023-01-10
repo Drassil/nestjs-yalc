@@ -1,4 +1,4 @@
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper';
+import { envIsTrue } from '@nestjs-yalc/utils';
 import { LoggerService } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from 'typeorm';

@@ -1,5 +1,5 @@
 import { encryptAes, decryptAes } from './encryption.helper';
-import * as crypto from 'crypto';
+import crypto from 'crypto';
 
 // Please let me know if you know how to solve this as unknown as void.
 jest

@@ -1,5 +1,5 @@
 import { inflate, deflate } from './zlib.helper';
-import * as zlib from 'zlib';
+import zlib from 'zlib';
 
 const largeObject = {
   many: {

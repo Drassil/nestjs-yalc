@@ -7,7 +7,8 @@ import defaultConf, {
   coverageThreshold,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
-import yargs from 'yargs';
+import _yargs from 'yargs';
+const yargs = _yargs.default;
 
 interface IAppDep {
   name: string;
@@ -16,6 +17,12 @@ interface IAppDep {
 export interface IAppProjSetting {
   confOverride?: any;
   deps: IAppDep[];
+}
+
+export interface IProjectInfo {
+  path: string;
+  sourcePath: string;
+  type: 'library' | 'application' | string;
 }
 
 export interface IOptions {
@@ -31,6 +38,8 @@ export interface IOptions {
     lines: number;
     statements: number;
   };
+  tsConfigPath?: { (proj: IProjectInfo): string };
+  coverageOutputPath?: { (subProjectPath: string): string };
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -43,7 +52,7 @@ console.log(`Max workers: ${maxWorkers}`);
 
 export function jestConfGenerator(
   rootPath: string,
-  projectList: { [key: string]: string },
+  projectList: { [key: string]: IProjectInfo },
   appProjectsSettings: {
     [key: string]: IAppProjSetting;
   },
@@ -54,7 +63,7 @@ export function jestConfGenerator(
     for (const app in appProjectsSettings) {
       _projectSets[app] = projects.filter((p) =>
         appProjectsSettings[app].deps.some((v) =>
-          p.name.startsWith(`unit/${v.name}`),
+          p.displayName.startsWith(`unit/${v.name}`),
         ),
       );
     }
@@ -69,14 +78,23 @@ export function jestConfGenerator(
 
   let projects = [];
 
-  const confFactory = (projName: string, root: string, projects?: any) => ({
+  const confFactory = (
+    projName: string,
+    proj: IProjectInfo,
+    projects?: any,
+  ) => ({
     ...defaultConf(`${rootPath}/`),
-    globals: globals(`${rootPath}/${root}/tsconfig.dev.json`),
-    name: `unit/${projName}`,
+    globals: globals(
+      options.tsConfigPath?.(proj) ??
+        `${rootPath}/${proj.path}/tsconfig.${
+          proj.type === 'library' ? 'lib' : 'app'
+        }.json`,
+    ),
+    // name: `unit/${projName}`,
     displayName: `unit/${projName}`,
     cacheDirectory: `${cacheDirBase}/unit/${projName}`,
-    rootDir: `${rootPath}/${root}/`,
-    roots: [`${rootPath}/${root}`],
+    rootDir: `${rootPath}/${proj.sourcePath}/`,
+    roots: [`${rootPath}/${proj.path}`],
     maxWorkers,
     setupFiles: [`${__dirname}/jest.setup.ts`],
     coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
@@ -89,7 +107,7 @@ export function jestConfGenerator(
 
   for (const projName of Object.keys(projectList)) {
     const proj = projectList[projName];
-    if (!options.skipProjects?.includes(proj)) {
+    if (!options.skipProjects?.includes(proj.path)) {
       let conf = confFactory(projName, proj);
 
       if (appProjectsSettings[projName]?.confOverride) {
@@ -120,7 +138,7 @@ export function jestConfGenerator(
   projects = projectSets[selectedProj];
 
   // use argv to catch the path argument in any position
-  const argv = yargs(process.argv.slice(2))
+  const argv: any = yargs(process.argv.slice(2))
     .command('$0 [path]', 'test path', (yargs) => {
       return yargs.positional('path', {
         describe: 'test path',
@@ -132,8 +150,11 @@ export function jestConfGenerator(
       // nothing to do
     }).argv;
 
-  const possiblePath = argv.path ?? argv.testPathPattern?.[0];
+  const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
   const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
+
+  // eslint-disable-next-line no-console
+  console.debug('possiblePath', possiblePath);
 
   let config: any = {};
 
@@ -150,7 +171,7 @@ export function jestConfGenerator(
   // get the project which prefix is closest to testPath
   // to apply the correct path for coverage etc.
   for (const proj of Object.values(projectList)) {
-    const root: string = proj;
+    const root: string = proj.path;
     if (testPath.startsWith(root) && subProjectPath.length < root.length) {
       subProjectPath = `/${root}`;
     }
@@ -173,7 +194,8 @@ export function jestConfGenerator(
     ),
     coverageDirectory: path.join(
       rootPath,
-      `docs/compodoc/jestcoverage/${subProjectPath}`,
+      options.coverageOutputPath?.(subProjectPath) ??
+        `docs/compodoc/jestcoverage/${subProjectPath}`,
     ),
     collectCoverageFrom: [
       `**/*.{js,ts}`,

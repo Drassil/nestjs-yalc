@@ -16,7 +16,7 @@ export function promiseMap<Element, NewElement>(
   mapper: pMap.Mapper<Element, NewElement>,
   options?: pMap.Options,
 ): Promise<NewElement[]> {
-  return pMap(input, mapper, {
+  return pMap.default(input, mapper, {
     concurrency: options?.concurrency ?? PROMISE_CONCURRENCY_LIMIT,
     stopOnError: options?.stopOnError ?? true,
   });

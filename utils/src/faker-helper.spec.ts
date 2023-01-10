@@ -73,7 +73,7 @@ describe('faker helper test', () => {
   it('should be able to generate a valid birthDate between age 18 and 100 (YYYY-MM-DD) (min age)', () => {
     const currentDate = new Date();
     // make a copy instead of reusing pointer
-    const returnDate = new Date(currentDate.valueOf());
+    const returnDate = new Date(currentDate.toUTCString());
     jest.spyOn(faker.date, 'past').mockReturnValue(returnDate);
 
     const currentYear = currentDate.getFullYear();

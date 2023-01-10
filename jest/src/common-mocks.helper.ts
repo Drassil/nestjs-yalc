@@ -1,8 +1,14 @@
 /* istanbul ignore file */
 
-jest.mock('@nestjs/graphql');
+let NestGraphql: any;
 
-import * as NestGraphql from '@nestjs/graphql';
+try {
+  jest.mock('@nestjs/graphql');
+  NestGraphql = require('@nestjs/graphql');
+} catch (e) {
+  // ignore error
+}
+
 import { ExecutionContext } from '@nestjs/common';
 import {
   createMock,
@@ -12,9 +18,13 @@ import {
 } from '@golevelup/ts-jest';
 import { SelectQueryBuilder } from 'typeorm';
 
-export const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
-export const mockedGqlCtxCreate =
-  (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
+export const mockedNestGraphql = () => {
+  return NestGraphql as jest.Mocked<typeof NestGraphql>;
+};
+export const mockedGqlCtxCreate = () => {
+  return (mockedNestGraphql().GqlExecutionContext.create = jest.fn());
+};
+
 export const mockedExecutionContext = createMock<ExecutionContext>();
 
 /**

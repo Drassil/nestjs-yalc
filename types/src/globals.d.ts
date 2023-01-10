@@ -46,3 +46,19 @@ type Spread<L, R> = Id<
     // Properties in R, with types that include undefined, that exist in L
     SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>
 >;
+
+type HTTPMethods =
+  | 'DELETE'
+  | 'delete'
+  | 'GET'
+  | 'get'
+  | 'HEAD'
+  | 'head'
+  | 'PATCH'
+  | 'patch'
+  | 'POST'
+  | 'post'
+  | 'PUT'
+  | 'put'
+  | 'OPTIONS'
+  | 'options';

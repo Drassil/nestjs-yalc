@@ -25,10 +25,10 @@ describe('Console logger service test', () => {
 
   it('Test error', async () => {
     const method = jest.spyOn(console, 'error');
-    logger.error?.('error', 'trace');
+    logger.error?.('error', 'trace', { data: 'test' });
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace');
+    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', 'test');
   });
 
   it('Test warn', async () => {
