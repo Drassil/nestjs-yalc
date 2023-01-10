@@ -2,11 +2,11 @@ remote_theme: Drassil/git-wiki-theme@master
 # used to update the remote theme when needed
 doc_version: 1.0.1
 # (string) Title of your wiki
-title: "NestJS-YALC"
+title: 'NestJS-YALC'
 disable_edit: false
 # (string) if you've installed your wiki in subfolder, you must change this configuration
 # with your folder name, otherwise leave it empty
-baseurl: "/"
+baseurl: '/'
 # (string) Description of your wiki
 description: Documentation for the NestJS-YALC project
 # (boolean) Enable/disable wiki page list in sidebar
@@ -21,18 +21,18 @@ show_wiki_posts: true
 show_wiki_posts_limit: 10
 # from jekyll (read jekyll doc)
 paginate: 5
-paginate_path: "/blog/page:num"
+paginate_path: '/blog/page:num'
 permalink: /blog/posts/:year/:month/:day/:title:output_ext
 # (boolean) Enable/disable download buttons in sidebar
 show_downloads: true
 # (string) Specify branch rendered by gitpages allowing wiki tool buttons to work
-git_branch: "dev"
+git_branch: 'dev'
 # (string) Url of logo image, it can be full, absolute or relative.
 logo_url: assets/images/logo-small_yalc.png
 # (string) The UA-XXXXX-Y code from google analytic to enable GA on your wiki
 google_analytics:
 # (string) folder where wiki pages are stored, it's needed for tool buttons
-wiki_folder: ""
+wiki_folder: ''
 # (boolean) if you're using github wiki as submodule then this config
 # must be enabled to allow tool buttons to work properly
 use_github_wiki: false
@@ -45,14 +45,14 @@ use_prose_io: false
 # - github : it uses internal github repository search
 # - google : it uses cse search bar, you need to configure google_cse_token
 #
-search_engine: "js"
+search_engine: 'js'
 # Setting google custom search engine for google
 # cse search bar (https://cse.google.it/cse/)
 google_cse_token:
 
 # (string) path of site root. Normally it's must be empty because _config.yml resides in the root of your repository.
 # If you have _config.yml and your site in a subfolder, then change this config accordly
-site_root: "docs/"
+site_root: 'docs/'
 
 #
 # Jekyll configurations
@@ -70,27 +70,27 @@ encoding: UTF-8
 
 defaults:
   - scope:
-      path: ""
+      path: 'wiki'
     values:
       permalink: /:basename
   - scope:
-      path: "" # an empty string here means all files in the project
+      path: '' # an empty string here means all files in the project
     values:
-      layout: "git-wiki-bs-github"
+      layout: 'git-wiki-bs-github'
   - scope:
-      path: ""
-      type: "pages"
+      path: ''
+      type: 'pages'
     values:
-      layout: "git-wiki-bs-github"
+      layout: 'git-wiki-bs-github'
   - scope:
-      path: ""
-      type: "posts"
+      path: ''
+      type: 'posts'
     values:
-      layout: "git-wiki-post"
+      layout: 'git-wiki-post'
   - scope:
       path: blog
     values:
-      layout: "git-wiki-blog"
+      layout: 'git-wiki-blog'
 sass:
   style: compressed
 plugins:
