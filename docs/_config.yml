@@ -70,7 +70,7 @@ encoding: UTF-8
 
 defaults:
   - scope:
-      path: "wiki"
+      path: ""
     values:
       permalink: /:basename
   - scope:
