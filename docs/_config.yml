@@ -26,7 +26,7 @@ permalink: /blog/posts/:year/:month/:day/:title:output_ext
 # (boolean) Enable/disable download buttons in sidebar
 show_downloads: true
 # (string) Specify branch rendered by gitpages allowing wiki tool buttons to work
-git_branch: "master"
+git_branch: "dev"
 # (string) Url of logo image, it can be full, absolute or relative.
 logo_url: assets/images/logo-small_yalc.png
 # (string) The UA-XXXXX-Y code from google analytic to enable GA on your wiki
