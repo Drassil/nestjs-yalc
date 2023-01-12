@@ -4,6 +4,11 @@ inputs:
   working-directory:
     description: 'Working directory'
     required: true
+  jest-workers:
+    description: 'Max number of workers to use'
+    required: false
+    default: 2
+
 runs:
   using: 'composite'
   steps:
@@ -25,5 +30,5 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}
       run: |
-        npm config set jestworkers=2
+        npm config set jestworkers=${{ inputs.jest-workers }}
         npm run test:cov
