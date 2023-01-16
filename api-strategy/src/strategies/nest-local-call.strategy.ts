@@ -8,17 +8,15 @@ import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types';
 import { InjectOptions } from 'fastify';
 
-export class NestLocalCallStrategy<
-  Options extends HttpOptions = HttpOptions,
-> extends HttpAbstractStrategy {
+export class NestLocalCallStrategy extends HttpAbstractStrategy {
   constructor(private adapterHost: HttpAdapterHost, private baseUrl = '') {
     super();
   }
 
-  async call<R = any>(
+  async call<TOptData extends string | object | Buffer | NodeJS.ReadableStream, TResData>(
     path: string,
-    options?: Options,
-  ): Promise<IHttpCallStrategyResponse<R>> {
+    options?: HttpOptions<TOptData>,
+  ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
 
     /**
@@ -43,7 +41,7 @@ export class NestLocalCallStrategy<
     });
 
     return {
-      data: result.body,
+      data: JSON.parse(result.body),
       headers: result.headers,
       status: result.statusCode,
       statusText: result.statusMessage,

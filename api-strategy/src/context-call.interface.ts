@@ -1,11 +1,15 @@
-export interface IApiCallStrategy<O, R> {
-  call(path: string, options?: O): Promise<R>;
+export interface IObjectWithData<TData> {
+  data: TData
+}
+
+export interface IApiCallStrategy {
+  call<TOptData, TResData>(path: string, options?: IObjectWithData<TOptData>): Promise<IObjectWithData<TResData>>;
   /**
-   * shortcut for call(path, { method: 'GET', ...options })
+   * alias for call that retrieves data without side effects (read-only)
    */
-  get(path: string, options?: O): Promise<R>;
+  get<TOptData, TResData>(path: string, options?: IObjectWithData<TOptData>): Promise<IObjectWithData<TResData>>;
   /**
-   * shortcut for call(path, { method: 'POST', ...options })
+   * alias for call that retrieves data with side effects (creation of a resource, etc.)
    */
-  post(path: string, options?: O): Promise<R>;
+  post<TOptData, TResData>(path: string, options?: IObjectWithData<TOptData>): Promise<IObjectWithData<TResData>>;
 }

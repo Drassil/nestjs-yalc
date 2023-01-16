@@ -2,14 +2,12 @@ import { ClassType } from '@nestjs-yalc/types';
 import { HttpService } from '@nestjs/axios';
 import {
   HttpAbstractStrategy,
-  HttpOptions,
   IHttpCallStrategyResponse,
+  HttpOptions
 } from './http-abstract-call.strategy';
 import { AxiosRequestConfig } from 'axios';
 
-export class NestHttpCallStrategy<
-  Options extends HttpOptions = HttpOptions,
-> extends HttpAbstractStrategy {
+export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
     private baseUrl = '',
@@ -17,10 +15,10 @@ export class NestHttpCallStrategy<
     super();
   }
 
-  call<R = any>(
+  async call<TOptData, TResData>(
     path: string,
-    options?: Options,
-  ): Promise<IHttpCallStrategyResponse<R>> {
+    options?: HttpOptions<TOptData>,
+  ): Promise<IHttpCallStrategyResponse<TResData>> {
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to AxiosRequestConfig
@@ -36,10 +34,15 @@ export class NestHttpCallStrategy<
       data: options?.data,
     };
 
-    return this.httpService.axiosRef.request({
+    const { data , ...res } = await this.httpService.axiosRef.request({
       ..._options,
       url: `${this.baseUrl}${path}`,
     });
+
+    return {
+      ...res,
+      data: typeof data === 'string' ? JSON.parse(data) : data,
+    }
   }
 }
 
