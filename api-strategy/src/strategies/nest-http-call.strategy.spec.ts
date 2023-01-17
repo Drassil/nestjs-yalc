@@ -54,4 +54,19 @@ describe('NestHttpCallStrategy', () => {
     const provider = NestHttpCallStrategyProvider('test');
     expect(provider.useFactory(httpService)).toBeDefined();
   });
+
+  it('should be able to execute the call method and return a json', async () => {
+    const axiosRef = createMock<AxiosInstance>({
+      request: (config: any) => ({ data: '{}' }),
+    });
+    httpService = createMock<HttpService>({
+      axiosRef,
+    });
+
+    const instance = new NestHttpCallStrategy(httpService);
+    const result = await instance.call('http://localhost:3000', {
+      method: 'GET',
+    });
+    expect(result).toBeDefined();
+  });
 });

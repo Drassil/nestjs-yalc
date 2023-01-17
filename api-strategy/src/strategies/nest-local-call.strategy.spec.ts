@@ -1,6 +1,7 @@
-import { createMock } from '@golevelup/ts-jest';
+import { createMock, PartialFuncReturn } from '@golevelup/ts-jest';
 import { HttpAdapterHost } from '@nestjs/common';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
+import { InjectOptions } from 'fastify';
 import {
   NestLocalCallStrategy,
   NestLocalCallStrategyProvider,
@@ -12,7 +13,12 @@ describe('NestLocalCallStrategy', () => {
   beforeEach(() => {
     adapterHost = createMock<HttpAdapterHost>({
       httpAdapter: {
-        getInstance: () => createMock<FastifyAdapter>(),
+        getInstance: () =>
+          createMock<FastifyAdapter>({
+            inject: (
+              _opts: string | InjectOptions,
+            ): PartialFuncReturn<Promise<any>> => ({ body: '{}' } as any),
+          }),
       },
     });
   });
