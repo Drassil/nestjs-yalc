@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as readTsConfig from 'get-tsconfig';
 import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
+import { Config } from '@jest/types';
 
 export const coveragePathIgnorePatterns = [
   '/env/dist/',
@@ -12,6 +13,28 @@ export const coveragePathIgnorePatterns = [
   '/database/migrations/',
   '/test/feature/',
 ];
+
+export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
+  const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+
+  const conf: any = {
+    'ts-jest': {
+      diagnostics: false,
+      isolatedModules: true,
+      tsconfig: {
+        ...(tsConfig?.config.compilerOptions ?? {}),
+      },
+    },
+  };
+
+  if (withGqlPlugin) {
+    conf['ts-jest'].astTransformers = {
+      before: [path.join(__dirname, 'gql-plugin.js')],
+    };
+  }
+
+  return conf;
+};
 
 export const globals = (tsConfPath = '') => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -85,29 +108,20 @@ export const coverageThreshold = (
   return coverage;
 };
 
-export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
-  const conf: any = {
-    'ts-jest': {
-      diagnostics: false,
-      tsconfig: path.resolve(tsConfPath),
-    },
-  };
-
-  if (withGqlPlugin) {
-    conf['ts-jest'].astTransformers = {
-      before: [path.join(__dirname, 'gql-plugin.js')],
-    };
-  }
-
-  return conf;
-};
+export interface IDefaultConfOptions {
+  /** node modules to transform */
+  esModules: string[];
+}
 
 /**
  * for both unit and e2e
  * @param dirname
  * @returns
  */
-const defaultConf = (dirname: string) => {
+const defaultConf = (
+  dirname: string,
+  options?: IDefaultConfOptions,
+): Config.InitialOptions => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
 
@@ -115,6 +129,7 @@ const defaultConf = (dirname: string) => {
   // ref: https://github.com/nrwl/nx/issues/812
   // ref: https://github.com/jaredpalmer/tsdx/issues/187#issuecomment-825536863
   const esModules = [
+    ...(options?.esModules ?? []),
     'aggregate-error',
     'clean-stack',
     'escape-string-regexp',
@@ -136,7 +151,7 @@ const defaultConf = (dirname: string) => {
     moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
     testRegex: '.*\\.spec\\.ts$',
     transform: {
-      '^.+\\.(t|j)s$': [
+      '^.+\\.(t|j)sx?$': [
         'ts-jest',
         {
           useESM: true,
@@ -154,19 +169,41 @@ const defaultConf = (dirname: string) => {
   };
 };
 
-export const createE2EConfig = (
-  alias: string,
-  e2eDirname: string,
-  rootDirname: string,
-) => ({
-  ...defaultConf(`${rootDirname}`),
-  name: `e2e/${alias}`,
-  displayName: `e2e/${alias}`,
-  testRegex: 'main.ts',
-  setupFilesAfterEnv: [`${e2eDirname}/jest.e2e-setup.ts`],
-  roots: [`${e2eDirname}`],
-  globals: globalsE2E(path.resolve(`${e2eDirname}/../tsconfig.json`)),
-  bail: 1,
-});
+export interface E2EOptions {
+  alias?: string;
+  e2eDirname: string;
+  rootDirname: string;
+  defaultConfOptions?: IDefaultConfOptions;
+  confOverride?: Config.InitialOptions;
+  withGqlPlugins?: boolean;
+}
+
+export const createE2EConfig = (options: E2EOptions): Config.InitialOptions => {
+  let conf: Config.InitialOptions = {
+    ...defaultConf(`${options.rootDirname}`, options.defaultConfOptions),
+    testRegex: '.*\\.e2e-spec\\.ts$',
+    setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
+    roots: [`${options.e2eDirname}`],
+    globals: globalsE2E(
+      path.resolve(`${options.e2eDirname}/tsconfig.json`),
+      options.withGqlPlugins ?? false,
+    ),
+    bail: 1,
+  };
+
+  if (options.alias) {
+    conf.displayName = `e2e/${options.alias}`;
+    // conf.name = `e2e/${options.alias}`;
+  }
+
+  if (options.confOverride) {
+    conf = {
+      ...conf,
+      ...options.confOverride,
+    };
+  }
+
+  return conf;
+};
 
 export default defaultConf;

@@ -5,6 +5,7 @@ import defaultConf, {
   coveragePathIgnorePatterns,
   globals,
   coverageThreshold,
+  IDefaultConfOptions,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
 import _yargs from 'yargs';
@@ -40,6 +41,7 @@ export interface IOptions {
   };
   tsConfigPath?: { (proj: IProjectInfo): string };
   coverageOutputPath?: { (subProjectPath: string): string };
+  defaultConfOptions?: IDefaultConfOptions;
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -83,7 +85,7 @@ export function jestConfGenerator(
     proj: IProjectInfo,
     projects?: any,
   ) => ({
-    ...defaultConf(`${rootPath}/`),
+    ...defaultConf(`${rootPath}/`, options.defaultConfOptions),
     globals: globals(
       options.tsConfigPath?.(proj) ??
         `${rootPath}/${proj.path}/tsconfig.${
