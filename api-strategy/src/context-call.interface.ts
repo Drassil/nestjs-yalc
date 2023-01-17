@@ -1,11 +1,11 @@
 export interface IObjectWithData<TData> {
-  data: TData;
+  data?: TData;
 }
 
 export interface ICallOptions<TData, TParams extends Record<string, any>>
   extends IObjectWithData<TData> {
-  data: TData;
-  parameters: TParams;
+  data?: TData;
+  parameters?: TParams;
 }
 
 export interface IApiCallStrategy {
