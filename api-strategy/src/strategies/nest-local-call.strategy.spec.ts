@@ -61,4 +61,15 @@ describe('NestLocalCallStrategy', () => {
     const provider = NestLocalCallStrategyProvider('test');
     expect(provider.useFactory(adapterHost)).toBeDefined();
   });
+
+  it('should be able to execute the call method with parameters', async () => {
+    const instance = new NestLocalCallStrategy(adapterHost);
+    const result = await instance.call('http://localhost:3000', {
+      method: 'GET',
+      parameters: {
+        test1: { test: 'test' },
+      },
+    });
+    expect(result).toBeDefined();
+  });
 });

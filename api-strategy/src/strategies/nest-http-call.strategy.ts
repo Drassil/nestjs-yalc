@@ -3,7 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import {
   HttpAbstractStrategy,
   IHttpCallStrategyResponse,
-  HttpOptions
+  HttpOptions,
 } from './http-abstract-call.strategy';
 import { AxiosRequestConfig } from 'axios';
 
@@ -15,9 +15,9 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     super();
   }
 
-  async call<TOptData, TResData>(
+  async call<TOptData, TParams extends Record<string, any>, TResData>(
     path: string,
-    options?: HttpOptions<TOptData>,
+    options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     /**
      * We need this to do a type check on the options and
@@ -34,7 +34,11 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
       data: options?.data,
     };
 
-    const { data , ...res } = await this.httpService.axiosRef.request({
+    if (options?.parameters) {
+      _options.params = new URLSearchParams(options.parameters);
+    }
+
+    const { data, ...res } = await this.httpService.axiosRef.request({
       ..._options,
       url: `${this.baseUrl}${path}`,
     });
@@ -42,7 +46,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     return {
       ...res,
       data: typeof data === 'string' ? JSON.parse(data) : data,
-    }
+    };
   }
 }
 

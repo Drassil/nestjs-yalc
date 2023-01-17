@@ -6,12 +6,16 @@ import { IApiCallStrategy } from '../context-call.interface';
  * This options should be compliant to all the http-based call strategies
  */
 // do not
-export interface HttpOptions<TData = string | object | Buffer | NodeJS.ReadableStream> {
+export interface HttpOptions<
+  TData = string | object | Buffer | NodeJS.ReadableStream,
+  TParams extends Record<string, any> = Record<string, any>,
+> {
   headers?: IncomingHttpHeaders & { [key: string]: string };
   method?: HTTPMethods;
   signal?: AbortSignal;
   Request?: object;
   data?: TData;
+  parameters?: TParams;
 }
 
 export interface IHttpCallStrategyResponse<T = any> {
@@ -25,24 +29,29 @@ export interface IHttpCallStrategyResponse<T = any> {
 
 export interface IHttpCallStrategy extends IApiCallStrategy {}
 
-export abstract class HttpAbstractStrategy implements IHttpCallStrategy
-{
-  abstract call<TOptData, TResData>(
+export abstract class HttpAbstractStrategy implements IHttpCallStrategy {
+  abstract call<TOptData, TParams extends Record<string, any>, TResData>(
     path: string,
-    options?: HttpOptions<TOptData> | { method?: string },
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
   ): Promise<IHttpCallStrategyResponse<TResData>>;
 
-  get<TOptData, TResData>(
+  get<TOptData, TParams extends Record<string, any>, TResData>(
     path: string,
-    options?: HttpOptions<TOptData>  | { method?: string },
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
   ): Promise<IHttpCallStrategyResponse<TResData>> {
-    return this.call<TOptData,TResData>(path, { ...options, method: 'GET' });
+    return this.call<TOptData, TParams, TResData>(path, {
+      ...options,
+      method: 'GET',
+    });
   }
 
-  post<TOptData, TResData>(
+  post<TOptData, TParams extends Record<string, any>, TResData>(
     path: string,
-    options?: HttpOptions<TOptData>  | { method?: string },
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
   ): Promise<IHttpCallStrategyResponse<TResData>> {
-    return this.call<TOptData,TResData>(path, { ...options, method: 'POST' });
+    return this.call<TOptData, TParams, TResData>(path, {
+      ...options,
+      method: 'POST',
+    });
   }
 }

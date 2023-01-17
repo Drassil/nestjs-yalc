@@ -69,4 +69,15 @@ describe('NestHttpCallStrategy', () => {
     });
     expect(result).toBeDefined();
   });
+
+  it('should be able to execute the call method with parameters', async () => {
+    const instance = new NestHttpCallStrategy(httpService);
+    const result = await instance.call('http://localhost:3000', {
+      method: 'GET',
+      parameters: {
+        test1: { test: 'test' },
+      },
+    });
+    expect(result).toBeDefined();
+  });
 });

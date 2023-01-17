@@ -13,9 +13,13 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     super();
   }
 
-  async call<TOptData extends string | object | Buffer | NodeJS.ReadableStream, TResData>(
+  async call<
+    TOptData extends string | object | Buffer | NodeJS.ReadableStream,
+    TParams extends Record<string, any>,
+    TResData,
+  >(
     path: string,
-    options?: HttpOptions<TOptData>,
+    options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
 
@@ -35,10 +39,16 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
       payload: options?.data, // map data to payload
     };
 
-    const result = await instance.inject({
+    const args: InjectOptions = {
       ..._options,
       url: `${this.baseUrl}${path}`,
-    });
+    };
+
+    if (options?.parameters) {
+      args.query = Object.fromEntries(new URLSearchParams(options.parameters));
+    }
+
+    const result = await instance.inject(args);
 
     return {
       data: JSON.parse(result.body),
