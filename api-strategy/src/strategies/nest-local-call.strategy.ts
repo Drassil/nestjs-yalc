@@ -50,8 +50,17 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
 
     const result = await instance.inject(args);
 
+    let data;
+    try {
+      data = result.json();
+    } catch (_e) {
+      //The content-type of the response is not application/json
+      // if so, we use the body instead
+      data = result.body;
+    }
+
     return {
-      data: JSON.parse(result.body),
+      data,
       headers: result.headers,
       status: result.statusCode,
       statusText: result.statusMessage,

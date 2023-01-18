@@ -45,7 +45,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
 
     return {
       ...res,
-      data: typeof data === 'string' ? JSON.parse(data) : data,
+      data,
     };
   }
 }
