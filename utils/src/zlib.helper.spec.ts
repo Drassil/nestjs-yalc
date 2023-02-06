@@ -1,4 +1,4 @@
-import { inflate, deflate } from './zlib.helper';
+import { inflate, deflate } from './zlib.helper.js';
 import zlib from 'zlib';
 
 const largeObject = {

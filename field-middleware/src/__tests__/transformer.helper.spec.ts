@@ -1,4 +1,4 @@
-import { defaultDateTransformer, enumTransformer } from '../transformer.helper';
+import { defaultDateTransformer, enumTransformer } from '../transformer.helper.js';
 
 enum TestEnum {
   TEST = 'test',

@@ -1,4 +1,4 @@
-import { returnProperty } from '@nestjs-yalc/utils/returnValue';
+import { returnProperty } from '@nestjs-yalc/utils/returnValue.js';
 import {
   BaseEntity,
   Entity,
@@ -7,7 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CrudGenField, CrudGenObject } from '../object.decorator';
+import { CrudGenField, CrudGenObject } from '../object.decorator.js';
 
 @Entity()
 export class TestEntity extends BaseEntity {

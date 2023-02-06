@@ -3,7 +3,7 @@ import {
   GraphQLRequestListener,
   ApolloServerPlugin,
 } from 'apollo-server-plugin-base';
-import { GqlComplexityHelper } from './gql-complexity.helper';
+import { GqlComplexityHelper } from './gql-complexity.helper.js';
 
 @Plugin()
 export class GqlComplexityPlugin implements ApolloServerPlugin {

@@ -1,4 +1,4 @@
-import { UUIDValidationError } from './uuid-validation.error';
+import { UUIDValidationError } from './uuid-validation.error.js';
 import { Scalar, CustomScalar } from '@nestjs/graphql';
 import { Kind, ValueNode } from 'graphql';
 

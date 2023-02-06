@@ -1,8 +1,8 @@
 import {
   QueryBuilderHelper,
   ReplicationMode,
-} from '@nestjs-yalc/database/query-builder.helper';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+} from '@nestjs-yalc/database/query-builder.helper.js';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { ClassType } from '@nestjs-yalc/types';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
 import {
@@ -15,10 +15,10 @@ import {
   applySelectOnFind,
   objectToFieldMapper,
   whereObjectToSqlString,
-} from './crud-gen.helpers';
-import { CrudGenFindManyOptions } from './crud-gen.interface';
-import { IWhereFilters } from './crud-gen.type';
-import { ICrudGenFieldMetadata } from './object.decorator';
+} from './crud-gen.helpers.js';
+import { CrudGenFindManyOptions } from './crud-gen.interface.js';
+import { IWhereFilters } from './crud-gen.type.js';
+import { ICrudGenFieldMetadata } from './object.decorator.js';
 import './query-builder.helpers'; // must be imported here
 
 export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
@@ -29,9 +29,7 @@ export class CrudGenRepository<Entity> extends Repository<Entity> {
   /**
    * @todo we should create a class helper/adapter for the findOptions and move this method there
    */
-  public getActualLimits(
-    findOptions: CrudGenFindManyOptions<Entity>,
-  ): {
+  public getActualLimits(findOptions: CrudGenFindManyOptions<Entity>): {
     skip?: number;
     take?: number;
   } {
@@ -153,10 +151,11 @@ export class CrudGenRepository<Entity> extends Repository<Entity> {
       processRelationExtraConditions('left', joinCopy.leftJoinAndSelect);
     }
 
-    queryBuilder = FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
-      queryBuilder,
-      { ...strippedFindOptions, join: joinCopy },
-    );
+    queryBuilder =
+      FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
+        queryBuilder,
+        { ...strippedFindOptions, join: joinCopy },
+      );
 
     rawSelection.length > 0 && queryBuilder.addSelect(rawSelection);
 

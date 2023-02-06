@@ -2,7 +2,7 @@ import {
   isJsonSQLRaw,
   JsonField,
   NYALC_JSON_FIELD_META_KEY,
-} from '../json.helpers';
+} from '../json.helpers.js';
 import 'reflect-metadata';
 
 describe('JsonHelpers test', () => {

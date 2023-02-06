@@ -1,6 +1,6 @@
-import { StringFormatEnum } from '../string-format.enum';
-import * as Validator from '../validator.decorator';
-import * as ValidatorHelper from '../validator.helper';
+import { StringFormatEnum } from '../string-format.enum.js';
+import * as Validator from '../validator.decorator.js';
+import * as ValidatorHelper from '../validator.helper.js';
 import * as ClassValidator from 'class-validator';
 
 ClassValidator as jest.Mocked<typeof ClassValidator>;

@@ -5,8 +5,8 @@ import { ConfigureOption } from 'typeorm-seeding/dist/connection';
 import { Injectable, LoggerService, Provider } from '@nestjs/common';
 import { Connection } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { IDbConfType } from './conf.interface';
-import { getConfNameByConnection } from './conn.helper';
+import { IDbConfType } from './conf.interface.js';
+import { getConfNameByConnection } from './conn.helper.js';
 
 /**
  * Application service

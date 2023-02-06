@@ -1,5 +1,5 @@
-import { JsonEntityMixin } from '../json.entity';
-import { ExtendedBaseEntity } from '@nestjs-yalc/jest/extended-base-entity.entity';
+import { JsonEntityMixin } from '../json.entity.js';
+import { ExtendedBaseEntity } from '@nestjs-yalc/jest/extended-base-entity.entity.js';
 import 'reflect-metadata';
 
 describe('JsonEntityMixin entity test', () => {

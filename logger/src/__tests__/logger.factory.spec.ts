@@ -8,8 +8,8 @@ jest.mock('@nestjs/common', () => ({
   Logger: NestLogger,
 }));
 
-import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum';
-import { AppLoggerFactory } from '../logger.factory';
+import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum.js';
+import { AppLoggerFactory } from '../logger.factory.js';
 
 describe('AppLoggerFactory', () => {
   // let mockConfigService;

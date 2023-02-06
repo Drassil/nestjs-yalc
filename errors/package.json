@@ -1,9 +1,11 @@
 {
   "name": "@nestjs-yalc/errors",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "src/index.ts",
   "exports": {
+    ".": "./src/index.ts",
     "./*": "./src/*"
   },
   "scripts": {

@@ -1,4 +1,4 @@
-import { IFieldMapper, isFieldMapper, isFieldMapperProperty } from '.';
+import { IFieldMapper, isFieldMapper, isFieldMapperProperty } from '..js';
 
 describe('test maps typeguards', () => {
   class FakeClass {

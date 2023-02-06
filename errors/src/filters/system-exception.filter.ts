@@ -1,6 +1,6 @@
 import { Catch, ExceptionFilter } from '@nestjs/common';
 import type { LoggerService } from '@nestjs/common';
-import { ExceptionContextEnum } from '../errors.enum';
+import { ExceptionContextEnum } from '../errors.enum.js';
 
 @Catch(TypeError, SyntaxError, RangeError, EvalError, ReferenceError)
 export class SystemExceptionFilter implements ExceptionFilter {

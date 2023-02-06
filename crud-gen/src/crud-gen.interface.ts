@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { ClassType } from '@nestjs-yalc/types';
 import {
   ArgsOptions,
@@ -9,16 +9,16 @@ import {
 } from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
 import { FindManyOptions, FindOperator } from 'typeorm';
-import { IAgQueryParams } from './crud-gen.args';
+import { IAgQueryParams } from './crud-gen.args.js';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
   Operators,
-} from './crud-gen.enum';
-import { IWhereCondition } from './crud-gen.type';
-import type { IKeyMeta } from './gqlfields.decorator';
-import { IFieldAndFilterMapper } from './object.decorator';
+} from './crud-gen.enum.js';
+import { IWhereCondition } from './crud-gen.type.js';
+import type { IKeyMeta } from './gqlfields.decorator.js';
+import { IFieldAndFilterMapper } from './object.decorator.js';
 
 export interface IBaseFilterModel {
   filterType: FilterType;

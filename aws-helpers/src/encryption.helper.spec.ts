@@ -1,7 +1,7 @@
 jest.mock('aws-sdk');
 
 import { createMock } from '@golevelup/ts-jest';
-import * as $ from './encryption.helper';
+import * as $ from './encryption.helper.js';
 import * as AWS from 'aws-sdk';
 import crypto from 'crypto';
 

@@ -11,11 +11,11 @@ import {
   MissingArgumentsError,
   UnauthorizedError,
 } from '@nestjs-yalc/errors';
-import { ExceptionContextEnum } from '../errors.enum';
-import { EntityError } from '@nestjs-yalc/crud-gen/entity.error';
+import { ExceptionContextEnum } from '../errors.enum.js';
+import { EntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
 import { FastifyReply as FResponse } from 'fastify';
-import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
-import { BadRequestError } from '../input-validation.error';
+import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
+import { BadRequestError } from '../input-validation.error.js';
 
 type HttpErrorType =
   | HttpException

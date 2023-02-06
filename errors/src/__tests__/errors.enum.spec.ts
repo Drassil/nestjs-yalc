@@ -1,4 +1,4 @@
-import { ErrorsEnum, ExceptionContextEnum } from '../errors.enum';
+import { ErrorsEnum, ExceptionContextEnum } from '../errors.enum.js';
 
 describe('errors enum test', () => {
   it('ErrorsEnum should have all the values', () => {

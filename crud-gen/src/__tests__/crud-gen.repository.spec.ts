@@ -7,14 +7,14 @@ import {
 import {
   CrudGenRepository,
   CrudGenRepositoryFactory,
-} from '../crud-gen.repository';
-import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
-import { SortDirection } from '../crud-gen.enum';
+} from '../crud-gen.repository.js';
+import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper.js';
+import { SortDirection } from '../crud-gen.enum.js';
 import { DeepMocked } from '@golevelup/ts-jest';
-import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper';
+import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper.js';
 import { Alias } from 'typeorm/query-builder/Alias';
 import * as Typeorm from 'typeorm';
-import * as CrudGenHelpers from '../crud-gen.helpers';
+import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
 jest.mock('typeorm');
 jest.mock('typeorm/find-options/FindOptionsUtils');

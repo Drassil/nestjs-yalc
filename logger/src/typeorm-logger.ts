@@ -2,7 +2,7 @@ import { envIsTrue } from '@nestjs-yalc/utils';
 import { LoggerService } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Logger } from 'typeorm';
-import { LoggerEvent } from './logger.event';
+import { LoggerEvent } from './logger.event.js';
 
 export class TypeORMLogger implements Logger {
   private isLoggerEnabled = false;

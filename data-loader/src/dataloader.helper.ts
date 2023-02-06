@@ -1,9 +1,9 @@
 import _DataLoader from 'dataloader';
-import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
+import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
 import { In } from 'typeorm';
-import { IWhereCondition } from '@nestjs-yalc/crud-gen/crud-gen.type';
-import { Operators } from '@nestjs-yalc/crud-gen/crud-gen.enum';
+import { IWhereCondition } from '@nestjs-yalc/crud-gen/crud-gen.type.js';
+import { Operators } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 import {
   FactoryProvider,
   NotAcceptableException,
@@ -14,11 +14,11 @@ import {
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/crud-gen/generic-service.service';
-import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers';
+} from '@nestjs-yalc/crud-gen/generic-service.service.js';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 // import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum';
+import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
 import { EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;

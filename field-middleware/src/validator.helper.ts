@@ -1,4 +1,4 @@
-import { FieldErrorsEnum } from './fields-error.enum';
+import { FieldErrorsEnum } from './fields-error.enum.js';
 
 export function errorTrhow(value: string | Date, message?: string) {
   const err = message ? message : `${FieldErrorsEnum.INVALID_VALUE} ${value}`;

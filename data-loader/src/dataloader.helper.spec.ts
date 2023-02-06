@@ -1,14 +1,14 @@
 import { createMock } from '@golevelup/ts-jest';
-import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
+import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
 import {
   FactoryProvider,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
+import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper.js';
 
-import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service';
+import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {

@@ -1,5 +1,5 @@
 import { BaseEntity, Repository } from 'typeorm';
-import { KafkaController } from '../kafka.controller';
+import { KafkaController } from '../kafka.controller.js';
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 
 class TestEntity {

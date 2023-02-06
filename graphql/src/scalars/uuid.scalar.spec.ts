@@ -4,8 +4,8 @@ import {
   formatValueErrorMessage,
   formatKindErrorMessage,
   validateUUID,
-} from './uuid.scalar';
-import { UUIDValidationError } from './uuid-validation.error';
+} from './uuid.scalar.js';
+import { UUIDValidationError } from './uuid-validation.error.js';
 
 describe('UUID Scalar Type', () => {
   const uuidScalarType = new UUIDScalar();

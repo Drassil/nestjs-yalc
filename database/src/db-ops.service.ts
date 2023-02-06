@@ -1,35 +1,16 @@
 /* istanbul ignore file */
 
-import { Injectable, LoggerService, Provider } from '@nestjs/common';
-import {
-  CannotExecuteNotConnectedError,
-  Connection,
-  ConnectionOptions,
-  MigrationExecutor,
-} from 'typeorm';
-import { getDBNameByConnection } from './conn.helper';
-import * as Engine from 'typeorm-model-generator/dist/src/Engine';
-import { getDefaultConnectionOptions } from 'typeorm-model-generator/dist/src/IConnectionOptions';
-import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions';
-import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
-import IConnectionOptions from 'typeorm-model-generator/dist/src/IConnectionOptions';
-import { SeedService } from './seed.service';
+import { Injectable, Provider } from '@nestjs/common';
+import type { LoggerService } from '@nestjs/common';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { dbConnectionMap } from './conn.helper.js';
+import * as Engine from 'typeorm-model-generator/dist/src/Engine.js';
+import * as ConnOptions from 'typeorm-model-generator/dist/src/IConnectionOptions.js';
+import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions.js';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions.js';
 
-export type MigrationSelection = { [database: string]: string[] };
+type IConnectionOptions = ConnOptions.default
 
-export interface MigrationOptions {
-  /**
-   * An object to define migrations to explicitly select
-   * it's composed by:
-   * property name -> name of the database
-   * property value -> array of migration class names to skip
-   */
-  selMigrations?: MigrationSelection;
-  /**
-   * Reseed after all migrations have been executed
-   */
-  reseed?: boolean;
-}
 
 /**
  * Application service
@@ -39,8 +20,7 @@ export class DbOpsService {
   constructor(
     _options: any,
     private loggerService: LoggerService,
-    private seedService: SeedService,
-    private dbConnections: { conn: Connection; dbName: string }[],
+    private dbConnections: { conn: DataSource; dbName: string }[],
   ) {}
 
   public async closeAllConnections() {
@@ -83,71 +63,6 @@ export class DbOpsService {
     }
   }
 
-  public async migrate(options?: MigrationOptions) {
-    this.loggerService.debug?.('Migrating db...');
-
-    if (options?.selMigrations) {
-      this.loggerService.debug?.(
-        `Selected migrations ${JSON.stringify(options.selMigrations)}`,
-      );
-    }
-
-    for (const v of this.dbConnections) {
-      if (!v.conn.isConnected)
-        throw new CannotExecuteNotConnectedError(v.conn.name);
-
-      const queryRunner = v.conn.createQueryRunner();
-
-      const migrationExecutor = new MigrationExecutor(v.conn, queryRunner);
-      migrationExecutor.transaction = 'all';
-
-      const migrations = await migrationExecutor.getAllMigrations();
-
-      const dbName = v.conn.driver.database ?? v.dbName;
-
-      // if there are no migrations, then do not execute anything!
-      if (!Array.isArray(migrations) || migrations.length <= 0) {
-        this.loggerService.debug?.(`No migrations available on ${dbName}`);
-        continue;
-      }
-
-      if (options?.selMigrations) {
-        this.loggerService.debug?.(
-          `Executing selected migrations on ${dbName}`,
-        );
-
-        const pendingMigrations =
-          await migrationExecutor.getPendingMigrations();
-
-        const selectedMigrations = dbName
-          ? options.selMigrations[dbName]
-          : true; // execute all migrations when it's a connection without db specified
-
-        for (const migration of pendingMigrations) {
-          if (
-            selectedMigrations === true ||
-            (Array.isArray(selectedMigrations) &&
-              selectedMigrations.includes(migration.name))
-          ) {
-            this.loggerService.debug?.(
-              `Executing migration ${migration.name} for ${dbName}`,
-            );
-            await migrationExecutor.executeMigration(migration);
-          }
-        }
-      } else {
-        this.loggerService.debug?.(`Executing migration for ${dbName}`);
-        await migrationExecutor.executePendingMigrations();
-      }
-    }
-
-    if (options?.reseed) {
-      await this.seedService.seedDatabases(true);
-    }
-
-    this.loggerService.debug?.('Migration completed!');
-  }
-
   public async generate(dbName: string, tables: string[], genPath?: string) {
     this.loggerService.debug?.('Exporting db to TypeORM entities...');
 
@@ -170,7 +85,7 @@ export class DbOpsService {
 
     for (const options of mysqlConnectionOptions) {
       const connOptions: IConnectionOptions = {
-        ...getDefaultConnectionOptions(),
+        ...ConnOptions.getDefaultConnectionOptions(),
         host: options.host ?? '127.0.0.1',
         port: options.port ?? 3306,
         password: options.password ?? '',
@@ -202,32 +117,25 @@ export class DbOpsService {
 }
 
 export function isMysqlConnectionOption(
-  options: ConnectionOptions | MysqlConnectionOptions,
+  options: DataSourceOptions | MysqlConnectionOptions,
 ): options is MysqlConnectionOptions {
-  return (options as ConnectionOptions).type === 'mysql';
+  return (options as DataSourceOptions).type === 'mysql';
 }
 
-export const dbConnectionMap = (c: Connection) => ({
-  conn: c,
-  dbName: c.options.database?.toString() ?? getDBNameByConnection(c.name),
-});
-
-export const DbObpsServiceFactory = (
+export const DbOpsServiceFactory = (
   loggerServiceToken: string,
   connectionTokens: any[],
 ): Provider => ({
   provide: DbOpsService,
   useFactory: async (
     loggerService: LoggerService,
-    seedService: SeedService,
-    ...dbConnections: Connection[]
+    ...dbConnections: DataSource[]
   ) => {
     return new DbOpsService(
       {},
       loggerService,
-      seedService,
       dbConnections.map(dbConnectionMap),
     );
   },
-  inject: [loggerServiceToken, SeedService, ...connectionTokens],
+  inject: [loggerServiceToken, ...connectionTokens],
 });

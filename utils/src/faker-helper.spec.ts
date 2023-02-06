@@ -1,4 +1,4 @@
-import { FakerHelper } from './faker-helper';
+import { FakerHelper } from './faker-helper.js';
 import * as faker from 'faker';
 
 enum testEnum {

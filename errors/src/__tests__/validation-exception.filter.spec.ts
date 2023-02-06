@@ -1,8 +1,8 @@
 import { createMock } from '@golevelup/ts-jest';
 import { LoggerService } from '@nestjs/common';
-import { ValidationExceptionFilter } from '../filters/validation-exception.filter';
-import { InputValidationError } from '../input-validation.error';
-import { CrudGenError } from '@nestjs-yalc/crud-gen/crud-gen.error';
+import { ValidationExceptionFilter } from '../filters/validation-exception.filter.js';
+import { InputValidationError } from '../input-validation.error.js';
+import { CrudGenError } from '@nestjs-yalc/crud-gen/crud-gen.error.js';
 
 describe('ValidationExceptionFilter', () => {
   const logger = createMock<LoggerService>();

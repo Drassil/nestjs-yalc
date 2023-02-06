@@ -1,16 +1,16 @@
 import { ArgsType, Field } from '@nestjs/graphql';
-import { FilterInput } from './crud-gen.interface';
+import { FilterInput } from './crud-gen.interface.js';
 import {
   filterExpressionInputFactory,
   ISortModelStrict,
   JoinArgOptions,
   SortModel,
   sortModelFactory,
-} from './crud-gen.input';
-import { FilterScalar } from './filter.scalar';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+} from './crud-gen.input.js';
+import { FilterScalar } from './filter.scalar.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { ClassType } from '@nestjs-yalc/types';
-import { RowDefaultValues } from './crud-gen.enum';
+import { RowDefaultValues } from './crud-gen.enum.js';
 
 export interface IAgQueryParams<T = any> {
   [index: string]: any; // dynamic parameters

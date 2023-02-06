@@ -3,7 +3,7 @@ import {
   getConnectionName,
   DBCONF_PREFIX,
   getDBNameByConnection,
-} from '../conn.helper';
+} from '../conn.helper.js';
 
 describe('conn.helper test', () => {
   it('Check getConfNameByConnection', async () => {

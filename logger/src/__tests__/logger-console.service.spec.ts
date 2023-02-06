@@ -1,5 +1,5 @@
-import { ConsoleLogger } from '../logger-console.service';
-import { LOG_LEVEL_ALL } from '../logger.enum';
+import { ConsoleLogger } from '../logger-console.service.js';
+import { LOG_LEVEL_ALL } from '../logger.enum.js';
 
 describe('Console logger service test', () => {
   let logger: ConsoleLogger;

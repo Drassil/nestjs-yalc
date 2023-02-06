@@ -1,5 +1,5 @@
 import { createMock } from '@golevelup/ts-jest';
-import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ModuleRef } from '@nestjs/core';
 import {
   checkFinalId,
@@ -15,23 +15,23 @@ import {
   IGenericResolverMethodOptions,
   IGenericResolverOptions,
   resolverFactory,
-} from '../generic-resolver.resolver';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+} from '../generic-resolver.resolver.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 
-import { GenericService } from '../generic-service.service';
+import { GenericService } from '../generic-service.service.js';
 import {
   TestEntityRelation,
   TestEntityRelation2,
-} from '../__mocks__/entity.mock';
-import * as CrudGenObjectDecorator from '../object.decorator';
-import * as CrudGenHelpers from '../crud-gen.helpers';
+} from '../__mocks__/entity.mock.js';
+import * as CrudGenObjectDecorator from '../object.decorator.js';
+import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
-import { ICrudGenFieldMetadata } from '../object.decorator';
+import { ICrudGenFieldMetadata } from '../object.decorator.js';
 import { BaseEntity } from 'typeorm';
-import { CrudGenFindManyOptions } from '../crud-gen.interface';
-import { FilterType } from '../crud-gen.enum';
+import { CrudGenFindManyOptions } from '../crud-gen.interface.js';
+import { FilterType } from '../crud-gen.enum.js';
 import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
-import { IRelationInfo } from '../crud-gen.helpers';
+import { IRelationInfo } from '../crud-gen.helpers.js';
 
 jest.mock('@nestjs/graphql');
 

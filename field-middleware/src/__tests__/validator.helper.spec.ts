@@ -1,4 +1,4 @@
-import { FieldErrorsEnum } from '../fields-error.enum';
+import { FieldErrorsEnum } from '../fields-error.enum.js';
 import {
   convertIfStringToDate,
   errorTrhow,
@@ -7,8 +7,8 @@ import {
   validateDate,
   validateDateOrThrow,
   validateStringFormat,
-} from '../validator.helper';
-import { StringFormatEnum } from '../string-format.enum';
+} from '../validator.helper.js';
+import { StringFormatEnum } from '../string-format.enum.js';
 
 describe('validator helper test', () => {
   it('convertIfStringToDate should work', async () => {

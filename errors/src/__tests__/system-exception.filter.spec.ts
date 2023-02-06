@@ -1,8 +1,8 @@
 import { createMock } from '@golevelup/ts-jest';
 import { LoggerService, UnprocessableEntityException } from '@nestjs/common';
 
-import { ExceptionContextEnum } from '../errors.enum';
-import { SystemExceptionFilter } from '../filters/system-exception.filter';
+import { ExceptionContextEnum } from '../errors.enum.js';
+import { SystemExceptionFilter } from '../filters/system-exception.filter.js';
 
 describe('System exceptions filter', () => {
   let filter: SystemExceptionFilter;

@@ -1,5 +1,5 @@
-import { ErrorsEnum } from '../errors.enum';
-import { UnauthorizedError } from '../unauthorized.error';
+import { ErrorsEnum } from '../errors.enum.js';
+import { UnauthorizedError } from '../unauthorized.error.js';
 
 describe('Unauthorized error', () => {
   const error = new UnauthorizedError();

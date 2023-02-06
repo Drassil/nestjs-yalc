@@ -109,8 +109,12 @@ export const coverageThreshold = (
 };
 
 export interface IDefaultConfOptions {
-  /** node modules to transform */
-  esModules: string[];
+  /** node modules to transform
+   * string array -> add extra esmodule to transform
+   * true -> transform esmodule only using the default array
+   * false -> disable esmodule transformation (default)
+   */
+  transformEsModules?: string[] | boolean;
 }
 
 /**
@@ -120,24 +124,19 @@ export interface IDefaultConfOptions {
  */
 const defaultConf = (
   dirname: string,
-  options?: IDefaultConfOptions,
+  options: IDefaultConfOptions = {},
 ): Config.InitialOptions => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
 
+
+
   // We need this to make sure that some esm modules are transformed
   // ref: https://github.com/nrwl/nx/issues/812
   // ref: https://github.com/jaredpalmer/tsdx/issues/187#issuecomment-825536863
-  const esModules = [
-    ...(options?.esModules ?? []),
-    'aggregate-error',
-    'clean-stack',
-    'escape-string-regexp',
-    'indent-string',
-    'p-map',
-  ].join('|');
 
-  return {
+
+  const config: Config.InitialOptions = {
     rootDir: dirname,
     modulePathIgnorePatterns: [
       '<rootDir>/var/',
@@ -158,15 +157,32 @@ const defaultConf = (
         },
       ],
     },
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-      prefix: dirname,
-    }),
+    moduleNameMapper: {
+      ...pathsToModuleNameMapper(compilerOptions.paths, {
+        prefix: dirname,
+      }),
+      "^(\\.{1,2}/.*)\\.js$": "$1" // for ESM support
+    },
     errorOnDeprecated: true,
-    extensionsToTreatAsEsm: ['.ts'],
-    transformIgnorePatterns: [
-      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
-    ],
+    extensionsToTreatAsEsm: ['.ts']
   };
+
+  if (options.transformEsModules) {
+    const esModules = [
+      ...(Array.isArray(options.transformEsModules) ? options.transformEsModules : []),
+      'aggregate-error',
+      'clean-stack',
+      'escape-string-regexp',
+      'indent-string',
+      'p-map',
+    ].join('|');
+
+    config.transformIgnorePatterns = [
+      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
+    ]
+  }
+
+  return config
 };
 
 export interface E2EOptions {

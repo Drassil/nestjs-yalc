@@ -5,7 +5,7 @@ import { InjectOptions } from 'fastify';
 import {
   NestLocalCallStrategy,
   NestLocalCallStrategyProvider,
-} from './nest-local-call.strategy';
+} from './nest-local-call.strategy.js';
 
 describe('NestLocalCallStrategy', () => {
   let adapterHost: HttpAdapterHost;

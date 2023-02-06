@@ -1,4 +1,4 @@
 /* istanbul ignore file */
-export * from './plugin';
-export * from './kafka.controller';
-export * from './interface';
+export * from './plugin.js';
+export * from './kafka.controller.js';
+export * from './interface.js';

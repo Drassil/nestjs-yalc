@@ -8,8 +8,8 @@ import {
   CrudGenNotPossibleError,
   CrudGenConditionNotSupportedError,
   CrudGenStringWhereError,
-} from '../crud-gen.error';
-import { FilterErrors } from '../strings.enum';
+} from '../crud-gen.error.js';
+import { FilterErrors } from '../strings.enum.js';
 
 describe('CrudGen module errors', () => {
   it('should have defined errors', () => {

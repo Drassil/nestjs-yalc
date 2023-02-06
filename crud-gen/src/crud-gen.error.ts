@@ -1,5 +1,5 @@
-import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
-import { FilterErrors } from './strings.enum';
+import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
+import { FilterErrors } from './strings.enum.js';
 
 export class CrudGenError extends GqlError {
   constructor(message?: string, public systemMessage?: string) {

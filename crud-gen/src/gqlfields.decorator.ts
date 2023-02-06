@@ -3,19 +3,19 @@ import { GqlExecutionContext, ReturnTypeFuncValue } from '@nestjs/graphql';
 import {
   IFieldMapper,
   FieldMapperProperty,
-} from '@nestjs-yalc/interfaces/maps.interface';
+} from '@nestjs-yalc/interfaces/maps.interface.js';
 import {
   columnConversion,
   formatRawSelectionWithoutAlias,
   objectToFieldMapper,
-} from '@nestjs-yalc/crud-gen/crud-gen.helpers';
-import { ClassType } from '@nestjs-yalc/types/globals';
+} from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { GraphQLResolveInfo } from 'graphql';
-import { removeSymbolicSelection } from './crud-gen-args.decorator';
+import { removeSymbolicSelection } from './crud-gen-args.decorator.js';
 import {
   ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
-} from './object.decorator';
+} from './object.decorator.js';
 
 export interface IGqlAgSingleParams {
   id: Type<any>;

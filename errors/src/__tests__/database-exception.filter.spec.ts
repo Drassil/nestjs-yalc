@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { EntityTarget } from 'typeorm';
 import { ConnectionNotFoundError, EntityNotFoundError } from 'typeorm';
-import { ExceptionContextEnum } from '../errors.enum';
-import { DatabaseExceptionFilter } from '../filters/database-exception.filter';
+import { ExceptionContextEnum } from '../errors.enum.js';
+import { DatabaseExceptionFilter } from '../filters/database-exception.filter.js';
 
 describe('Database exceptions filter', () => {
   let filter: DatabaseExceptionFilter;

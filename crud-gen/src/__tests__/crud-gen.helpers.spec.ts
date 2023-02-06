@@ -1,13 +1,13 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum.js';
 import {
   CrudGenConditionNotSupportedError,
   CrudGenNotPossibleError,
   CrudGenStringWhereError,
-} from '../crud-gen.error';
+} from '../crud-gen.error.js';
 import {
   forceFilterWorker,
   forceFilters,
@@ -30,25 +30,25 @@ import {
   applySelectOnFind,
   formatRawSelection,
   getDestinationFieldName,
-} from '../crud-gen.helpers';
-import { JoinArgOptions, JoinTypes } from '../crud-gen.input';
-import { IWhereCondition } from '../crud-gen.type';
-import * as ObjectDecorator from '../object.decorator';
-import * as CrudGenHelpers from '../crud-gen.helpers';
+} from '../crud-gen.helpers.js';
+import { JoinArgOptions, JoinTypes } from '../crud-gen.input.js';
+import { IWhereCondition } from '../crud-gen.type.js';
+import * as ObjectDecorator from '../object.decorator.js';
+import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
 import {
   FilterOption,
   FilterOptionType,
   ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
-} from '../object.decorator';
+} from '../object.decorator.js';
 import {
   TestEntity,
   TestEntityDto,
   TestEntityRelation,
-} from '../__mocks__/entity.mock';
-import { GenericService } from '../generic-service.service';
-import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
+} from '../__mocks__/entity.mock.js';
+import { GenericService } from '../generic-service.service.js';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { Resolver } from '@nestjs/graphql';
 
 const fixedKey = 'passed';

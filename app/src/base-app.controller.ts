@@ -1,8 +1,8 @@
-import { IServiceConf } from '@nestjs-yalc/app/conf.type';
-import { CURAPP_CONF_ALIAS } from '@nestjs-yalc/app/def.const';
+import { IServiceConf } from '@nestjs-yalc/app/conf.type.js';
+import { CURAPP_CONF_ALIAS } from '@nestjs-yalc/app/def.const.js';
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { BaseAppService } from './base-app.service';
+import { BaseAppService } from './base-app.service.js';
 import { ApiOperation } from '@nestjs/swagger';
 
 /**

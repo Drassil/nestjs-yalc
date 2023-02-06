@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import * as $ from '../crud-gen.type';
+import * as $ from '../crud-gen.type.js';
 
 class Test {
   testField: string;

@@ -1,5 +1,6 @@
 {
   "name": "@types/nestjs-yalc",
+  "type": "module",
   "main": "./src/index.d.ts",
   "types": "./src/index.d.ts",
   "files": [
@@ -7,6 +8,10 @@
     "./src/globals.d.ts",
     "./src/modules.d.ts"
   ],
+  "exports": {
+    ".": "./src/index.d.ts",
+    "./*": "./src/*"
+  },
   "version": "1.0.0",
   "description": "Type definitions for nestjs yalc",
   "author": "Yehonal"

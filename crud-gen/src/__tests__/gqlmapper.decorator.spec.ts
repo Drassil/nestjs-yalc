@@ -1,12 +1,12 @@
 jest.mock('@nestjs/graphql');
 
-import * as gqlMapper from '../gqlmapper.decorator';
+import * as gqlMapper from '../gqlmapper.decorator.js';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
-} from '@nestjs-yalc/jest/common-mocks.helper';
+} from '@nestjs-yalc/jest/common-mocks.helper.js';
 import * as graphql from '@nestjs/graphql';
-import { CrudGenField, CrudGenObject } from '../object.decorator';
+import { CrudGenField, CrudGenObject } from '../object.decorator.js';
 
 @CrudGenObject()
 class DummyType {

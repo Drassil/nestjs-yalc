@@ -1,6 +1,6 @@
 import { createMock } from '@golevelup/ts-jest';
 import * as confluent from '@kafkajs/confluent-schema-registry';
-import { KafkaAvroDeserializer } from '../plugin';
+import { KafkaAvroDeserializer } from '../plugin.js';
 
 jest.mock('@kafkajs/confluent-schema-registry', () => {
   const mockedSchema = createMock<confluent.SchemaRegistry>();

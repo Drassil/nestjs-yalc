@@ -1,5 +1,5 @@
 import { createMock } from '@golevelup/ts-jest';
-import * as S3Helper from './aws-s3.helper';
+import * as S3Helper from './aws-s3.helper.js';
 
 jest.mock('aws-sdk', () => {
   const mockedS3 = createMock<AWS.S3>();

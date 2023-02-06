@@ -1,6 +1,6 @@
 import { BaseEntity } from 'typeorm';
-import { entityFieldsEnumFactory } from '../crud-gen.enum';
-import * as CrudGenHelper from '../crud-gen.helpers';
+import { entityFieldsEnumFactory } from '../crud-gen.enum.js';
+import * as CrudGenHelper from '../crud-gen.helpers.js';
 
 const fixedProperty = 'columId';
 

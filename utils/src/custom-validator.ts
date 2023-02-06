@@ -1,6 +1,10 @@
-import { stringIsInEnum } from './validator-helper';
+import { stringIsInEnum } from './validator-helper.js';
 
-export const stringIsInEnumValidatorFactory = <T>(property: T) => {
+export const stringIsInEnumValidatorFactory = <
+  T extends Record<string, string | number>,
+>(
+  property: T,
+) => {
   return {
     validate(value: any) {
       return stringIsInEnum(value, property);

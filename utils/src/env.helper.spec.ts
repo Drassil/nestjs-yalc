@@ -1,4 +1,4 @@
-import { envIsTrue, envToArray, isProduction } from './env.helper';
+import { envIsTrue, envToArray, isProduction } from './env.helper.js';
 import { envTestHelper } from '@nestjs-yalc/jest';
 
 describe('environment helper test', () => {

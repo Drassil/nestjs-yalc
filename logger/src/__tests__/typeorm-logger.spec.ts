@@ -5,13 +5,13 @@
 //   Logger: NestLogger,
 // }));
 
-// import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum';
-// import { AppLoggerFactory } from '../logger.factory';
+// import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum.js';
+// import { AppLoggerFactory } from '../logger.factory.js';
 // import { DeepMocked } from '@golevelup/ts-jest';
 import { createMock } from '@golevelup/ts-jest';
 import { LoggerService } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TypeORMLogger } from '../typeorm-logger';
+import { TypeORMLogger } from '../typeorm-logger.js';
 
 describe('TypeORMLogger with a valid logger', () => {
   const mockedLoggerService = createMock<LoggerService>();

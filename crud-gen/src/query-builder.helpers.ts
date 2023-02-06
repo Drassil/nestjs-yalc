@@ -2,11 +2,11 @@ import { SelectQueryBuilder } from 'typeorm';
 import {
   formatRawSelection,
   getDestinationFieldName,
-} from './crud-gen.helpers';
+} from './crud-gen.helpers.js';
 import {
   getCrudGenFieldMetadataList,
   ICrudGenFieldMetadata,
-} from './object.decorator';
+} from './object.decorator.js';
 
 /**
  * Monkey patching query builder

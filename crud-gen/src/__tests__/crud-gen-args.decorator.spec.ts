@@ -4,7 +4,7 @@ jest.mock('../crud-gen.args', () => ({
   agQueryParamsNoPaginationFactory: jest.fn(),
 }));
 
-import * as crudGenArgsDecorator from '../crud-gen-args.decorator';
+import * as crudGenArgsDecorator from '../crud-gen-args.decorator.js';
 import {
   Equal,
   LessThan,
@@ -16,35 +16,35 @@ import {
   In,
   BaseEntity,
 } from 'typeorm';
-import { IAgQueryParams } from '../crud-gen.args';
+import { IAgQueryParams } from '../crud-gen.args.js';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from '../crud-gen.enum';
+} from '../crud-gen.enum.js';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
-} from '@nestjs-yalc/jest/common-mocks.helper';
+} from '@nestjs-yalc/jest/common-mocks.helper.js';
 import {
   FilterInput,
   FilterModel,
   ICrudGenArgsOptions,
   ICombinedSimpleModel,
-} from '../crud-gen.interface';
+} from '../crud-gen.interface.js';
 import * as graphql from '@nestjs/graphql';
-import * as CrudGenInput from '../crud-gen.input';
-import * as GqlCrudGenDecorator from '../gqlfields.decorator';
-import * as CrudGenHelpers from '../crud-gen.helpers';
+import * as CrudGenInput from '../crud-gen.input.js';
+import * as GqlCrudGenDecorator from '../gqlfields.decorator.js';
+import * as CrudGenHelpers from '../crud-gen.helpers.js';
 import {
   CrudGenFilterNotSupportedError,
   CrudGenFilterProhibited,
   CrudGenInvalidArgumentError,
   CrudGenInvalidOperatorError,
   CrudGenError,
-} from '../crud-gen.error';
-import { DateHelper } from '@nestjs-yalc/utils/date.helper';
+} from '../crud-gen.error.js';
+import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { createMock } from '@golevelup/ts-jest';
 import {
@@ -76,12 +76,12 @@ import {
   fixedWhereTransformedWithNotInclude,
   fixeNumberArgs,
   genExtraArgs,
-} from '../__mocks__/filter.mocks';
+} from '../__mocks__/filter.mocks.js';
 import {
   ArgumentsError,
   MissingArgumentsError,
-} from '../missing-arguments.error';
-import { TestEntity } from '../__mocks__/entity.mock';
+} from '../missing-arguments.error.js';
+import { TestEntity } from '../__mocks__/entity.mock.js';
 
 const firstTextParameter = 'a';
 const firstNumberParameter = 1;

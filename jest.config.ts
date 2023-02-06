@@ -3,7 +3,9 @@ import {
   IOptions,
   IProjectInfo,
   jestConfGenerator,
-} from './jest/src/config/jest-conf.generator';
+} from './jest/src/config/jest-conf.generator.js';
+
+console.log("=================== LOADING JEST OPTIONS ================")
 
 const tsProjects = require('./tsconfig.json');
 
@@ -25,7 +27,7 @@ Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
 
 const options: IOptions = {
   // TODO: re-enable everything except types
-  skipProjects: ['types', 'graphql', 'app', 'crud-gen', 'kafka'],
+  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka'],
   defaultCoverageThreshold: {
     branches: 100,
     functions: 100,
@@ -33,6 +35,14 @@ const options: IOptions = {
     statements: 100,
   },
   confOverrides: {
+    '@nestjs-yalc/app': {
+      coverageThreshold: {
+        statements: 9.62,
+        branches: 0,
+        functions: 10.71,
+        lines: 8.06,
+      },
+    },
     '@nestjs-yalc/aws-helpers': {
       coverageThreshold: {
         branches: 100,

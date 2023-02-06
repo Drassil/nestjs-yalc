@@ -4,10 +4,10 @@ import {
   RowGroup,
   SortModel,
   sortModelFactory,
-} from '../crud-gen.input';
-import * as CrudGenEnum from '../crud-gen.enum';
-import * as CrudGenHelpers from '../crud-gen.helpers';
-import { TestEntity, TestEntityRelation } from '../__mocks__/entity.mock';
+} from '../crud-gen.input.js';
+import * as CrudGenEnum from '../crud-gen.enum.js';
+import * as CrudGenHelpers from '../crud-gen.helpers.js';
+import { TestEntity, TestEntityRelation } from '../__mocks__/entity.mock.js';
 
 describe('Dynamic user input dto test', () => {
   const spiedEntityFieldsEnumFactory = jest.spyOn(

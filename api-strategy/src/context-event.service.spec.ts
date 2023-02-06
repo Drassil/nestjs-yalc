@@ -1,7 +1,7 @@
 import { createMock } from '@golevelup/ts-jest';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ContextEventServiceFactory } from './context-event.service';
-import { NestLocalEventStrategy } from './index';
+import { ContextEventServiceFactory } from './context-event.service.js';
+import { NestLocalEventStrategy } from './index.js';
 
 describe('ContextEventServiceFactory', () => {
   let eventEmitter: EventEmitter2;

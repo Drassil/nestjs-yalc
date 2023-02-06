@@ -5,8 +5,8 @@ import {
   SelectionNode,
   GraphQLSchema,
 } from 'graphql';
-import { GqlASTHelper } from './gql-ast.helper';
-import { GqlError, GqlErrorMsgs } from './gql.error';
+import { GqlASTHelper } from './gql-ast.helper.js';
+import { GqlError, GqlErrorMsgs } from './gql.error.js';
 
 const MAX_EXECUTABLE_DEFINITIONS = 50;
 const MAX_DEPTH = 3;

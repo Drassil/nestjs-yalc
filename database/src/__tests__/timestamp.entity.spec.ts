@@ -1,5 +1,5 @@
 import { BaseEntity } from 'typeorm';
-import { EntityWithTimestamps } from '../timestamp.entity';
+import { EntityWithTimestamps } from '../timestamp.entity.js';
 
 describe('EntityWithTimestamps entity test', () => {
   it('should be defined', () => {

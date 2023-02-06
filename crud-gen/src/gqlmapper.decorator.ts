@@ -1,8 +1,8 @@
 import {
   columnConversion,
   objectToFieldMapper,
-} from '@nestjs-yalc/crud-gen/crud-gen.helpers';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+} from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { ClassType } from '@nestjs-yalc/types';
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import {

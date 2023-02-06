@@ -4,7 +4,7 @@ import { AxiosInstance } from 'axios';
 import {
   NestHttpCallStrategy,
   NestHttpCallStrategyProvider,
-} from './nest-http-call.strategy';
+} from './nest-http-call.strategy.js';
 
 describe('NestHttpCallStrategy', () => {
   let httpService: HttpService;

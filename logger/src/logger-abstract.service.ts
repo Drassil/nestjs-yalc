@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LoggerService, LogLevel } from '@nestjs/common';
-import { LogLevelEnum } from './logger.enum';
+import { LogLevelEnum } from './logger.enum.js';
 export interface LogMethodOptions {
   data?: any;
   masks?: string[];

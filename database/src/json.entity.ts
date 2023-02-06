@@ -1,6 +1,6 @@
 import { ClassType, Mixin } from '@nestjs-yalc/types';
 import { BeforeUpdate, Entity } from 'typeorm';
-import { NYALC_JSON_FIELD_META_KEY } from './json.helpers';
+import { NYALC_JSON_FIELD_META_KEY } from './json.helpers.js';
 
 /**
  * Mixin

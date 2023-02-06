@@ -1,16 +1,16 @@
 import { createMock } from '@golevelup/ts-jest';
-import { CreateEntityError } from '@nestjs-yalc/crud-gen/entity.error';
-import { MissingArgumentsError } from '@nestjs-yalc/crud-gen/missing-arguments.error';
+import { CreateEntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
+import { MissingArgumentsError } from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
 import {
   ArgumentsHost,
   LoggerService,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { GqlArgumentsHost } from '@nestjs/graphql';
-import { ExceptionContextEnum } from '../errors.enum';
-import { HttpExceptionFilter } from '../filters/http-exception.filter';
-import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error';
-import { LoginError } from '../';
+import { ExceptionContextEnum } from '../errors.enum.js';
+import { HttpExceptionFilter } from '../filters/http-exception.filter.js';
+import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
+import { LoginError } from '../.js';
 jest.mock('@nestjs/graphql');
 
 describe('Http exceptions filter', () => {

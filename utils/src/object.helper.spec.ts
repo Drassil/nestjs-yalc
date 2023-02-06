@@ -1,4 +1,4 @@
-import { deepMerge, objectSetProp } from './object.helper';
+import { deepMerge, objectSetProp } from './object.helper.js';
 
 describe('test object.helper.ts', () => {
   it('should set a property correctly', () => {

@@ -1,5 +1,5 @@
-import { CrudGenField } from '@nestjs-yalc/crud-gen/object.decorator';
-import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
+import { CrudGenField } from '@nestjs-yalc/crud-gen/object.decorator.js';
+import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity.js';
 import { ObjectType } from '@nestjs/graphql';
 import {
   BaseEntity,
@@ -9,7 +9,7 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { SkeletonPhone } from './skeleton-phone.entity';
+import { SkeletonPhone } from './skeleton-phone.entity.js';
 
 @Entity('skeleton-user')
 @ObjectType({ isAbstract: true })

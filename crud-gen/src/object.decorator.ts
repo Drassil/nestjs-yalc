@@ -1,6 +1,6 @@
 import { FieldMapperProperty, IFieldMapper } from '@nestjs-yalc/interfaces';
-import { ClassType } from '@nestjs-yalc/types/globals';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import {
   addFieldMetadata,
   FieldOptions,
@@ -8,7 +8,7 @@ import {
 } from '@nestjs/graphql';
 import 'reflect-metadata';
 import { RelationType } from 'typeorm/metadata/types/RelationTypes';
-import { IAgQueryParams } from './crud-gen.args';
+import { IAgQueryParams } from './crud-gen.args.js';
 
 export interface DstExtended {
   name: string;

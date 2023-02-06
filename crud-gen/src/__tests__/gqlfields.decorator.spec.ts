@@ -3,13 +3,13 @@ jest.mock('@nestjs-yalc/crud-gen/crud-gen.args', () => ({
   agQueryParamsFactory: jest.fn(),
 }));
 
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
-import * as $ from '../gqlfields.decorator';
-import * as CrudGenHelper from '../crud-gen.helpers';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
+import * as $ from '../gqlfields.decorator.js';
+import * as CrudGenHelper from '../crud-gen.helpers.js';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
-} from '@nestjs-yalc/jest/common-mocks.helper';
+} from '@nestjs-yalc/jest/common-mocks.helper.js';
 import { GraphQLResolveInfo } from 'graphql';
 
 const infoObj: GraphQLResolveInfo = {

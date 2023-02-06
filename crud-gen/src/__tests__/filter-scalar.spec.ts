@@ -1,8 +1,8 @@
 import { ObjectValueNode, StringValueNode } from 'graphql';
-import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
-import { FilterInput, IMultiColumnJoinOptions } from '../crud-gen.interface';
-import { FilterScalar } from '../filter.scalar';
-import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum.js';
+import { FilterInput, IMultiColumnJoinOptions } from '../crud-gen.interface.js';
+import { FilterScalar } from '../filter.scalar.js';
+import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks.js';
 
 const createdFilterScalar = new FilterScalar();
 const fixedString =

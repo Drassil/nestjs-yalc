@@ -8,17 +8,17 @@ import {
 } from 'typeorm';
 import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver';
 import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver';
-import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum';
+import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 import {
   IFieldMapper,
   isFieldMapper,
-} from '@nestjs-yalc/interfaces/maps.interface';
-import { isJsonSQLRaw } from './json.helpers';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
+} from '@nestjs-yalc/interfaces/maps.interface.js';
+import { isJsonSQLRaw } from './json.helpers.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
 // import {
 //   IJsonVirtualFieldOptions,
 //   NYALC_JSON_VIRTUAL_FIELD_META_KEY,
-// } from './json.entity';
+// } from './json.entity.js';
 
 export type FindAndCountResult<Entity> = [Entity[], number];
 type GetOneResult<Entity> = Entity | undefined;

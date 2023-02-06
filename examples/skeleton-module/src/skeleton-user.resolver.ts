@@ -1,7 +1,7 @@
-import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers';
-import { resolverFactory } from '@nestjs-yalc/crud-gen/generic-resolver.resolver';
-import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import { resolverFactory } from '@nestjs-yalc/crud-gen/generic-resolver.resolver.js';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { UseGuards } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext, Mutation, Resolver } from '@nestjs/graphql';
@@ -10,19 +10,19 @@ import {
   SkeletonUserCreateInput,
   SkeletonUserUpdateInput,
   SkeletonUserCondition,
-} from './skeleton-user.dto';
-import { SkeletonUser } from './skeleton-user.entity';
-import { RoleAuth, RoleEnum } from './role.guard';
+} from './skeleton-user.dto.js';
+import { SkeletonUser } from './skeleton-user.entity.js';
+import { RoleAuth, RoleEnum } from './role.guard.js';
 import {
   skeletonUserServiceFactory,
   SkeletonUserService,
-} from './skeleton-user.service';
-import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator';
+} from './skeleton-user.service.js';
+import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator.js';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from '@nestjs-yalc/crud-gen/crud-gen.enum';
+} from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,

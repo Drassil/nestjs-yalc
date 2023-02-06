@@ -1,4 +1,4 @@
-import { IEventStrategy } from '../context-event.interface';
+import { IEventStrategy } from '../context-event.interface.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ClassType } from '@nestjs-yalc/types';
 

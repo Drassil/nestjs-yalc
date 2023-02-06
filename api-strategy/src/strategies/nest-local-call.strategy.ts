@@ -3,7 +3,7 @@ import {
   HttpAbstractStrategy,
   HttpOptions,
   IHttpCallStrategyResponse,
-} from './http-abstract-call.strategy';
+} from './http-abstract-call.strategy.js';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types';
 import { InjectOptions } from 'fastify';

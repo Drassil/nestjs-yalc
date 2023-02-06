@@ -1,12 +1,12 @@
 import {
   DataLoaderFactory,
   getDataloaderToken,
-} from '@nestjs-yalc/data-loader/dataloader.helper';
-import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper';
+} from '@nestjs-yalc/data-loader/dataloader.helper.js';
+import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper.js';
 import {
   IFieldMapper,
   isFieldMapper,
-} from '@nestjs-yalc/interfaces/maps.interface';
+} from '@nestjs-yalc/interfaces/maps.interface.js';
 import { ClassType } from '@nestjs-yalc/types';
 import {
   ClassProvider,
@@ -20,42 +20,42 @@ import { GraphQLResolveInfo } from 'graphql';
 import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs';
-import { createWhere, getFindOperator } from './crud-gen-args.decorator';
+import { createWhere, getFindOperator } from './crud-gen-args.decorator.js';
 import {
   isCombinedWhereModel,
   isFindOperator,
-} from './crud-gen-type-checker.utils';
-import { FilterType, Operators } from './crud-gen.enum';
+} from './crud-gen-type-checker.utils.js';
+import { FilterType, Operators } from './crud-gen.enum.js';
 import {
   CrudGenConditionNotSupportedError,
   CrudGenNotPossibleError,
   CrudGenStringWhereError,
-} from './crud-gen.error';
-import { JoinArgOptions, JoinTypes } from './crud-gen.input';
+} from './crud-gen.error.js';
+import { JoinArgOptions, JoinTypes } from './crud-gen.input.js';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   FilterInput,
-} from './crud-gen.interface';
+} from './crud-gen.interface.js';
 import {
   CrudGenRepository,
   CrudGenRepositoryFactory,
-} from './crud-gen.repository';
+} from './crud-gen.repository.js';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
   IWhereFilters,
-} from './crud-gen.type';
+} from './crud-gen.type.js';
 import {
   IGenericResolverOptions,
   resolverFactory,
-} from './generic-resolver.resolver';
+} from './generic-resolver.resolver.js';
 import {
   GenericService,
   GenericServiceFactory,
-} from './generic-service.service';
+} from './generic-service.service.js';
 import {
   DstExtended,
   getCrudGenFieldMetadataList,
@@ -63,7 +63,7 @@ import {
   ICrudGenFieldMetadata,
   IFieldAndFilterMapper,
   isDstExtended,
-} from './object.decorator';
+} from './object.decorator.js';
 export const columnConversion = (
   key: string,
   data: IFieldMapper | { [key: string]: ICrudGenFieldMetadata } | undefined,

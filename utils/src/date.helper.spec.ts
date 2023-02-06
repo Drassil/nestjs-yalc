@@ -1,4 +1,4 @@
-import { DateHelper } from './date.helper';
+import { DateHelper } from './date.helper.js';
 
 describe('Date helper test suite', () => {
   it('getDateQuery - returns proper query', () => {

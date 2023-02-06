@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -59,6 +59,7 @@
   "exclude": ["**/node_modules", "**/.webpack"],
   "ts-node": {
     "transpileOnly": true,
-    "files": true
+    "files": true,
+    "esm": true
   }
 }

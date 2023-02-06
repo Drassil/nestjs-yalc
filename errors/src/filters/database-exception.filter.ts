@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 // We can import more errors from the typeorm/error folder if necessary, nothing is exported though, so use explicit paths.
 import { EntityNotFoundError, ConnectionNotFoundError } from 'typeorm';
-import { ExceptionContextEnum } from '../errors.enum';
+import { ExceptionContextEnum } from '../errors.enum.js';
 
 @Catch(EntityNotFoundError, ConnectionNotFoundError)
 export class DatabaseExceptionFilter implements GqlExceptionFilter {

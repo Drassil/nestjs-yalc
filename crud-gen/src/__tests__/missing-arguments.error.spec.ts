@@ -1,5 +1,5 @@
-import { MissingArgumentsError } from '../missing-arguments.error';
-import { CrudGenErrors } from '../strings.enum';
+import { MissingArgumentsError } from '../missing-arguments.error.js';
+import { CrudGenErrors } from '../strings.enum.js';
 
 describe('Missing arguments error', () => {
   const error = new MissingArgumentsError();

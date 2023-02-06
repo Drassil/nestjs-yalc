@@ -1,6 +1,6 @@
 import { HTTPMethods } from '@nestjs-yalc/types';
 import { OutgoingHttpHeaders, IncomingHttpHeaders } from 'node:http2';
-import { IApiCallStrategy } from '../context-call.interface';
+import { IApiCallStrategy } from '../context-call.interface.js';
 
 /**
  * This options should be compliant to all the http-based call strategies

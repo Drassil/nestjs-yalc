@@ -1,8 +1,8 @@
-import * as GenericServiceModule from '../generic-service.service';
+import * as GenericServiceModule from '../generic-service.service.js';
 import {
   GenericService,
   GenericServiceFactory,
-} from '../generic-service.service';
+} from '../generic-service.service.js';
 import {
   BaseEntity,
   Connection,
@@ -18,22 +18,22 @@ import {
   MockedEntity,
   ReadEntity,
   WriteEntity,
-} from '../__mocks__/generic-service.mocks';
-import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
+} from '../__mocks__/generic-service.mocks.js';
+import { getConnectionName } from '@nestjs-yalc/database/conn.helper.js';
 import { createMock } from '@golevelup/ts-jest';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
+import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
 import { ConnectionNotFoundError } from 'typeorm';
 import { FactoryProvider } from '@nestjs/common';
 import {
   CreateEntityError,
   DeleteEntityError,
   UpdateEntityError,
-} from '../entity.error';
+} from '../entity.error.js';
 import {
   NoResultsFoundError,
   ConditionsTooBroadError,
-} from '../conditions.error';
-import * as ClassHelper from '@nestjs-yalc/utils/class.helper';
+} from '../conditions.error.js';
+import * as ClassHelper from '@nestjs-yalc/utils/class.helper.js';
 jest.mock('typeorm');
 
 describe('GenericService', () => {

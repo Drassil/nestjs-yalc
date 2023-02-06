@@ -3,7 +3,7 @@ import {
   // HttpExceptionFilter,
   // ValidationExceptionFilter,
   SystemExceptionFilter,
-} from '@nestjs-yalc/errors/filters';
+} from '@nestjs-yalc/errors/filters/index.js';
 import {
   DynamicModule,
   ExceptionFilter,
@@ -18,8 +18,8 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import fastifyCookie from '@fastify/cookie';
-import type { IServiceConf } from './conf.type';
-import { APP_LOGGER_SERVICE } from './def.const';
+import type { IServiceConf } from './conf.type.js';
+import { APP_LOGGER_SERVICE } from './def.const.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
 

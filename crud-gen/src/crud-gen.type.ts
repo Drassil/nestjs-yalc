@@ -1,9 +1,9 @@
 import { ObjectType, Field, HideField } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
 import { FindManyOptions, FindOperator } from 'typeorm';
-import returnValue from '@nestjs-yalc/utils/returnValue';
-import { IExtraArg, ICombinedWhereModel } from './crud-gen.interface';
-import { Operators } from './crud-gen.enum';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
+import { IExtraArg, ICombinedWhereModel } from './crud-gen.interface.js';
+import { Operators } from './crud-gen.enum.js';
 
 @ObjectType()
 export class PageDataCrudGen {

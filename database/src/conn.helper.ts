@@ -1,3 +1,5 @@
+import { DataSource } from 'typeorm';
+
 export const DBCONF_PREFIX = 'dbConf_';
 export const CONN_SUFFIX = 'Connection';
 
@@ -12,3 +14,8 @@ export function getConnectionName(dbName: string) {
 export function getDBNameByConnection(connName: string) {
   return connName.substring(0, connName.indexOf(CONN_SUFFIX));
 }
+
+export const dbConnectionMap = (c: DataSource) => ({
+  conn: c,
+  dbName: c.options.database?.toString() ?? getDBNameByConnection(c.name),
+});

@@ -13,13 +13,13 @@ import {
   In,
   IsNull,
 } from 'typeorm';
-import { GqlCrudGenFieldsMapper } from '@nestjs-yalc/crud-gen/gqlfields.decorator';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { GqlCrudGenFieldsMapper } from '@nestjs-yalc/crud-gen/gqlfields.decorator.js';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import {
   IAgQueryParams,
   agQueryParamsFactory,
   agQueryParamsNoPaginationFactory,
-} from './crud-gen.args';
+} from './crud-gen.args.js';
 import {
   GeneralFilters,
   FilterType,
@@ -27,7 +27,7 @@ import {
   Operators,
   ExtraArgsStrategy,
   RowDefaultValues,
-} from './crud-gen.enum';
+} from './crud-gen.enum.js';
 import {
   CrudGenFindManyOptions,
   DateFilterModel,
@@ -39,13 +39,13 @@ import {
   ISetFilterModel,
   ICrudGenArgsOptions,
   ICrudGenArgsSingleOptions,
-} from './crud-gen.interface';
+} from './crud-gen.interface.js';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
-} from './crud-gen.type';
+} from './crud-gen.type.js';
 import {
   applyJoinArguments,
   columnConversion,
@@ -55,24 +55,24 @@ import {
   isAskingForCount,
   isSymbolic,
   objectToFieldMapper,
-} from './crud-gen.helpers';
+} from './crud-gen.helpers.js';
 import {
   CrudGenError,
   CrudGenFilterNotSupportedError,
   CrudGenFilterProhibited,
   CrudGenInvalidArgumentError,
   CrudGenInvalidOperatorError,
-} from './crud-gen.error';
-import { DateHelper } from '@nestjs-yalc/utils/date.helper';
+} from './crud-gen.error.js';
+import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
 import { EntityFieldsNames } from 'typeorm/common/EntityFieldsNames';
-import { agJoinArgFactory } from './crud-gen.input';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+import { agJoinArgFactory } from './crud-gen.input.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { GraphQLResolveInfo } from 'graphql';
-import { FilterOption, FilterOptionType } from './object.decorator';
+import { FilterOption, FilterOptionType } from './object.decorator.js';
 import {
   ArgumentsError,
   MissingArgumentsError,
-} from '@nestjs-yalc/crud-gen/missing-arguments.error';
+} from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
 import {
   isCombinedFilterModel,
   isDateFilterModel,
@@ -80,7 +80,7 @@ import {
   isNumberFilterModel,
   isSetFilterModel,
   isTextFilterModel,
-} from './crud-gen-type-checker.utils';
+} from './crud-gen-type-checker.utils.js';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {

@@ -4,7 +4,7 @@ import {
   HttpAbstractStrategy,
   IHttpCallStrategyResponse,
   HttpOptions,
-} from './http-abstract-call.strategy';
+} from './http-abstract-call.strategy.js';
 import { AxiosRequestConfig } from 'axios';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {

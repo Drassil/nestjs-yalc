@@ -1,5 +1,5 @@
 import { createMock } from '@golevelup/ts-jest';
-import * as SqsHelper from './aws-sqs.helper';
+import * as SqsHelper from './aws-sqs.helper.js';
 
 jest.mock('aws-sdk', () => {
   const mockedSqs = createMock<AWS.SQS>();
