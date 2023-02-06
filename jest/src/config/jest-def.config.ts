@@ -158,9 +158,9 @@ const defaultConf = (
       ],
     },
     moduleNameMapper: {
-      ...pathsToModuleNameMapper(compilerOptions.paths, {
-        prefix: dirname,
-      }),
+      // ...pathsToModuleNameMapper(compilerOptions.paths, {
+      //   prefix: dirname,
+      // }),
       "^(\\.{1,2}/.*)\\.js$": "$1" // for ESM support
     },
     errorOnDeprecated: true,
