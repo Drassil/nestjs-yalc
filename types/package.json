@@ -10,6 +10,7 @@
   ],
   "exports": {
     ".": "./src/index.d.ts",
+    "./*.js": "./src/*.ts",
     "./*": "./src/*"
   },
   "version": "1.0.0",

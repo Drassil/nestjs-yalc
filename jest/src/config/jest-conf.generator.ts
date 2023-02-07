@@ -1,6 +1,7 @@
 /* istanbul ignore file */
 
 import * as path from 'path';
+import type { JestConfigWithTsJest } from 'ts-jest'
 import defaultConf, {
   coveragePathIgnorePatterns,
   globals,
@@ -9,6 +10,7 @@ import defaultConf, {
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
 import _yargs from 'yargs';
+import { tsJestConfig } from './jest-def.config';
 const yargs = _yargs.default;
 
 interface IAppDep {
@@ -59,7 +61,7 @@ export function jestConfGenerator(
     [key: string]: IAppProjSetting;
   },
   options: IOptions,
-) {
+):JestConfigWithTsJest {
   const createProjectSets = (projects: any[]) => {
     const _projectSets: { [key: string]: any } = {};
     for (const app in appProjectsSettings) {
@@ -85,13 +87,11 @@ export function jestConfGenerator(
     proj: IProjectInfo,
     projects?: any,
   ) => ({
-    ...defaultConf(`${rootPath}/`, options.defaultConfOptions),
-    globals: globals(
-      options.tsConfigPath?.(proj) ??
+    ...defaultConf(`${rootPath}/`, options.defaultConfOptions, tsJestConfig(options.tsConfigPath?.(proj) ??
         `${rootPath}/${proj.path}/tsconfig.${
           proj.type === 'library' ? 'lib' : 'app'
-        }.json`,
-    ),
+        }.json`)),
+    globals: globals(),
     // name: `unit/${projName}`,
     displayName: `unit/${projName}`,
     cacheDirectory: `${cacheDirBase}/unit/${projName}`,
@@ -99,7 +99,6 @@ export function jestConfGenerator(
     roots: [`${rootPath}/${proj.path}`],
     maxWorkers,
     setupFiles: [`${__dirname}/jest.setup.ts`],
-    coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
     coverageThreshold: coverageThreshold(
       projects,
       options.defaultCoverageThreshold,
@@ -187,6 +186,8 @@ export function jestConfGenerator(
   console.debug('Subproject path:', subProjectPath ?? '');
 
   config = {
+    coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
+    coverageProvider: 'v8',
     rootDir: `${rootPath}`,
     coverageThreshold: coverageThreshold(
       projects.filter((v: any) =>

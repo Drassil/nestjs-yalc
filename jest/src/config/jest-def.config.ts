@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as readTsConfig from 'get-tsconfig';
 import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
-import { Config } from '@jest/types';
+import type { JestConfigWithTsJest } from 'ts-jest';
 
 export const coveragePathIgnorePatterns = [
   '/env/dist/',
@@ -14,21 +14,25 @@ export const coveragePathIgnorePatterns = [
   '/test/feature/',
 ];
 
-export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
+export const globals = () => {
+  return {
+    __JEST_DISABLE_DB: true,
+  };
+};
+
+export const tsJestConfigE2E = (tsConfPath = '', withGqlPlugin = true) => {
   const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
 
   const conf: any = {
-    'ts-jest': {
-      diagnostics: false,
-      isolatedModules: true,
-      tsconfig: {
-        ...(tsConfig?.config.compilerOptions ?? {}),
-      },
+    diagnostics: false,
+    isolatedModules: true,
+    tsconfig: {
+      ...(tsConfig?.config.compilerOptions ?? {}),
     },
   };
 
   if (withGqlPlugin) {
-    conf['ts-jest'].astTransformers = {
+    conf.astTransformers = {
       before: [path.join(__dirname, 'gql-plugin.js')],
     };
   }
@@ -36,29 +40,25 @@ export const globalsE2E = (tsConfPath = '', withGqlPlugin = true) => {
   return conf;
 };
 
-export const globals = (tsConfPath = '') => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+export const tsJestConfig = (tsConfPath = '') => {
   const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
 
   return {
-    __JEST_DISABLE_DB: true,
-    'ts-jest': {
-      tsconfig: {
-        ...(tsConfig?.config.compilerOptions ?? {}),
-        emitDecoratorMetadata: false,
-        experimentalDecorators: false,
-      },
-      diagnostics: false,
-      // Setting isolatedModules to true improves the performance but it
-      // also causes several problems with graphql typescript decorators
-      // where sometime the coverage is not collected properly.
-      // Hence, because of it, decorators must be disabled and mocked
-      // related issues:
-      // - https://github.com/istanbuljs/istanbuljs/issues/70
-      // - https://github.com/kulshekhar/ts-jest/issues/1166
-      // - https://stackoverflow.com/questions/57516328/unexpected-uncovered-branch-in-jest-coverage
-      isolatedModules: true,
+    tsconfig: {
+      ...(tsConfig?.config.compilerOptions ?? {}),
+      emitDecoratorMetadata: false,
+      experimentalDecorators: false,
     },
+    diagnostics: false,
+    // Setting isolatedModules to true improves the performance but it
+    // also causes several problems with graphql typescript decorators
+    // where sometime the coverage is not collected properly.
+    // Hence, because of it, decorators must be disabled and mocked
+    // related issues:
+    // - https://github.com/istanbuljs/istanbuljs/issues/70
+    // - https://github.com/kulshekhar/ts-jest/issues/1166
+    // - https://stackoverflow.com/questions/57516328/unexpected-uncovered-branch-in-jest-coverage
+    isolatedModules: true,
   };
 };
 
@@ -115,6 +115,7 @@ export interface IDefaultConfOptions {
    * false -> disable esmodule transformation (default)
    */
   transformEsModules?: string[] | boolean;
+  tsJestConf?: any;
 }
 
 /**
@@ -125,18 +126,16 @@ export interface IDefaultConfOptions {
 const defaultConf = (
   dirname: string,
   options: IDefaultConfOptions = {},
-): Config.InitialOptions => {
+  tsJestConfig: any = {},
+): JestConfigWithTsJest => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
-
-
 
   // We need this to make sure that some esm modules are transformed
   // ref: https://github.com/nrwl/nx/issues/812
   // ref: https://github.com/jaredpalmer/tsdx/issues/187#issuecomment-825536863
 
-
-  const config: Config.InitialOptions = {
+  const config: JestConfigWithTsJest = {
     rootDir: dirname,
     modulePathIgnorePatterns: [
       '<rootDir>/var/',
@@ -145,7 +144,6 @@ const defaultConf = (
       '<rootDir>/node_modules/',
     ],
     preset: 'ts-jest/presets/default-esm',
-    coverageProvider: 'v8',
     testEnvironment: 'node',
     moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
     testRegex: '.*\\.spec\\.ts$',
@@ -154,22 +152,25 @@ const defaultConf = (
         'ts-jest',
         {
           useESM: true,
+          ...tsJestConfig,
         },
       ],
     },
     moduleNameMapper: {
+      '^(\\.{1,2}/.*)\\.js$': '$1', // for ESM support
       // ...pathsToModuleNameMapper(compilerOptions.paths, {
       //   prefix: dirname,
       // }),
-      "^(\\.{1,2}/.*)\\.js$": "$1" // for ESM support
     },
     errorOnDeprecated: true,
-    extensionsToTreatAsEsm: ['.ts']
+    extensionsToTreatAsEsm: ['.ts'],
   };
 
   if (options.transformEsModules) {
     const esModules = [
-      ...(Array.isArray(options.transformEsModules) ? options.transformEsModules : []),
+      ...(Array.isArray(options.transformEsModules)
+        ? options.transformEsModules
+        : []),
       'aggregate-error',
       'clean-stack',
       'escape-string-regexp',
@@ -179,10 +180,10 @@ const defaultConf = (
 
     config.transformIgnorePatterns = [
       `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
-    ]
+    ];
   }
 
-  return config
+  return config;
 };
 
 export interface E2EOptions {
@@ -190,20 +191,23 @@ export interface E2EOptions {
   e2eDirname: string;
   rootDirname: string;
   defaultConfOptions?: IDefaultConfOptions;
-  confOverride?: Config.InitialOptions;
+  confOverride?: JestConfigWithTsJest;
   withGqlPlugins?: boolean;
 }
 
-export const createE2EConfig = (options: E2EOptions): Config.InitialOptions => {
-  let conf: Config.InitialOptions = {
-    ...defaultConf(`${options.rootDirname}`, options.defaultConfOptions),
+export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
+  let conf: JestConfigWithTsJest = {
+    ...defaultConf(
+      `${options.rootDirname}`,
+      options.defaultConfOptions,
+      tsJestConfigE2E(
+        path.resolve(`${options.e2eDirname}/tsconfig.json`),
+        options.withGqlPlugins ?? false,
+      ),
+    ),
     testRegex: '.*\\.e2e-spec\\.ts$',
     setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
     roots: [`${options.e2eDirname}`],
-    globals: globalsE2E(
-      path.resolve(`${options.e2eDirname}/tsconfig.json`),
-      options.withGqlPlugins ?? false,
-    ),
     bail: 1,
   };
 

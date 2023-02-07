@@ -5,7 +5,7 @@
  */
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const cp = require('child_process');
+import cp from 'child_process';
 
 const newArgs = process.argv.slice(2).filter((p) => p !== '--findRelatedTests');
 
