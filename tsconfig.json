@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
