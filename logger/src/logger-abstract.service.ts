@@ -43,23 +43,22 @@ export abstract class LoggerAbstractService implements ImprovedLoggerService {
       enabledLevels[level] = true;
     });
 
-    if (
-      enabledLevels[LogLevelEnum.LOG] === true &&
-      this.methods[LogLevelEnum.LOG]
-    )
-      this.log = this.methods[LogLevelEnum.LOG];
+    this.log =
+      enabledLevels[LogLevelEnum.LOG] === true && this.methods[LogLevelEnum.LOG]
+        ? this.methods[LogLevelEnum.LOG]
+        : () => {}; // else void
 
-    if (
+    this.error =
       enabledLevels[LogLevelEnum.ERROR] === true &&
       this.methods[LogLevelEnum.ERROR]
-    )
-      this.error = this.methods[LogLevelEnum.ERROR];
+        ? this.methods[LogLevelEnum.ERROR]
+        : () => {}; // else void
 
-    if (
+    this.warn =
       enabledLevels[LogLevelEnum.WARN] === true &&
       this.methods[LogLevelEnum.WARN]
-    )
-      this.warn = this.methods[LogLevelEnum.WARN];
+        ? this.methods[LogLevelEnum.WARN]
+        : () => {}; // else void
 
     if (
       enabledLevels[LogLevelEnum.DEBUG] === true &&
