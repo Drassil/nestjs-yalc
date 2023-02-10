@@ -8,9 +8,9 @@ import * as Engine from 'typeorm-model-generator/dist/src/Engine.js';
 import * as ConnOptions from 'typeorm-model-generator/dist/src/IConnectionOptions.js';
 import { getDefaultGenerationOptions } from 'typeorm-model-generator/dist/src/IGenerationOptions.js';
 import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions.js';
+import { getDataSourceToken } from '@nestjs/typeorm';
 
-type IConnectionOptions = ConnOptions.default
-
+type IConnectionOptions = ConnOptions.default;
 
 /**
  * Application service
@@ -25,15 +25,21 @@ export class DbOpsService {
 
   public async closeAllConnections() {
     for (const v of this.dbConnections) {
-      if (v.conn.isConnected) await v.conn.close();
+      if (v.conn.isInitialized) await v.conn.destroy();
     }
   }
 
   public async create() {
     for (const v of this.dbConnections) {
+      const schemaName = v.dbName;
+      if (!schemaName) {
+        this.loggerService.log(`Schema name not defined for ${v.dbName}`);
+        continue;
+      }
+
       const queryRunner = v.conn.createQueryRunner();
-      this.loggerService.log('Creating ' + v.dbName);
-      await queryRunner.createDatabase(v.dbName, true);
+      this.loggerService.log('Creating ' + schemaName);
+      await queryRunner.createDatabase(schemaName, true);
     }
   }
 
@@ -137,5 +143,5 @@ export const DbOpsServiceFactory = (
       dbConnections.map(dbConnectionMap),
     );
   },
-  inject: [loggerServiceToken, ...connectionTokens],
+  inject: [loggerServiceToken, ...connectionTokens.map(getDataSourceToken)],
 });

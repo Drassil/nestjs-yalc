@@ -10,6 +10,10 @@ declare global {
       NODE_ENV?: 'development' | 'production' | 'test' | 'pipeline';
       NEST_LOGGER_LEVELS?: LogLevel | string;
       TYPEORM_LOGGING?: 'true' | 'false';
+      /**
+       * Allow db connections without a schema
+       */
+      TYPEORM_NO_SEL_DB?: 'true' | 'false';
     }
   }
 }

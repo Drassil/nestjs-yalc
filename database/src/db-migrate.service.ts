@@ -8,6 +8,7 @@ import {
   MigrationExecutor,
 } from 'typeorm';
 import { dbConnectionMap } from './conn.helper.js';
+import { getDataSourceToken } from '@nestjs/typeorm';
 
 export type MigrationSelection = { [database: string]: string[] };
 
@@ -32,7 +33,7 @@ export class DbMigrateService {
   ) {}
 
   public async migrate(options?: MigrationOptions) {
-    this.loggerService.debug?.('Migrating db...');
+    this.loggerService.debug?.(`Migrating db...`);
 
     if (options?.selMigrations) {
       this.loggerService.debug?.(
@@ -41,8 +42,11 @@ export class DbMigrateService {
     }
 
     for (const v of this.dbConnections) {
-      if (!v.conn.isInitialized)
-        throw new CannotExecuteNotConnectedError(v.conn.name);
+      const schema = v.conn.driver.schema;
+
+      this.loggerService.debug?.(`Initializing ${schema}`);
+
+      if (!v.conn.isInitialized) await v.conn.initialize();
 
       const queryRunner = v.conn.createQueryRunner();
 
@@ -51,7 +55,7 @@ export class DbMigrateService {
 
       const migrations = await migrationExecutor.getAllMigrations();
 
-      const dbName = v.conn.driver.database ?? v.dbName;
+      const dbName = v.conn.driver.schema ?? v.dbName;
 
       // if there are no migrations, then do not execute anything!
       if (!Array.isArray(migrations) || migrations.length <= 0) {
@@ -107,5 +111,5 @@ export const DbMigrationServiceFactory = (
       dbConnections.map(dbConnectionMap),
     );
   },
-  inject: [loggerServiceToken, ...connectionTokens],
+  inject: [loggerServiceToken, ...connectionTokens.map(getDataSourceToken)],
 });

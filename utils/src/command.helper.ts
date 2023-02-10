@@ -5,7 +5,7 @@
  * @returns
  */
 export const commandWithErrors = (
-  command: (...args: any[]) => Promise<void>,
+  command: (...args: any[]) => Promise<any>,
 ) => {
   return async (...args: any[]) => {
     try {
