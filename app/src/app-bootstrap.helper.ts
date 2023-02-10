@@ -22,6 +22,7 @@ import type { IServiceConf } from './conf.type.js';
 import { APP_LOGGER_SERVICE } from './def.const.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
+import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 
 export interface IGlobalOptions {
   /**
@@ -47,6 +48,11 @@ export class AppBootstrap {
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
+
+    if (envIsTrue(process.env.APP_DRY_RUN) === true) {
+      await this.getApp().close;
+      process.exit(0);
+    }
 
     this.listen();
 
