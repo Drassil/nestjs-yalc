@@ -16,3 +16,4 @@ export * from './validator-helper.js';
 export * from './zlib.helper.js';
 export * from './command.helper.js';
 export * from './files.helper.js';
+export * from './rxjs.helper.js';

@@ -2,11 +2,7 @@
 
 import { Injectable, Provider } from '@nestjs/common';
 import type { LoggerService } from '@nestjs/common';
-import {
-  CannotExecuteNotConnectedError,
-  DataSource,
-  MigrationExecutor,
-} from 'typeorm';
+import { DataSource, MigrationExecutor } from 'typeorm';
 import { dbConnectionMap } from './conn.helper.js';
 import { getDataSourceToken } from '@nestjs/typeorm';
 
