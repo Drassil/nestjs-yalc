@@ -1,39 +1,40 @@
-import { expect, jest, test } from "@jest/globals";
+import { expect, jest, describe } from '@jest/globals';
+import { createMock } from '@golevelup/ts-jest';
 
-jest.mock("aws-sdk", () => {
-  const mockedS3 = createMock<AWS.S3>();
+import type S3 from 'aws-sdk/clients/s3.js';
+const mockedS3 = createMock<S3>();
 
-  mockedS3.getSignedUrl.mockImplementationOnce(
-    (_operations: string, _param: any) => {
-      return "tempSignedUrl";
-    }
-  );
-
-  mockedS3.getSignedUrl.mockImplementationOnce(
-    (_operations: string, _param: any) => {
-      return "tempSignedUrl";
-    }
-  );
-
-  return {
-    S3: jest.fn(() => mockedS3)
-  };
+jest.mock('aws-sdk/clients/s3.js', () => {
+  return jest.fn(() => mockedS3);
 });
 
-import { createMock } from "@golevelup/ts-jest";
-import * as S3Helper from "./aws-s3.helper.js";
+// import * as S3Helper from './aws-s3.helper.js'; // apparently jest.mock doesn't work with stack import. To investigate
 
-describe("AWS S3 Helper", () => {
-  it("Should create a presigned Url", async () => {
-    const result = await S3Helper.getFileFromS3("filePath", "bucket");
-    expect(result).toBe("tempSignedUrl");
+const S3Helper = await import('./aws-s3.helper.js');
+
+describe('AWS S3 Helper', () => {
+  it('Should create a presigned Url', async () => {
+    mockedS3.getSignedUrl.mockImplementationOnce(
+      (_operations: string, _param: any, callback: any) => {
+        callback(null, 'tempSignedUrl');
+      },
+    );
+
+    const result = await S3Helper.getFileFromS3('filePath', 'bucket');
+    expect(result).toBe('tempSignedUrl');
   });
 
-  it("Should throw an error", async () => {
+  it('Should throw an error', async () => {
+    mockedS3.getSignedUrl.mockImplementationOnce(
+      (_operations: string, _param: any, callback: any) => {
+        callback('someError', 'tempSignedUrl');
+      },
+    );
+
     try {
-      await S3Helper.getFileFromS3("filePath", "bucket");
+      await S3Helper.getFileFromS3('filePath', 'bucket');
     } catch (error) {
-      expect(error).toEqual("someError");
+      expect(error).toEqual('someError');
     }
   });
 });

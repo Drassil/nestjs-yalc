@@ -1,53 +1,53 @@
 /* istanbul ignore file */
 
-import * as path from "path";
-import * as readTsConfig from "get-tsconfig";
-import { pathsToModuleNameMapper } from "ts-jest";
-import { defaults } from "jest-config";
-import type { JestConfigWithTsJest } from "ts-jest";
+import * as path from 'path';
+import * as readTsConfig from 'get-tsconfig';
+import { pathsToModuleNameMapper } from 'ts-jest';
+import { defaults } from 'jest-config';
+import type { JestConfigWithTsJest } from 'ts-jest';
 
 export const coveragePathIgnorePatterns = [
-  "/env/dist/",
-  "/node_modules/",
-  "/database/seeds/",
-  "/database/migrations/",
-  "/test/feature/"
+  '/env/dist/',
+  '/node_modules/',
+  '/database/seeds/',
+  '/database/migrations/',
+  '/test/feature/',
 ];
 
 export const globals = () => {
   return {
-    __JEST_DISABLE_DB: true
+    __JEST_DISABLE_DB: true,
   };
 };
 
-export const tsJestConfigE2E = (tsConfPath = "", withGqlPlugin = true) => {
+export const tsJestConfigE2E = (tsConfPath = '', withGqlPlugin = true) => {
   const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
 
   const conf: any = {
     diagnostics: false,
     isolatedModules: true,
     tsconfig: {
-      ...(tsConfig?.config.compilerOptions ?? {})
-    }
+      ...(tsConfig?.config.compilerOptions ?? {}),
+    },
   };
 
   if (withGqlPlugin) {
     conf.astTransformers = {
-      before: [path.join(__dirname, "gql-plugin.js")]
+      before: [path.join(__dirname, 'gql-plugin.js')],
     };
   }
 
   return conf;
 };
 
-export const tsJestConfig = (tsConfPath = "") => {
+export const tsJestConfig = (tsConfPath = '') => {
   const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
 
   return {
     tsconfig: {
       ...(tsConfig?.config.compilerOptions ?? {}),
       emitDecoratorMetadata: false,
-      experimentalDecorators: false
+      experimentalDecorators: false,
     },
     diagnostics: false,
     // Setting isolatedModules to true improves the performance but it
@@ -58,7 +58,7 @@ export const tsJestConfig = (tsConfPath = "") => {
     // - https://github.com/istanbuljs/istanbuljs/issues/70
     // - https://github.com/kulshekhar/ts-jest/issues/1166
     // - https://stackoverflow.com/questions/57516328/unexpected-uncovered-branch-in-jest-coverage
-    isolatedModules: true
+    isolatedModules: true,
   };
 };
 
@@ -68,13 +68,13 @@ export const coverageThreshold = (
     branches: 100,
     functions: 100,
     lines: 100,
-    statements: 100
-  }
+    statements: 100,
+  },
 ) => {
   const coverage: Record<string, any> = {
     global: {
-      ...defaultCoverageThreshold
-    }
+      ...defaultCoverageThreshold,
+    },
   };
 
   projects.map((project) => {
@@ -94,13 +94,13 @@ export const coverageThreshold = (
     // }
 
     coverage[project.rootDir] = {
-      ...defaultCoverageThreshold
+      ...defaultCoverageThreshold,
     };
 
     if (project?.coverageThreshold) {
       coverage[project.rootDir] = {
         ...coverage[project.rootDir],
-        ...project?.coverageThreshold
+        ...project?.coverageThreshold,
       };
     }
   });
@@ -126,7 +126,7 @@ export interface IDefaultConfOptions {
 const defaultConf = (
   dirname: string,
   options: IDefaultConfOptions = {},
-  tsJestConfig: any = {}
+  tsJestConfig: any = {},
 ): JestConfigWithTsJest => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
@@ -138,32 +138,32 @@ const defaultConf = (
   const config: JestConfigWithTsJest = {
     rootDir: dirname,
     modulePathIgnorePatterns: [
-      "<rootDir>/var/",
-      "<rootDir>/env/",
-      "<rootDir>/docs/",
-      "<rootDir>/node_modules/"
+      '<rootDir>/var/',
+      '<rootDir>/env/',
+      '<rootDir>/docs/',
+      '<rootDir>/node_modules/',
     ],
-    preset: "ts-jest/presets/default-esm",
-    testEnvironment: "node",
-    moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"], // add typescript to the default options
-    testRegex: ".*\\.spec\\.ts$",
+    preset: 'ts-jest/presets/default-esm',
+    testEnvironment: 'node',
+    moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
+    testRegex: '.*\\.spec\\.ts$',
     transform: {
-      "^.+\\.(t|j)sx?$": [
-        "ts-jest",
+      '^.+\\.(t|j)sx?$': [
+        'ts-jest',
         {
           useESM: true,
-          ...tsJestConfig
-        }
-      ]
+          ...tsJestConfig,
+        },
+      ],
     },
     moduleNameMapper: {
-      "^(\\.{1,2}/.*)\\.js$": "$1" // for ESM support
+      '^(\\.{1,2}/.*)\\.js$': '$1', // for ESM support
       // ...pathsToModuleNameMapper(compilerOptions.paths, {
       //   prefix: dirname,
       // }),
     },
     errorOnDeprecated: true,
-    extensionsToTreatAsEsm: [".ts"]
+    // extensionsToTreatAsEsm: ['.ts'],
     // injectGlobals: true
   };
 
@@ -172,15 +172,15 @@ const defaultConf = (
       ...(Array.isArray(options.transformEsModules)
         ? options.transformEsModules
         : []),
-      "aggregate-error",
-      "clean-stack",
-      "escape-string-regexp",
-      "indent-string",
-      "p-map"
-    ].join("|");
+      'aggregate-error',
+      'clean-stack',
+      'escape-string-regexp',
+      'indent-string',
+      'p-map',
+    ].join('|');
 
     config.transformIgnorePatterns = [
-      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`
+      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
     ];
   }
 
@@ -203,13 +203,13 @@ export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
       options.defaultConfOptions,
       tsJestConfigE2E(
         path.resolve(`${options.e2eDirname}/tsconfig.json`),
-        options.withGqlPlugins ?? false
-      )
+        options.withGqlPlugins ?? false,
+      ),
     ),
-    testRegex: ".*\\.e2e-spec\\.ts$",
+    testRegex: '.*\\.e2e-spec\\.ts$',
     setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
     roots: [`${options.e2eDirname}`],
-    bail: 1
+    bail: 1,
   };
 
   if (options.alias) {
@@ -220,7 +220,7 @@ export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
   if (options.confOverride) {
     conf = {
       ...conf,
-      ...options.confOverride
+      ...options.confOverride,
     };
   }
 

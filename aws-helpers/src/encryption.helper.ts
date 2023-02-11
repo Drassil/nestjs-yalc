@@ -1,4 +1,4 @@
-import * as aws from 'aws-sdk';
+import aws from 'aws-sdk';
 import * as localEncryption from '@nestjs-yalc/utils/encryption.helper.js';
 
 /**
