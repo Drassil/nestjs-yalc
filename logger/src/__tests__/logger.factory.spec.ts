@@ -1,56 +1,58 @@
+import { expect, jest, test } from "@jest/globals";
+
 class NestLogger {
-  setLogLevels: jest.Mock<any, any>;
+  setLogLevels: jest.Mock<any>;
   static overrideLogger = jest.fn();
 }
 
-jest.mock('@nestjs/common', () => ({
-  ...(jest.requireActual('@nestjs/common') as any),
-  Logger: NestLogger,
+jest.mock("@nestjs/common", () => ({
+  ...(jest.requireActual("@nestjs/common") as any),
+  Logger: NestLogger
 }));
 
-import { LogLevelEnum, LoggerTypeEnum } from '../logger.enum.js';
-import { AppLoggerFactory } from '../logger.factory.js';
+import { LogLevelEnum, LoggerTypeEnum } from "../logger.enum.js";
+import { AppLoggerFactory } from "../logger.factory.js";
 
-describe('AppLoggerFactory', () => {
+describe("AppLoggerFactory", () => {
   // let mockConfigService;
   let logger;
 
-  it('No configuration test', async () => {
+  it("No configuration test", async () => {
     logger = AppLoggerFactory(
-      'test',
+      "test",
       [LogLevelEnum.DEBUG],
-      LoggerTypeEnum.CONSOLE,
+      LoggerTypeEnum.CONSOLE
     );
     expect(logger).toBeDefined();
 
     logger = AppLoggerFactory(
-      'test',
+      "test",
       [LogLevelEnum.DEBUG],
-      LoggerTypeEnum.PINO,
+      LoggerTypeEnum.PINO
     );
     expect(logger).toBeDefined();
 
     logger = AppLoggerFactory(
-      'test',
+      "test",
       [LogLevelEnum.DEBUG],
-      LoggerTypeEnum.NEST,
+      LoggerTypeEnum.NEST
     );
     expect(logger).toBeDefined();
 
-    logger = AppLoggerFactory('test', [LogLevelEnum.DEBUG]);
+    logger = AppLoggerFactory("test", [LogLevelEnum.DEBUG]);
     expect(logger).toBeDefined();
 
-    logger = AppLoggerFactory('test', []);
+    logger = AppLoggerFactory("test", []);
     expect(logger).toBeDefined();
   });
 
-  it('No configuration test', async () => {
-    logger = AppLoggerFactory('test');
+  it("No configuration test", async () => {
+    logger = AppLoggerFactory("test");
     expect(logger).toBeDefined();
 
     NestLogger.prototype.setLogLevels = jest.fn();
 
-    logger = AppLoggerFactory('test', [LogLevelEnum.DEBUG]);
+    logger = AppLoggerFactory("test", [LogLevelEnum.DEBUG]);
     expect(logger).toBeDefined();
   });
 });

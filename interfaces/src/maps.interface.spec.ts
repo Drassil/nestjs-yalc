@@ -1,22 +1,26 @@
-import { IFieldMapper, isFieldMapper, isFieldMapperProperty } from '..js';
+import {
+  IFieldMapper,
+  isFieldMapper,
+  isFieldMapperProperty
+} from "./maps.interface.js";
 
-describe('test maps typeguards', () => {
+describe("test maps typeguards", () => {
   class FakeClass {
-    fakeProperty: 'something';
+    fakeProperty: "something";
   }
 
   const fieldMapper: IFieldMapper<FakeClass> = {
     fakeProperty: {
-      dst: 'somethingElse',
-    },
+      dst: "somethingElse"
+    }
   };
 
-  it('test is isFieldMapper', () => {
+  it("test is isFieldMapper", () => {
     expect(isFieldMapper(fieldMapper)).toBeTruthy();
     expect(isFieldMapper({})).toBeFalsy();
   });
 
-  it('test is isFieldMapperProperty', () => {
+  it("test is isFieldMapperProperty", () => {
     expect(isFieldMapperProperty(fieldMapper.fakeProperty)).toBeTruthy();
     expect(isFieldMapperProperty({})).toBeFalsy();
   });

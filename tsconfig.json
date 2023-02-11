@@ -18,6 +18,7 @@
     "noImplicitReturns": true,
     "sourceMap": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
     "rootDir": ".",
     "baseUrl": "./",
     "paths": {
@@ -59,7 +60,9 @@
   "exclude": ["**/node_modules", "**/.webpack"],
   "ts-node": {
     "transpileOnly": true,
+    "experimentalSpecifierResolution": "node",
     "files": true,
-    "esm": true
+    "esm": true,
+    "swc": true
   }
 }
