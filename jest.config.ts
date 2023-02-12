@@ -74,9 +74,13 @@ const options: IOptions = {
   },
 };
 
-export default jestConfGenerator(
+const conf = jestConfGenerator(
   __dirname,
   projectList,
   appProjectsSettings,
   options,
 );
+
+conf.injectGlobals = false;
+
+export default conf;

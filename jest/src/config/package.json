@@ -1,5 +1,5 @@
 {
-  "name": "@nestjs-yalc/jest",
+  "name": "@nestjs-yalc/jest-config",
   "version": "1.0.0",
   "description": "",
   "main": "src/index.ts",

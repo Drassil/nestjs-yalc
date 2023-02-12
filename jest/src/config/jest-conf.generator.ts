@@ -7,10 +7,10 @@ import defaultConf, {
   globals,
   coverageThreshold,
   IDefaultConfOptions,
+  tsJestConfig,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
 import _yargs from 'yargs';
-import { tsJestConfig } from './jest-def.config';
 const yargs = _yargs.default;
 
 interface IAppDep {

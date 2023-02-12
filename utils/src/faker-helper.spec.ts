@@ -1,7 +1,7 @@
 import { expect, jest, describe } from '@jest/globals';
 
 import { FakerHelper } from './faker-helper.js';
-import * as faker from 'faker';
+import faker from 'faker';
 
 enum testEnum {
   KEY = 'value',

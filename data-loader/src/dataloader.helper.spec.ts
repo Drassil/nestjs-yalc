@@ -6,10 +6,14 @@ import {
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper.js';
+import {
+  DataLoaderFactory,
+  getFn,
+  GQLDataLoader,
+} from './dataloader.helper.js';
 
 import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import eventemitter from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {
   class EntityTest {
@@ -23,7 +27,7 @@ describe('GQLDataLoader class', () => {
 
   const mockLoadFn = jest.fn();
   const mockedFindManyOptions = createMock<CrudGenFindManyOptions>();
-  const mockedEventEmitter = createMock<EventEmitter2>();
+  const mockedEventEmitter = createMock<eventemitter.EventEmitter2>();
   let dataLoader: GQLDataLoader<EntityTest>;
 
   beforeEach(() => {
