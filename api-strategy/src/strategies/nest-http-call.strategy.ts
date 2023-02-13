@@ -39,7 +39,11 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     }
 
     const { data, ...res } = await this.httpService.axiosRef.request({
-      ..._options,
+      headers: options?.headers,
+      method: _options?.method,
+      signal: _options?.signal,
+      data: _options?.data,
+      params: _options?.params,
       url: `${this.baseUrl}${path}`,
     });
 
