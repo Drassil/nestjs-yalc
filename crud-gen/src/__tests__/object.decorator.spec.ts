@@ -7,10 +7,10 @@ import {
   hasCrudGenFieldMetadataList,
   hasCrudGenObjectMetadata,
   ICrudGenFieldMetadata,
-} from '../object.decorator';
-import { TestEntityDto } from '../__mocks__/entity.mock';
-import { fixedIncludefilterOption } from '../__mocks__/filter.mocks';
-import * as ObjectDecorator from '../object.decorator';
+} from '../object.decorator.js';
+import { TestEntityDto } from '../__mocks__/entity.mock.js';
+import { fixedIncludefilterOption } from '../__mocks__/filter.mocks.js';
+import * as ObjectDecorator from '../object.decorator.js';
 
 import * as NestGraphql from '@nestjs/graphql';
 import { FieldOptions, ReturnTypeFunc } from '@nestjs/graphql';

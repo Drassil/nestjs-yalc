@@ -1,5 +1,6 @@
 import fastRedact from 'fast-redact';
-import { isEmpty } from 'lodash';
+import lodash from 'lodash';
+const { isEmpty } = lodash;
 
 export function maskDataInObject(data?: any, paths?: string[]) {
   if (!paths || !data || isEmpty(paths) || isEmpty(data)) {

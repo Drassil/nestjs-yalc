@@ -1,5 +1,5 @@
 import { SelectionNode } from 'graphql';
-import { GqlASTHelper } from './gql-ast.helper';
+import { GqlASTHelper } from './gql-ast.helper.js';
 
 describe('GraphQL AST helper functions', () => {
   it('should not process filter FieldNodes in a list of SelectionNode', () => {

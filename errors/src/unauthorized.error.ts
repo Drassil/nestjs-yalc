@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '@nestjs/common';
-import { ErrorsEnum } from './errors.enum';
+import { ErrorsEnum } from './errors.enum.js';
 
 export class UnauthorizedError extends UnauthorizedException {
   constructor(message?: string) {

@@ -1,4 +1,4 @@
-import { GetContext, paramDecoratorToCreate } from './nest.decorator';
+import { GetContext, paramDecoratorToCreate } from './nest.decorator.js';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext } from '@nestjs/common';
 

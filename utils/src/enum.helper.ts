@@ -6,7 +6,7 @@ import { Spread } from '@nestjs-yalc/types';
  * @param value
  * @returns `boolean`
  */
-export const belongsToEnum = <T>(
+export const belongsToEnum = <T extends Record<string, string | number>>(
   enumObj: T,
   value: string | number,
 ): boolean => {

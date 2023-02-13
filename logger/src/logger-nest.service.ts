@@ -1,6 +1,6 @@
 import { ConsoleLogger } from '@nestjs/common';
-import { LogMethodOptions } from './logger-abstract.service';
-import { maskDataInObject } from './logger.helper';
+import { LogMethodOptions } from './logger-abstract.service.js';
+import { maskDataInObject } from './logger.helper.js';
 
 export class ImprovedNestLogger extends ConsoleLogger {
   log(message: any): void;

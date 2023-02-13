@@ -1,9 +1,11 @@
 {
   "name": "@nestjs-yalc/skeleton-module",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "src/index.ts",
   "exports": {
+    "./*.js": "./src/*.ts",
     "./*": "./src/*"
   },
   "scripts": {

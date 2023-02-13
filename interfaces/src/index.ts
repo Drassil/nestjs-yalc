@@ -1,3 +1,3 @@
-export * from './maps.interface';
-export * from './nestjs.type';
-export * from './queryparams.interface';
+export * from './maps.interface.js';
+export * from './nestjs.type.js';
+export * from './queryparams.interface.js';

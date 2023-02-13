@@ -6,12 +6,12 @@ import * as RxjsOperators from 'rxjs/operators';
 import {
   CrudGenInterceptor,
   crudGenInterceptorWorker,
-} from '../crud-gen.interceptor';
+} from '../crud-gen.interceptor.js';
 import { createMock } from '@golevelup/ts-jest';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
-} from '@nestjs-yalc/jest/common-mocks.helper';
+} from '@nestjs-yalc/jest/common-mocks.helper.js';
 
 const infoObj = {
   fieldNodes: [

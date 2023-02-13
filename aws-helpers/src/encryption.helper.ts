@@ -1,5 +1,5 @@
-import * as aws from 'aws-sdk';
-import * as localEncryption from '@nestjs-yalc/utils/encryption.helper';
+import aws from 'aws-sdk';
+import * as localEncryption from '@nestjs-yalc/utils/encryption.helper.js';
 
 /**
  *  Used for everything locally, must still be passed since sometimes we want to use other keys

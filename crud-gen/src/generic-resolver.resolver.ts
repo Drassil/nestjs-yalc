@@ -13,7 +13,7 @@ import {
 import {
   CrudGenArgs,
   CrudGenArgsSingle,
-} from '@nestjs-yalc/crud-gen/crud-gen-args.decorator';
+} from '@nestjs-yalc/crud-gen/crud-gen-args.decorator.js';
 
 import {
   applyDecorators,
@@ -21,23 +21,23 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { CrudGenInterceptor } from '@nestjs-yalc/crud-gen/crud-gen.interceptor';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+import { CrudGenInterceptor } from '@nestjs-yalc/crud-gen/crud-gen.interceptor.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   IIDArg,
-} from '@nestjs-yalc/crud-gen/crud-gen.interface';
+} from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/crud-gen/generic-service.service';
+} from '@nestjs-yalc/crud-gen/generic-service.service.js';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
-import CrudGenGqlType from './crud-gen.type';
+import CrudGenGqlType from './crud-gen.type.js';
 import {
   getDataloaderToken,
   GQLDataLoader,
-} from '@nestjs-yalc/data-loader/dataloader.helper';
+} from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ContextId, ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { Mutation } from '@nestjs/graphql';
 import { ClassType } from '@nestjs-yalc/types';
@@ -45,14 +45,14 @@ import {
   filterTypeToNativeType,
   getEntityRelations,
   IRelationInfo,
-} from './crud-gen.helpers';
-import { getCrudGenFieldMetadataList } from './object.decorator';
-import { CrudGenError } from './crud-gen.error';
-import { ExtraArgsStrategy } from './crud-gen.enum';
-import { IAgQueryParams } from './crud-gen.args';
-import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
-import { GetContext } from '@nestjs-yalc/utils/nest.decorator';
+} from './crud-gen.helpers.js';
+import { getCrudGenFieldMetadataList } from './object.decorator.js';
+import { CrudGenError } from './crud-gen.error.js';
+import { ExtraArgsStrategy } from './crud-gen.enum.js';
+import { IAgQueryParams } from './crud-gen.args.js';
+import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
+import { GetContext } from '@nestjs-yalc/utils/nest.decorator.js';
 export interface IGenericResolver {
   [index: string]: any; //index signature
 }
@@ -253,10 +253,11 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               return [parentRes, -1];
             }
 
-            const dataLoader: GQLDataLoader<Entity> = await this.moduleRef.resolve(
-              getDataloaderToken(relType),
-              this.contextId,
-            );
+            const dataLoader: GQLDataLoader<Entity> =
+              await this.moduleRef.resolve(
+                getDataloaderToken(relType),
+                this.contextId,
+              );
 
             const joinCol =
               resolverInfo.join?.referencedColumnName ??
@@ -335,10 +336,11 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
               return parentRes;
             }
 
-            const dataLoader: GQLDataLoader<Entity> = await this.moduleRef.resolve(
-              getDataloaderToken(relType),
-              this.contextId,
-            );
+            const dataLoader: GQLDataLoader<Entity> =
+              await this.moduleRef.resolve(
+                getDataloaderToken(relType),
+                this.contextId,
+              );
 
             /* istanbul ignore next */
             const joinCol =
@@ -794,7 +796,7 @@ export function defineDeleteMutation<Entity>(
 
 export function resolverFactory<
   Entity extends Record<string, any> = any,
-  EntityWrite = Entity
+  EntityWrite = Entity,
 >(
   options: IGenericResolverOptions<Entity>,
 ): {

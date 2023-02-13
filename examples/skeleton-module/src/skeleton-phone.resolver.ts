@@ -1,11 +1,11 @@
-import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers';
+import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import {
   SkeletonPhoneType,
   SkeletonPhoneCreateInput,
   SkeletonPhoneUpdateInput,
   SkeletonPhoneCondition,
-} from './skeleton-phone.dto';
-import { SkeletonPhone } from './skeleton-phone.entity';
+} from './skeleton-phone.dto.js';
+import { SkeletonPhone } from './skeleton-phone.entity.js';
 
 export const skeletonPhoneProvidersFactory = (dbConnection: string) =>
   CrudGenDependencyFactory<SkeletonPhone>({

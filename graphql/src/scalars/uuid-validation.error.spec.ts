@@ -1,4 +1,4 @@
-import { UUIDValidationError } from './uuid-validation.error';
+import { UUIDValidationError } from './uuid-validation.error.js';
 
 describe('UUIDValidationError', () => {
   it('should set the custom message', () => {

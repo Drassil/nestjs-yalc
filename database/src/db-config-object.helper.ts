@@ -1,10 +1,23 @@
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper';
+import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { EntitySchema } from 'typeorm';
-import { Seeder } from 'typeorm-seeding';
-import { IDbConfObject } from './conf.interface';
-import { getConnectionName } from './conn.helper';
-import { MysqlConnectionCredentialsOptions } from 'typeorm/driver/mysql/MysqlConnectionCredentialsOptions';
-import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions';
+import { Seeder } from '@jorgebodega/typeorm-seeding';
+import { IDbConfObject } from './conf.interface.js';
+import { getConnectionName } from './conn.helper.js';
+import { MysqlConnectionCredentialsOptions } from 'typeorm/driver/mysql/MysqlConnectionCredentialsOptions.js';
+// import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
+import { SqlServerConnectionCredentialsOptions } from 'typeorm/driver/sqlserver/SqlServerConnectionCredentialsOptions.js';
+import { MysqlConnectionOptions } from 'typeorm/driver/mysql/MysqlConnectionOptions.js';
+// import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions.js';
+// import { SqlServerConnectionOptions } from 'typeorm/driver/sqlserver/SqlServerConnectionOptions.js';
+
+type ConnectionOptions = MysqlConnectionOptions;
+// | PostgresConnectionOptions
+// | SqlServerConnectionOptions;
+
+type CredentialOptions =
+  | MysqlConnectionCredentialsOptions
+  // | PostgresConnectionCredentialsOptions -> the password field is incompatible
+  | SqlServerConnectionCredentialsOptions;
 
 /**
  * TypeORM doesn't provide a type for entities, TypeOrmEntityType has been created to improve
@@ -92,20 +105,18 @@ export function buildDbConfigObject({
 }
 
 type DbConfigParams =
-  | MysqlConnectionCredentialsOptions
-  | MysqlReplicationConnectionCredentialsOptions;
+  | CredentialOptions
+  | ReplicationConnectionCredentialsOptions;
 
-interface MysqlReplicationConnectionCredentialsOptions {
+interface ReplicationConnectionCredentialsOptions {
   replication: {
-    master: MysqlConnectionCredentialsOptions;
-    slaves: MysqlConnectionCredentialsOptions[];
+    master: CredentialOptions;
+    slaves: CredentialOptions[];
     selector?: 'RR' | 'RANDOM' | 'ORDER';
   };
 }
 
-function _getDefaultDbConnectionConfig(
-  dbName?: string,
-): MysqlConnectionOptions {
+function _getDefaultDbConnectionConfig(dbName?: string): ConnectionOptions {
   const { TYPEORM_SYNCHRONIZE } = process.env;
   const dbConfigParams = _makeDbConfigParams(dbName);
 
@@ -131,9 +142,7 @@ function _makeDbConfigParams(dbName?: string): DbConfigParams {
   return _makeSingleDbConfigParams(dbName);
 }
 
-function _makeSingleDbConfigParams(
-  dbName?: string,
-): MysqlConnectionCredentialsOptions {
+function _makeSingleDbConfigParams(dbName?: string): CredentialOptions {
   const {
     MYSQL_HOST,
     MYSQL_PORT,
@@ -148,7 +157,7 @@ function _makeSingleDbConfigParams(
   const username = MYSQL_USER || 'root';
   const password = MYSQL_PASSWORD ?? MYSQL_ROOT_PASSWORD;
 
-  let result: MysqlConnectionCredentialsOptions = {
+  let result: CredentialOptions = {
     host,
     port,
     username,
@@ -168,9 +177,11 @@ function _makeSingleDbConfigParams(
 function _makeReplicatedDbConfigParams(
   totalReplicaNodes: number,
   dbName?: string,
-): MysqlReplicationConnectionCredentialsOptions {
-  const replicas: MysqlConnectionCredentialsOptions[] =
-    _getSingleDbConfigParams(totalReplicaNodes, dbName);
+): ReplicationConnectionCredentialsOptions {
+  const replicas: CredentialOptions[] = _getSingleDbConfigParams(
+    totalReplicaNodes,
+    dbName,
+  );
 
   return {
     replication: {
@@ -184,15 +195,15 @@ function _makeReplicatedDbConfigParams(
 function _getSingleDbConfigParams(
   totalReplicaNodes: number,
   dbName?: string,
-): MysqlConnectionCredentialsOptions[] {
-  const replicas: MysqlConnectionCredentialsOptions[] = [];
+): CredentialOptions[] {
+  const replicas: CredentialOptions[] = [];
 
   for (let i = 1; i <= totalReplicaNodes; i++) {
     const host = process.env[`MYSQL_REPLICA_HOST_${i}`];
     const port = _getDbPort(process.env[`MYSQL_REPLICA_PORT_${i}`]);
     const username = process.env[`MYSQL_REPLICA_USERNAME_${i}`];
     const password = process.env[`MYSQL_REPLICA_PASSWORD_${i}`];
-    let credentialsOptions: MysqlConnectionCredentialsOptions = {
+    let credentialsOptions: CredentialOptions = {
       host,
       port,
       username,

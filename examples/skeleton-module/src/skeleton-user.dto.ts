@@ -8,11 +8,11 @@ import {
 import {
   CrudGenField,
   CrudGenObject,
-} from '@nestjs-yalc/crud-gen/object.decorator';
-import { SkeletonUser } from './skeleton-user.entity';
-import returnValue from '@nestjs-yalc/utils/returnValue';
-import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
-import { SkeletonPhoneType } from './skeleton-phone.dto';
+} from '@nestjs-yalc/crud-gen/object.decorator.js';
+import { SkeletonUser } from './skeleton-user.entity.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
+import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
+import { SkeletonPhoneType } from './skeleton-phone.dto.js';
 
 @ObjectType()
 @CrudGenObject()

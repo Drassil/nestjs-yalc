@@ -1,4 +1,4 @@
-import { throwWrap } from './error.helper';
+import { throwWrap } from './error.helper.js';
 
 describe('Test errors helpers', () => {
   it('should throw an error without wraping it', () => {

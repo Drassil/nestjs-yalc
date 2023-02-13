@@ -1,9 +1,14 @@
-import { StringFormatEnum } from '../string-format.enum';
-import * as Validator from '../validator.decorator';
-import * as ValidatorHelper from '../validator.helper';
-import * as ClassValidator from 'class-validator';
+import { expect, jest } from '@jest/globals';
+import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
 
-ClassValidator as jest.Mocked<typeof ClassValidator>;
+const ValidatorHelper = await importMockedEsm(
+  '../validator.helper.js',
+  import.meta,
+);
+const Validator = await import('../validator.decorator.js');
+
+const { StringFormatEnum } = await import('../string-format.enum.js');
+
 describe('validator decorator test', () => {
   it('StringFormatMatchValidation is defined', async () => {
     let testData = Validator.StringFormatMatchValidation();

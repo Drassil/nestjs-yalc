@@ -2,11 +2,11 @@ import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
 import {
   CrudGenField,
   CrudGenObject,
-} from '@nestjs-yalc/crud-gen/object.decorator';
-import { SkeletonPhone } from './skeleton-phone.entity';
-import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar';
-import returnValue from '@nestjs-yalc/utils/returnValue';
-import { SkeletonUserType } from './skeleton-user.dto';
+} from '@nestjs-yalc/crud-gen/object.decorator.js';
+import { SkeletonPhone } from './skeleton-phone.entity.js';
+import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
+import { SkeletonUserType } from './skeleton-user.dto.js';
 
 @ObjectType()
 @CrudGenObject()

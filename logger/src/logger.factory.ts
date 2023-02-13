@@ -1,9 +1,9 @@
-import { ConsoleLogger } from './logger-console.service';
-import { PinoLogger } from './logger-pino.service';
+import { ConsoleLogger } from './logger-console.service.js';
+import { PinoLogger } from './logger-pino.service.js';
 import { LoggerService, LogLevel } from '@nestjs/common';
-import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum';
-import { ImprovedNestLogger } from './logger-nest.service';
-import { ImprovedLoggerService } from './logger-abstract.service';
+import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum.js';
+import { ImprovedNestLogger } from './logger-nest.service.js';
+import { ImprovedLoggerService } from './logger-abstract.service.js';
 
 export const AppLoggerFactory = (
   context: string,

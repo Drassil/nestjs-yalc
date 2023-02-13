@@ -1,10 +1,10 @@
-import { IDbConfObject } from '@nestjs-yalc/database/conf.interface';
-import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
+import { IDbConfObject } from '@nestjs-yalc/database/conf.interface.js';
+import { getConnectionName } from '@nestjs-yalc/database/conn.helper.js';
 import { ClassType } from '@nestjs-yalc/types';
-import { envIsTrue } from '@nestjs-yalc/utils/env.helper';
+import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { EntitySchema } from 'typeorm';
 import { Seeder } from 'typeorm-seeding';
-import { getPrefixedEnv, ENV_PREFIX } from './conf.helper';
+import { getPrefixedEnv, ENV_PREFIX } from './conf.helper.js';
 
 type DbConfigObjectParams = {
   realmAlias?: string;

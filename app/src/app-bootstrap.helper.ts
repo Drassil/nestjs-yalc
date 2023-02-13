@@ -3,7 +3,7 @@ import {
   // HttpExceptionFilter,
   // ValidationExceptionFilter,
   SystemExceptionFilter,
-} from '@nestjs-yalc/errors/filters';
+} from '@nestjs-yalc/errors/filters/index.js';
 import {
   DynamicModule,
   ExceptionFilter,
@@ -18,10 +18,11 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import fastifyCookie from '@fastify/cookie';
-import type { IServiceConf } from './conf.type';
-import { APP_LOGGER_SERVICE } from './def.const';
+import type { IServiceConf } from './conf.type.js';
+import { APP_LOGGER_SERVICE } from './def.const.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
+import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 
 export interface IGlobalOptions {
   /**
@@ -32,9 +33,9 @@ export interface IGlobalOptions {
 }
 
 export class AppBootstrap {
-  private app: NestFastifyApplication;
-  private fastifyInstance: FastifyInstance;
-  protected loggerService: LoggerService;
+  private app?: NestFastifyApplication;
+  private fastifyInstance?: FastifyInstance;
+  protected loggerService?: LoggerService;
 
   constructor(
     private appAlias: string,
@@ -47,6 +48,11 @@ export class AppBootstrap {
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
+
+    if (envIsTrue(process.env.APP_DRY_RUN) === true) {
+      await this.getApp().close;
+      process.exit(0);
+    }
 
     this.listen();
 
@@ -90,11 +96,15 @@ export class AppBootstrap {
   }
 
   getConf() {
-    const configService = this.app.get<ConfigService>(ConfigService);
+    const configService = this.getApp().get<ConfigService>(ConfigService);
     return configService.get<IServiceConf>(this.appConfAlias);
   }
 
   getApp() {
+    if (!this.app) {
+      throw new Error('This app is not initialized yet');
+    }
+
     return this.app;
   }
 
@@ -103,20 +113,16 @@ export class AppBootstrap {
   }
 
   applyBootstrapGlobals(options?: IGlobalOptions) {
-    if (!this.app) {
-      throw new Error('The app must be created first');
-    }
-
-    this.app.useGlobalPipes(
+    this.getApp().useGlobalPipes(
       new ValidationPipe({ validateCustomDecorators: true }),
     );
-    this.loggerService = this.app.get(APP_LOGGER_SERVICE);
+    this.loggerService = this.getApp().get(APP_LOGGER_SERVICE);
 
-    this.app.setGlobalPrefix(
+    this.getApp().setGlobalPrefix(
       options?.apiPrefix ?? (this.getConf()?.apiPrefix || ''),
     );
-    this.app.useLogger(this.loggerService);
-    this.app.register(fastifyCookie as any, {});
+    this.getApp().useLogger(this.loggerService);
+    this.getApp().register(fastifyCookie as any, {});
 
     /**
      * @todo refactor using a factory function to share with all services
@@ -125,7 +131,7 @@ export class AppBootstrap {
       new SystemExceptionFilter(this.loggerService),
       ...(options?.filters ?? []),
     ];
-    this.app.useGlobalFilters(...filters);
+    this.getApp().useGlobalFilters(...filters);
 
     const config = new DocumentBuilder()
       .setTitle(this.appAlias)
@@ -147,7 +153,7 @@ export class AppBootstrap {
     let apiPrefix = this.getConf()?.apiPrefix;
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
     const domain = this.getConf()?.domain || 'localhost';
-    await this.app.listen(port, host, () => {
+    await this.getApp().listen(port, host, () => {
       // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/

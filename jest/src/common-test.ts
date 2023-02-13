@@ -1,8 +1,8 @@
 /* istanbul ignore file */
 
-import { ClassType, FactoryType } from '@nestjs-yalc/interfaces/common.type';
+import { ClassType, FactoryType } from '@nestjs-yalc/interfaces/common.type.js';
 import * as faker from 'faker';
-import { getTestFilenameWithoutExtension } from './helpers';
+import { getTestFilenameWithoutExtension } from './helpers.js';
 
 export function classesAreDefinedTest(
   moduleName: string,

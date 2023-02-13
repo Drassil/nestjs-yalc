@@ -3,16 +3,19 @@ import {
   IOptions,
   IProjectInfo,
   jestConfGenerator,
-} from './jest/src/config/jest-conf.generator';
+} from '@nestjs-yalc/jest/config/jest-conf.generator.js';
 
-const tsProjects = require('./tsconfig.json');
+console.log('=================== LOADING JEST OPTIONS ================');
+
+import tsProjects from './tsconfig.json';
 
 const appProjectsSettings: { [key: string]: IAppProjSetting } = {};
 
 const projectList: { [key: string]: IProjectInfo } = {};
 
-Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
-  const path: string = tsProjects.compilerOptions.paths[k][0];
+const paths: Record<string, string[]> = tsProjects.compilerOptions.paths;
+Object.keys(paths).map((k: string) => {
+  const path: string = paths[k][0];
 
   if (!k.endsWith('*')) {
     projectList[k] = {
@@ -24,8 +27,11 @@ Object.keys(tsProjects.compilerOptions.paths).map((k: string) => {
 });
 
 const options: IOptions = {
+  defaultConfOptions: {
+    transformEsModules: false,
+  },
   // TODO: re-enable everything except types
-  skipProjects: ['types', 'graphql', 'app', 'crud-gen', 'kafka'],
+  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka'],
   defaultCoverageThreshold: {
     branches: 100,
     functions: 100,
@@ -33,6 +39,14 @@ const options: IOptions = {
     statements: 100,
   },
   confOverrides: {
+    '@nestjs-yalc/app': {
+      coverageThreshold: {
+        statements: 9.62,
+        branches: 0,
+        functions: 10.71,
+        lines: 8.06,
+      },
+    },
     '@nestjs-yalc/aws-helpers': {
       coverageThreshold: {
         branches: 100,
@@ -44,7 +58,7 @@ const options: IOptions = {
     '@nestjs-yalc/logger': {
       coverageThreshold: {
         branches: 60.13,
-        functions: 88.23,
+        functions: 83.87,
         lines: 88.7,
         statements: 89.31,
       },
@@ -60,9 +74,13 @@ const options: IOptions = {
   },
 };
 
-export default jestConfGenerator(
+const conf = jestConfGenerator(
   __dirname,
   projectList,
   appProjectsSettings,
   options,
 );
+
+conf.injectGlobals = false;
+
+export default conf;

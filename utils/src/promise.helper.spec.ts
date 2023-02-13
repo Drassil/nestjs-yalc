@@ -1,4 +1,4 @@
-import { promiseMap } from './promise.helper';
+import { promiseMap } from './promise.helper.js';
 
 describe('promise helper test', () => {
   const elements = [1, 2];

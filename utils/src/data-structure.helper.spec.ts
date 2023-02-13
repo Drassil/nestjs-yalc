@@ -1,4 +1,4 @@
-import { arrayGroupByField } from './data-structure.helper';
+import { arrayGroupByField } from './data-structure.helper.js';
 
 const testArray = [
   {

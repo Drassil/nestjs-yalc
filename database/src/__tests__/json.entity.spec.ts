@@ -1,28 +1,30 @@
-import { JsonEntityMixin } from '../json.entity';
-import { ExtendedBaseEntity } from '@nestjs-yalc/jest/extended-base-entity.entity';
-import 'reflect-metadata';
+import { expect, jest, test } from "@jest/globals";
 
-describe('JsonEntityMixin entity test', () => {
+import { JsonEntityMixin } from "../json.entity.js";
+import { ExtendedBaseEntity } from "@nestjs-yalc/jest/extended-base-entity.entity.js";
+import "reflect-metadata";
+
+describe("JsonEntityMixin entity test", () => {
   const ClassJsonEntityMixin = JsonEntityMixin(ExtendedBaseEntity);
 
-  it('should be defined', () => {
+  it("should be defined", () => {
     expect(ClassJsonEntityMixin).toBeDefined();
   });
 
-  it('updateData should work as intended', () => {
+  it("updateData should work as intended", () => {
     const testEntityPvt = new ClassJsonEntityMixin();
     jest
-      .spyOn(Reflect, 'getMetadata')
+      .spyOn(Reflect, "getMetadata")
       .mockReturnValueOnce({ first: true, second: false });
     testEntityPvt.updateData();
   });
 
-  it('updateData should work with a Json field', () => {
+  it("updateData should work with a Json field", () => {
     const testEntityPvt = new ClassJsonEntityMixin();
     jest
-      .spyOn(Reflect, 'getMetadata')
+      .spyOn(Reflect, "getMetadata")
       .mockReturnValueOnce({ first: true, second: false, third: true });
     testEntityPvt.updateData();
-    expect(testEntityPvt.third()).toContain('JSON_MERGE_PATCH');
+    expect(testEntityPvt.third()).toContain("JSON_MERGE_PATCH");
   });
 });

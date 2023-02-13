@@ -1,6 +1,6 @@
-import { envTestHelper } from '@nestjs-yalc/jest/env.helper';
-import { CONN_SUFFIX } from '../conn.helper';
-import { buildDbConfigObject } from '../db-config-object.helper';
+import { envTestHelper } from '@nestjs-yalc/jest/env.helper.js';
+import { CONN_SUFFIX } from '../conn.helper.js';
+import { buildDbConfigObject } from '../db-config-object.helper.js';
 
 describe('buildDbConfigObject()', () => {
   const env = envTestHelper();

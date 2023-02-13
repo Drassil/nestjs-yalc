@@ -1,8 +1,8 @@
-import { CrudGenError } from '@nestjs-yalc/crud-gen/crud-gen.error';
-import { UUIDValidationError } from '@nestjs-yalc/graphql/scalars/uuid-validation.error';
+import { CrudGenError } from '@nestjs-yalc/crud-gen/crud-gen.error.js';
+import { UUIDValidationError } from '@nestjs-yalc/graphql/scalars/uuid-validation.error.js';
 import { Catch, LoggerService } from '@nestjs/common';
 import { GqlExceptionFilter } from '@nestjs/graphql';
-import { InputValidationError } from '../input-validation.error';
+import { InputValidationError } from '../input-validation.error.js';
 
 @Catch(UUIDValidationError, CrudGenError)
 export class ValidationExceptionFilter implements GqlExceptionFilter {

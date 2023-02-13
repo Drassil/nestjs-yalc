@@ -1,7 +1,7 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
-import { StringFormatEnum } from './string-format.enum';
-import { validateDate, validateStringFormat } from './validator.helper';
-import { IStringFormatMatchCheckOptions } from './validator.interface';
+import { StringFormatEnum } from './string-format.enum.js';
+import { validateDate, validateStringFormat } from './validator.helper.js';
+import { IStringFormatMatchCheckOptions } from './validator.interface.js';
 
 export const stringFormatMatchValidatorFactory = (
   stringMatchOptions: IStringFormatMatchCheckOptions,

@@ -1,8 +1,8 @@
 import { BaseEntity } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
-import { CrudGenField, CrudGenObject } from '../object.decorator';
-import { JsonTransformer } from '../transformers.helpers';
+import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
+import { CrudGenField, CrudGenObject } from '../object.decorator.js';
+import { JsonTransformer } from '../transformers.helpers.js';
 
 @CrudGenObject({})
 export class ReadEntity {

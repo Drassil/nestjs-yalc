@@ -10,13 +10,17 @@ declare global {
       NODE_ENV?: 'development' | 'production' | 'test' | 'pipeline';
       NEST_LOGGER_LEVELS?: LogLevel | string;
       TYPEORM_LOGGING?: 'true' | 'false';
+      /**
+       * Allow db connections without a schema
+       */
+      TYPEORM_NO_SEL_DB?: 'true' | 'false';
     }
   }
 }
 
 export declare type ClassType<Class = any> = { new (...args: any[]): Class };
 
-export declare type AnyFunction<A = any> = (...input: any[]) => A;
+export declare type AnyFunction<A = any, I = any> = (...input: I[]) => A;
 export declare type AnyConstructor<A = Record<string, unknown>> = new (
   ...input: any[]
 ) => A;

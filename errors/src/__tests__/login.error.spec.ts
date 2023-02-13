@@ -1,5 +1,5 @@
-import { ErrorsEnum } from '../errors.enum';
-import { LoginError } from '../login.error';
+import { ErrorsEnum } from '../errors.enum.js';
+import { LoginError } from '../login.error.js';
 
 describe('Login error', () => {
   const error = new LoginError();

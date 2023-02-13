@@ -1,14 +1,14 @@
 import {
   ConditionsTooBroadError,
   NoResultsFoundError,
-} from './conditions.error';
+} from './conditions.error.js';
 import {
   CreateEntityError,
   DeleteEntityError,
   EntityError,
   UpdateEntityError,
-} from './entity.error';
-import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
+} from './entity.error.js';
+import { getConnectionName } from '@nestjs-yalc/database/conn.helper.js';
 import { FactoryProvider, Injectable } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
@@ -20,13 +20,13 @@ import {
 } from 'typeorm';
 import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
-import { ClassType } from '@nestjs-yalc/types/globals';
-import { getProviderToken } from './crud-gen.helpers';
-import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
-import { getCrudGenFieldMetadataList, isDstExtended } from './object.decorator';
+import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { getProviderToken } from './crud-gen.helpers.js';
+import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper.js';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
+import { getCrudGenFieldMetadataList, isDstExtended } from './object.decorator.js';
 
 /**
  *

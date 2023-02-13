@@ -9,15 +9,15 @@ import {
 import {
   agQueryParamsNoPaginationFactory,
   IAgQueryParams,
-} from './crud-gen.args';
+} from './crud-gen.args.js';
 import {
   entityFieldsEnumFactory,
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from './crud-gen.enum';
-import { getEntityRelations } from './crud-gen.helpers';
+} from './crud-gen.enum.js';
+import { getEntityRelations } from './crud-gen.helpers.js';
 import {
   DateFilterModel,
   FilterInput,
@@ -25,7 +25,7 @@ import {
   INumberFilterModel,
   ISetFilterModel,
   ITextFilterModel,
-} from './crud-gen.interface';
+} from './crud-gen.interface.js';
 
 export interface ISortModel<T = any> {
   colId: keyof T | string;

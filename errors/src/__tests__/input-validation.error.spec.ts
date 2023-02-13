@@ -1,7 +1,7 @@
 import {
   BadRequestError,
   InputValidationError,
-} from '../input-validation.error';
+} from '../input-validation.error.js';
 
 describe('InputValidationError', () => {
   it('should set the custom message', () => {

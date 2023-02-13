@@ -3,7 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   NestLocalEventStrategy,
   NestLocalEventStrategyProvider,
-} from './nest-local-event.strategy';
+} from './nest-local-event.strategy.js';
 
 describe('NestLocalEventStrategy', () => {
   let eventEmitter: EventEmitter2;

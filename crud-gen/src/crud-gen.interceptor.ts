@@ -5,7 +5,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { map } from 'rxjs/operators';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
 export function crudGenInterceptorWorker<T>(startRow: number, endRow: number) {

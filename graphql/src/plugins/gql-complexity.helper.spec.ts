@@ -1,6 +1,6 @@
 import { FieldNode, SelectionNode } from 'graphql';
-import { GqlError, GqlErrorMsgs } from './gql.error';
-import { GqlComplexityHelper } from './gql-complexity.helper';
+import { GqlError, GqlErrorMsgs } from './gql.error.js';
+import { GqlComplexityHelper } from './gql-complexity.helper.js';
 
 describe('GqlComplexityHelper', () => {
   afterEach(() => {

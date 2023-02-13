@@ -1,4 +1,4 @@
-import { IntervalHelper } from './interval.helper';
+import { IntervalHelper } from './interval.helper.js';
 
 describe('interval helper test', () => {
   it('Generates interval of 1 day with miliseconds', () => {

@@ -1,7 +1,7 @@
 import { createMock } from '@golevelup/ts-jest';
 import { HttpAdapterHost } from '@nestjs/common';
-import { ContextCallServiceFactory } from './context-call.service';
-import { NestLocalCallStrategy } from './index';
+import { ContextCallServiceFactory } from './context-call.service.js';
+import { NestLocalCallStrategy } from './index.js';
 
 describe('ContextCallServiceFactory', () => {
   let httpAdapterHost: HttpAdapterHost;

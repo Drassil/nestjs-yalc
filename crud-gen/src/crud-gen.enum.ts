@@ -1,7 +1,7 @@
 import { AnyFunction, ClassType } from '@nestjs-yalc/types';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { registerEnumType } from '@nestjs/graphql';
-import { getMappedTypeProperties } from './crud-gen.helpers';
+import { getMappedTypeProperties } from './crud-gen.helpers.js';
 
 export enum GeneralFilters {
   NOT = 'not',

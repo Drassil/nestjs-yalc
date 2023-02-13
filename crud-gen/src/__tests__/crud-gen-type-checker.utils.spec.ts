@@ -9,9 +9,9 @@ import {
   isOperator,
   isSetFilterModel,
   isTextFilterModel,
-} from '../crud-gen-type-checker.utils';
-import { FilterType, Operators } from '../crud-gen.enum';
-import { FilterModel } from '../crud-gen.interface';
+} from '../crud-gen-type-checker.utils.js';
+import { FilterType, Operators } from '../crud-gen.enum.js';
+import { FilterModel } from '../crud-gen.interface.js';
 import {
   fixedCombinedOrDateFilter,
   fixedCombinedOrNumberFilter,
@@ -21,7 +21,7 @@ import {
   fixedSimpleDateFilter,
   fixedSimpleNumberFilter,
   fixedSimpleTextFilter,
-} from '../__mocks__/filter.mocks';
+} from '../__mocks__/filter.mocks.js';
 
 describe('Crud-gen type checker', () => {
   it('isFilterModel should works properly', async () => {

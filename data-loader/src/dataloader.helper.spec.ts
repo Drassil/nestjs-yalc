@@ -1,15 +1,19 @@
 import { createMock } from '@golevelup/ts-jest';
-import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface';
+import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
 import {
   FactoryProvider,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
-import { DataLoaderFactory, getFn, GQLDataLoader } from './dataloader.helper';
+import {
+  DataLoaderFactory,
+  getFn,
+  GQLDataLoader,
+} from './dataloader.helper.js';
 
-import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service.js';
+import eventemitter from '@nestjs/event-emitter';
 
 describe('GQLDataLoader class', () => {
   class EntityTest {
@@ -23,7 +27,7 @@ describe('GQLDataLoader class', () => {
 
   const mockLoadFn = jest.fn();
   const mockedFindManyOptions = createMock<CrudGenFindManyOptions>();
-  const mockedEventEmitter = createMock<EventEmitter2>();
+  const mockedEventEmitter = createMock<eventemitter.EventEmitter2>();
   let dataLoader: GQLDataLoader<EntityTest>;
 
   beforeEach(() => {

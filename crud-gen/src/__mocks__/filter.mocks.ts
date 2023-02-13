@@ -1,12 +1,12 @@
 import { IFieldMapper } from '@nestjs-yalc/interfaces';
 import { Equal } from 'typeorm';
-import { IAgQueryParams } from '../crud-gen.args';
+import { IAgQueryParams } from '../crud-gen.args.js';
 import {
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from '../crud-gen.enum';
+} from '../crud-gen.enum.js';
 import {
   DateFilterModel,
   FilterInput,
@@ -18,9 +18,9 @@ import {
   ISetFilterModel,
   ISimpleFilterModel,
   ITextFilterModel,
-} from '../crud-gen.interface';
-import { IWhereCondition } from '../crud-gen.type';
-import { FilterOption, FilterOptionType } from '../object.decorator';
+} from '../crud-gen.interface.js';
+import { IWhereCondition } from '../crud-gen.type.js';
+import { FilterOption, FilterOptionType } from '../object.decorator.js';
 
 const fixedKey = 'passed';
 const dbName = 'original';

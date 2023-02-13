@@ -1,6 +1,6 @@
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
-import { IEventStrategy } from './context-event.interface';
+import { IEventStrategy } from './context-event.interface.js';
 
 export interface IApiMessageService<Strategy extends IEventStrategy> {
   setStrategy(strategy: Strategy): void;

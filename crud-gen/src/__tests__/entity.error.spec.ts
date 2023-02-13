@@ -1,4 +1,4 @@
-import * as EntityError from '../entity.error';
+import * as EntityError from '../entity.error.js';
 
 const fixedMessage = 'fixedErrorText';
 const fixedError = new Error(fixedMessage);

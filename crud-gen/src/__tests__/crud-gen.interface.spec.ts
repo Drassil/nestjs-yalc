@@ -1,4 +1,4 @@
-import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum.js';
 import {
   DateFilterModel,
   FilterModel,
@@ -7,8 +7,8 @@ import {
   INumberFilterModel,
   ICombinedSimpleModel,
   FilterInput,
-} from '../crud-gen.interface';
-import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks';
+} from '../crud-gen.interface.js';
+import { fixedSimpleTextFilter } from '../__mocks__/filter.mocks.js';
 
 const simpleFilterModel: ISimpleFilterModel = {
   filterType: FilterType.TEXT,

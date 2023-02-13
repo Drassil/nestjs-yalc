@@ -1,5 +1,5 @@
-import { belongsToEnum, mergeEnums } from './enum.helper';
-import { TestEnum1, TestEnum2 } from './__mocks__/enum.mock';
+import { belongsToEnum, mergeEnums } from './enum.helper.js';
+import { TestEnum1, TestEnum2 } from './__mocks__/enum.mock.js';
 
 test('belongsToEnum should check if a value belongs to a specific Enum', () => {
   enum TestEnum {

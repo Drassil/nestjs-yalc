@@ -1,4 +1,4 @@
-import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity';
+import { EntityWithTimestamps } from '@nestjs-yalc/database/timestamp.entity.js';
 import { ObjectType } from '@nestjs/graphql';
 import {
   BaseEntity,
@@ -9,7 +9,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { SkeletonUser } from './skeleton-user.entity';
+import { SkeletonUser } from './skeleton-user.entity.js';
 
 @Entity('skeleton-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })

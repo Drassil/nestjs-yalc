@@ -1,4 +1,4 @@
-import returnValue, { returnProperty } from './returnValue';
+import returnValue, { returnProperty } from './returnValue.js';
 
 test('returnValue should return a constant function', () => {
   class TypeTest {}

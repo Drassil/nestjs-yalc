@@ -1,4 +1,4 @@
-import { isClass } from './class.helper';
+import { isClass } from './class.helper.js';
 
 describe('Test Class Helpers', () => {
   it('should test a class correctly', () => {

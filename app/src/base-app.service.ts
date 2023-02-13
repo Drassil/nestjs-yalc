@@ -5,8 +5,8 @@ import {
   LoggerService,
 } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { APP_LOGGER_SERVICE } from '@nestjs-yalc/app/def.const';
-import { AppEvents } from './app.events';
+import { APP_LOGGER_SERVICE } from '@nestjs-yalc/app/def.const.js';
+import { AppEvents } from './app.events.js';
 
 /**
  * Application service

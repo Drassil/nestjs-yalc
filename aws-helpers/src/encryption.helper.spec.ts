@@ -1,9 +1,11 @@
+import { expect, jest, test } from '@jest/globals';
+
 jest.mock('aws-sdk');
 
 import { createMock } from '@golevelup/ts-jest';
-import * as $ from './encryption.helper';
-import * as AWS from 'aws-sdk';
+import AWS from 'aws-sdk';
 import crypto from 'crypto';
+const $ = await import('./encryption.helper.js');
 
 // Please let me know if you know how to solve this as unknown as void.
 jest
@@ -32,7 +34,7 @@ jest.mock('aws-sdk', () => {
   }) as encryptType);
 
   mockedKMS.decrypt.mockImplementation(((param: any, callback: any) => {
-    callback(null, {});
+    callback(null, { Plaintext: 'someString' });
   }) as decryptType);
 
   // First call
@@ -97,7 +99,9 @@ describe('Encryption helper test', () => {
       $.EncryptMode.LOCAL,
       encryptionKey,
     );
-    expect(encoded).toEqual(encrypted);
+    expect(
+      await $.decryptString(encoded, $.EncryptMode.LOCAL, encryptionKey),
+    ).toEqual(toEncrypt);
   });
 
   it('should be able to encrypt remotely', async () => {
@@ -179,7 +183,6 @@ describe('Encryption helper test', () => {
   });
 
   it('should be able to decrypt remotely on aws', async () => {
-    jest.spyOn($, 'asyncDecrypt').mockResolvedValue('someString');
     process.env.NODE_ENV = 'production';
     const result = await $.decryptString(encrypted, $.EncryptMode.AWS);
     delete process.env.IS_AWS_ENV;

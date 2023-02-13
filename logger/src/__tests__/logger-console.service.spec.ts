@@ -1,53 +1,55 @@
-import { ConsoleLogger } from '../logger-console.service';
-import { LOG_LEVEL_ALL } from '../logger.enum';
+import { expect, jest, test } from "@jest/globals";
 
-describe('Console logger service test', () => {
+import { ConsoleLogger } from "../logger-console.service.js";
+import { LOG_LEVEL_ALL } from "../logger.enum.js";
+
+describe("Console logger service test", () => {
   let logger: ConsoleLogger;
 
   beforeEach(async () => {
-    logger = new ConsoleLogger('test', LOG_LEVEL_ALL);
+    logger = new ConsoleLogger("test", LOG_LEVEL_ALL);
   });
 
-  it('Test undefined levels', async () => {
-    const method = jest.spyOn(console, 'log');
-    logger = new ConsoleLogger('test', undefined);
-    logger.log?.('test');
+  it("Test undefined levels", async () => {
+    const method = jest.spyOn(console, "log");
+    logger = new ConsoleLogger("test", undefined);
+    logger.log?.("test");
 
     expect(method).not.toHaveBeenCalled();
   });
 
-  it('Test log', async () => {
-    const method = jest.spyOn(console, 'log');
-    logger.log?.('test');
+  it("Test log", async () => {
+    const method = jest.spyOn(console, "log");
+    logger.log?.("test");
 
     expect(method).toHaveBeenCalled();
   });
 
-  it('Test error', async () => {
-    const method = jest.spyOn(console, 'error');
-    logger.error?.('error', 'trace', { data: 'test' });
+  it("Test error", async () => {
+    const method = jest.spyOn(console, "error");
+    logger.error?.("error", "trace", { data: "test" });
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', 'test');
+    expect(method).toHaveBeenCalledWith("[test]", "error", "trace", "test");
   });
 
-  it('Test warn', async () => {
-    const method = jest.spyOn(console, 'warn');
-    logger.warn?.('warn');
-
-    expect(method).toHaveBeenCalled();
-  });
-
-  it('Test debug', async () => {
-    const method = jest.spyOn(console, 'debug');
-    logger.debug?.('debug');
+  it("Test warn", async () => {
+    const method = jest.spyOn(console, "warn");
+    logger.warn?.("warn");
 
     expect(method).toHaveBeenCalled();
   });
 
-  it('Test verbose', async () => {
-    const method = jest.spyOn(console, 'info');
-    logger.verbose?.('verbose');
+  it("Test debug", async () => {
+    const method = jest.spyOn(console, "debug");
+    logger.debug?.("debug");
+
+    expect(method).toHaveBeenCalled();
+  });
+
+  it("Test verbose", async () => {
+    const method = jest.spyOn(console, "info");
+    logger.verbose?.("verbose");
 
     expect(method).toHaveBeenCalled();
   });

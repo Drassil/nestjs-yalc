@@ -4,14 +4,14 @@ import {
   isCombinedFilterModel,
   isFilterModel,
   isMulticolumnJoinOptions,
-} from './crud-gen-type-checker.utils';
-import { CustomWhereKeys } from './crud-gen.enum';
-import { CrudGenBadFilterTypeError } from './crud-gen.error';
+} from './crud-gen-type-checker.utils.js';
+import { CustomWhereKeys } from './crud-gen.enum.js';
+import { CrudGenBadFilterTypeError } from './crud-gen.error.js';
 import {
   FilterInput,
   IFilterInputOld,
   IMultiColumnJoinOptions,
-} from './crud-gen.interface';
+} from './crud-gen.interface.js';
 
 @Scalar('FilterInput')
 export class FilterScalar implements CustomScalar<string, FilterInput> {

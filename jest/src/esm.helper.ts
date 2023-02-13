@@ -1,0 +1,64 @@
+/**
+ * This is a workaround to fix the issue with mocking ESM modules in jest
+ * Issue: https://github.com/facebook/jest/issues/13258
+ *
+ * Original code:
+ * @see https://gist.github.com/booya2nd/dcaa1775fd4c06cd79610e3feea6362c#file-mock-esmodule-js
+ */
+import * as path from 'path';
+import * as url from 'url';
+
+function forEachDeep(
+  obj: any,
+  cb: {
+    ([prop, value]: [any, any], obj: any): void;
+    (arg0: any[], arg1: any, arg2: any[]): any;
+  },
+  options = { depth: 6 },
+) {
+  (function walk(
+    value,
+    property: string | undefined = undefined,
+    parent = null,
+    objPath: any = [],
+  ) {
+    return value && typeof value === 'object' && objPath.length <= options.depth
+      ? Object.entries(value).forEach(([key, val]) =>
+          walk(val, key, value, [...objPath, key]),
+        )
+      : cb([property, value], parent, objPath);
+  })(obj);
+}
+
+const NOOP = (x: any) => x;
+export async function importMockedEsm(
+  moduleSpecifier: any,
+  importMeta: { jest: any; url: string },
+  factory = NOOP,
+) {
+  let modulePath = moduleSpecifier;
+
+  if (moduleSpecifier.startsWith('.')) {
+    const metaPath = url.fileURLToPath(new URL('./', importMeta.url));
+    const thisMetaPath = url.fileURLToPath(new URL('./', import.meta.url));
+    const absolutePath = path.join(metaPath, moduleSpecifier);
+    modulePath = path.relative(thisMetaPath, absolutePath);
+  }
+
+  const { jest } = importMeta;
+  const module = await import(modulePath);
+
+  const moduleCopy = { ...module };
+  forEachDeep(moduleCopy, ([prop, value]: any, obj: { [x: string]: any }) => {
+    if (typeof value === 'function') {
+      obj[prop] = jest.fn(value);
+      // re-adding stinky dynamic custom properties which jest.fn() may has removed
+      Object.assign(obj[prop], value);
+    }
+  });
+
+  const moduleMock = factory(moduleCopy);
+  jest.unstable_mockModule(moduleSpecifier, () => moduleMock);
+
+  return moduleMock;
+}

@@ -1,21 +1,23 @@
+import { expect, jest, describe } from '@jest/globals';
 import { createMock } from '@golevelup/ts-jest';
-import * as SqsHelper from './aws-sqs.helper';
 
 jest.mock('aws-sdk', () => {
   const mockedSqs = createMock<AWS.SQS>();
 
-  mockedSqs.sendMessage.mockImplementationOnce((param: any, callback: any) => {
-    callback(undefined, 'data');
+  mockedSqs.sendMessage.mockImplementationOnce((err: any, callback: any) => {
+    return callback(undefined, 'data');
   });
 
-  mockedSqs.sendMessage.mockImplementationOnce((param: any, callback: any) => {
-    callback('someError', 'data');
+  mockedSqs.sendMessage.mockImplementationOnce((err: any, callback: any) => {
+    return callback('someError', 'data');
   });
 
   return {
     SQS: jest.fn(() => mockedSqs),
   };
 });
+
+const SqsHelper = await import('./aws-sqs.helper.js');
 
 describe('AWS S3 Helper', () => {
   it('Should send a message on SQS', async () => {

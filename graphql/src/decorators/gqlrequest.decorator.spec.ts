@@ -1,10 +1,10 @@
 jest.mock('@nestjs/graphql');
 
-import { GqlGetRequest, paramDecoratorToCreate } from './gqlrequest.decorator';
+import { GqlGetRequest, paramDecoratorToCreate } from './gqlrequest.decorator.js';
 import {
   mockedExecutionContext,
   mockedNestGraphql,
-} from '@nestjs-yalc/jest/common-mocks.helper';
+} from '@nestjs-yalc/jest/common-mocks.helper.js';
 
 describe('Gql user decorator test', () => {
   const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());

@@ -1,4 +1,4 @@
-import { JsonTransformer } from '../transformers.helpers';
+import { JsonTransformer } from '../transformers.helpers.js';
 
 describe('Test transformers', () => {
   it('should provide and execute a json transformer', () => {

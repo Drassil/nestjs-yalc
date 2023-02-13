@@ -1,5 +1,5 @@
 import { ClassType, Mixin } from '@nestjs-yalc/types';
-import returnValue from '@nestjs-yalc/utils/returnValue';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CreateDateColumn, UpdateDateColumn } from 'typeorm';
 

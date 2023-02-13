@@ -1,5 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
-import { CrudGenErrors } from './strings.enum';
+import { CrudGenErrors } from './strings.enum.js';
 
 export class ArgumentsError extends BadRequestException {
   constructor(message: string) {

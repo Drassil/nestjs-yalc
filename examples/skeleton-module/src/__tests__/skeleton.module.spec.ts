@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import { SkeletonModule } from '../index';
+import { SkeletonModule } from '../index.js';
 
-import * as helpers from '@nestjs-yalc/crud-gen/crud-gen.helpers';
+import * as helpers from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 
 describe('Test skeleton module', () => {
   it('should register the module', () => {

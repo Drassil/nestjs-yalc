@@ -1,6 +1,6 @@
 import { ClassType } from '@nestjs-yalc/types';
 import { Injectable } from '@nestjs/common';
-import { IApiCallStrategy } from './context-call.interface';
+import { IApiCallStrategy } from './context-call.interface.js';
 
 export interface IApiCallService<Strategy extends IApiCallStrategy> {
   setStrategy(strategy: Strategy): void;

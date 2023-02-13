@@ -1,7 +1,7 @@
-import { ExtendedBaseEntity } from '@nestjs-yalc/jest/extended-base-entity.entity';
-import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper';
-import * as ObjectDecorator from '../object.decorator';
-import { SelectQueryBuilderPatched } from '../query-builder.helpers';
+import { ExtendedBaseEntity } from '@nestjs-yalc/jest/extended-base-entity.entity.js';
+import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper.js';
+import * as ObjectDecorator from '../object.decorator.js';
+import { SelectQueryBuilderPatched } from '../query-builder.helpers.js';
 
 describe('QueryBuilderHelper', () => {
   let testQb: SelectQueryBuilderPatched<Partial<ExtendedBaseEntity>>;

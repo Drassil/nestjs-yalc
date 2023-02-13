@@ -4,7 +4,7 @@ import { SchemaRegistry } from '@kafkajs/confluent-schema-registry';
 import { SchemaRegistryAPIClientArgs } from '@kafkajs/confluent-schema-registry/dist/api';
 import { SchemaRegistryAPIClientOptions } from '@kafkajs/confluent-schema-registry/dist/@types';
 import { KafkaMessage } from '@nestjs/microservices/external/kafka.interface';
-import { DeserializedData } from '../interface/debezium.interface';
+import { DeserializedData } from '../interface/debezium.interface.js';
 
 /**
  * Deserializer for Kafka data by using Avro Schema

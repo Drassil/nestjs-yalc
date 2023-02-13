@@ -1,6 +1,6 @@
 /* istanbul ignore file */
 
-import { ImportType } from '@nestjs-yalc/interfaces/nestjs.type';
+import { ImportType } from '@nestjs-yalc/interfaces/nestjs.type.js';
 import { Logger, ModuleMetadata, Provider } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -13,25 +13,25 @@ import {
   RenameInterfaceFields,
   RenameInputObjectFields,
 } from '@graphql-tools/wrap';
-import { AppContextModule } from './app-context.module';
-import { AppContextService } from './app-context.service';
-import { IDbConfType } from '@nestjs-yalc/database/conf.interface';
-import { getConfNameByConnection } from '@nestjs-yalc/database/conn.helper';
+import { AppContextModule } from './app-context.module.js';
+import { AppContextService } from './app-context.service.js';
+import { IDbConfType } from '@nestjs-yalc/database/conf.interface.js';
+import { getConfNameByConnection } from '@nestjs-yalc/database/conn.helper.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BuildSchemaOptions, GraphQLFederationModule } from '@nestjs/graphql';
 import { JwtModule } from '@nestjs/jwt';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
-import { IServiceConf } from './conf.type';
+import { IServiceConf } from './conf.type.js';
 import { GraphQLError } from 'graphql/error';
 import { GraphQLFormattedError } from 'graphql/error';
-import { AppLoggerModule } from '../logger/app-logger.module';
-import { TypeORMLogger } from '@nestjs-yalc/logger/typeorm-logger';
-import { CURAPP_CONF_ALIAS } from './def.const';
-import { AppEvents } from './app.events';
-import { GqlComplexityPlugin } from '@nestjs-yalc/graphql/plugins/gql-complexity.plugin';
+import { AppLoggerModule } from '../logger/app-logger.module.js';
+import { TypeORMLogger } from '@nestjs-yalc/logger/typeorm-logger.js';
+import { CURAPP_CONF_ALIAS } from './def.const.js';
+import { AppEvents } from './app.events.js';
+import { GqlComplexityPlugin } from '@nestjs-yalc/graphql/plugins/gql-complexity.plugin.js';
 import { ApolloServerPlugin } from 'apollo-server-plugin-base';
 import { ClassType } from '@nestjs-yalc/types';
-import { isClass } from '@nestjs-yalc/utils/class.helper';
+import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 
 import * as dotenv from 'dotenv';
 dotenv.config(); // preload .env root file before all the others

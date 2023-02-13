@@ -1,14 +1,16 @@
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository';
-import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper';
+import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ModuleRef } from '@nestjs/core';
 import 'reflect-metadata';
-import { lowerCaseEmailMiddleware, SkeletonUserResolver } from '../index';
-import { SkeletonUser } from '../skeleton-user.entity';
-import {
-  SkeletonUserService,
-  skeletonUserServiceFactory,
-} from '../skeleton-user.service';
+const { lowerCaseEmailMiddleware, SkeletonUserResolver } = await import(
+  '../index.js'
+);
+import { type SkeletonUser } from '../skeleton-user.entity.js';
+import { type SkeletonUserService } from '../skeleton-user.service.js';
+const { skeletonUserServiceFactory } = await import(
+  '../skeleton-user.service.js'
+);
 
 describe('Test skeleton user resolver', () => {
   let mockedRepository: DeepMocked<CrudGenRepository<SkeletonUser>>;
