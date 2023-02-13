@@ -27,7 +27,20 @@ export interface IHttpCallStrategyResponse<T = any> {
   request?: any;
 }
 
-export interface IHttpCallStrategy extends IApiCallStrategy {}
+export interface IHttpCallStrategy extends IApiCallStrategy {
+  call<TOptData, TParams extends Record<string, any>, TResData>(
+    path: string,
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
+  ): Promise<IHttpCallStrategyResponse<TResData>>;
+  get<TOptData, TParams extends Record<string, any>, TResData>(
+    path: string,
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
+  ): Promise<IHttpCallStrategyResponse<TResData>>;
+  post<TOptData, TParams extends Record<string, any>, TResData>(
+    path: string,
+    options?: HttpOptions<TOptData, TParams> | { method?: string },
+  ): Promise<IHttpCallStrategyResponse<TResData>>;
+}
 
 export abstract class HttpAbstractStrategy implements IHttpCallStrategy {
   abstract call<TOptData, TParams extends Record<string, any>, TResData>(
