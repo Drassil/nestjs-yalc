@@ -95,7 +95,7 @@ export function AppDependencyFactory(
   const configModule = ConfigModule.forRoot({
     load: confs,
     envFilePath: envPath,
-    isGlobal: true,
+    // isGlobal: true,
   });
 
   // configModule and AppContextModule must be global to avoid

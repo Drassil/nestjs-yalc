@@ -39,7 +39,6 @@ export class AppBootstrap {
 
   constructor(
     private appAlias: string,
-    private appConfAlias: string,
     private readonly module: DynamicModule,
   ) {}
 
@@ -103,7 +102,7 @@ export class AppBootstrap {
 
   getConf() {
     const configService = this.getApp().get<ConfigService>(ConfigService);
-    return configService.get<IServiceConf>(this.appConfAlias);
+    return configService.get<IServiceConf>(this.appAlias);
   }
 
   getApp() {
@@ -159,12 +158,13 @@ export class AppBootstrap {
     let apiPrefix = this.getConf()?.apiPrefix;
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
     const domain = this.getConf()?.domain || 'localhost';
-    await this.getApp().listen(port, host, () => {
+    await this.getApp().listen(port, host, (_err, address) => {
       // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/
         http://127.0.0.1:${port}${apiPrefix}/
-        http://${domain}:${port}${apiPrefix}/`);
+        http://${domain}:${port}${apiPrefix}/
+        ${address}`);
 
       // // eslint-disable-next-line no-console
       // console.debug(`GraphQL ${this.appAlias} listening on

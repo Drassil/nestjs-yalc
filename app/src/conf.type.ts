@@ -7,7 +7,7 @@ export interface IServiceConf {
   logLevels: LogLevel[];
   /** You can specialize log levels per each logger context. By default logLevels is used instead */
   logContextLevels?: { [key: string]: LogLevel[] };
-  domain: string;
+  domain?: string;
 
   host: string;
   port: number;
@@ -16,7 +16,7 @@ export interface IServiceConf {
   isPipeline: boolean;
   isProduction: boolean;
   env: typeof process.env.NODE_ENV;
-  apiPrefix: string;
-  basePath: string;
-  operationPrefix: string;
+  apiPrefix?: string;
+  basePath?: string;
+  operationPrefix?: string;
 }
