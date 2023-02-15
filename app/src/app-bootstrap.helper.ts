@@ -24,6 +24,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
+import clc from 'cli-color';
 
 export interface IGlobalOptions {
   /**
@@ -31,6 +32,7 @@ export interface IGlobalOptions {
    */
   apiPrefix?: string;
   filters?: ExceptionFilter[];
+  abortOnError?: boolean;
 }
 
 export class AppBootstrap {
@@ -65,6 +67,7 @@ export class AppBootstrap {
   }) {
     await this.createApp({
       fastifyInstance: this.fastifyInstance,
+      globalsOptions: options?.globalsOptions,
     });
 
     this.applyBootstrapGlobals(options?.globalsOptions);
@@ -80,13 +83,27 @@ export class AppBootstrap {
     return this;
   }
 
-  async createApp(options?: { fastifyInstance?: FastifyInstance }) {
+  async createApp(options?: {
+    globalsOptions?: IGlobalOptions;
+    fastifyInstance?: FastifyInstance;
+  }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
 
-    const app = await NestFactory.create<NestFastifyApplication>(
-      this.module,
-      new FastifyAdapter(this.fastifyInstance as any),
-    );
+    let app;
+    try {
+      app = await NestFactory.create<NestFastifyApplication>(
+        this.module,
+        new FastifyAdapter(this.fastifyInstance as any),
+        {
+          bufferLogs: false,
+          abortOnError: options?.globalsOptions?.abortOnError ?? false,
+        },
+      );
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(clc.red('Failed to create app'), clc.red(err));
+      throw new Error('Process aborted');
+    }
 
     useContainer(app.select(this.module), { fallbackOnErrors: true });
 
