@@ -1,3 +1,4 @@
+import { Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 /**
@@ -27,7 +28,7 @@ export class AppConfigService<T = any> {
   }
 }
 
-export function AppConfigServiceFactory(appAlias: string) {
+export function createAppConfigProvider(appAlias: string): Provider {
   return {
     provide: AppConfigService,
     useFactory: (config: ConfigService): AppConfigService => {
