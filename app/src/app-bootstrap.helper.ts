@@ -23,6 +23,7 @@ import { APP_LOGGER_SERVICE } from './def.const.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
+import { useContainer } from 'class-validator';
 
 export interface IGlobalOptions {
   /**
@@ -82,12 +83,14 @@ export class AppBootstrap {
   async createApp(options?: { fastifyInstance?: FastifyInstance }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
 
-    return this.setApp(
-      await NestFactory.create<NestFastifyApplication>(
-        this.module,
-        new FastifyAdapter(this.fastifyInstance as any),
-      ),
+    const app = await NestFactory.create<NestFastifyApplication>(
+      this.module,
+      new FastifyAdapter(this.fastifyInstance as any),
     );
+
+    useContainer(app.select(this.module), { fallbackOnErrors: true });
+
+    return this.setApp(app);
   }
 
   getFastifyInstance() {
