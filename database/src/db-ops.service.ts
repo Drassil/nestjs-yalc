@@ -39,7 +39,7 @@ export class DbOpsService {
 
       const queryRunner = v.conn.createQueryRunner();
       this.loggerService.log('Creating ' + schemaName);
-      await queryRunner.createDatabase(schemaName, true);
+      await queryRunner.createSchema(schemaName, true);
     }
   }
 
@@ -65,7 +65,7 @@ export class DbOpsService {
     for (const v of this.dbConnections) {
       const queryRunner = v.conn.createQueryRunner();
       this.loggerService.debug?.(`Dropping ${v.dbName}`);
-      await queryRunner.dropDatabase(v.dbName, true);
+      await queryRunner.dropSchema(v.dbName, true, true);
     }
   }
 
