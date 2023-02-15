@@ -13,9 +13,7 @@ export const executeStandaloneFunctionForApp = async (
 
   const service = app.get(serviceType);
 
-  await fn(service);
-
-  await app.close();
+  await fn(service).finally(() => app.close());
 };
 
 /**
