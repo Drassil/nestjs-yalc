@@ -6,13 +6,24 @@ import { ConfigService } from '@nestjs/config';
  * without specifying the app alias.
  */
 export class AppConfigService<T = any> {
+  protected config: T;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly appAlias: string,
-  ) {}
+  ) {
+    const config = this.configService.get<T>(this.appAlias);
+    if (!config) {
+      throw new Error(
+        `AppConfigService: No config found for app alias '${this.appAlias}'`,
+      );
+    }
 
-  get(): T | undefined {
-    return this.configService.get<T>(this.appAlias);
+    this.config = config;
+  }
+
+  get(): T {
+    return this.config;
   }
 }
 
