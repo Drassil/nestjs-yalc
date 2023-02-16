@@ -2,7 +2,7 @@
 
 import * as path from 'path';
 import * as readTsConfig from 'get-tsconfig';
-import { pathsToModuleNameMapper } from 'ts-jest';
+// import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
 import type { JestConfigWithTsJest } from 'ts-jest';
 
@@ -20,15 +20,22 @@ export const globals = () => {
   };
 };
 
-export const tsJestConfigE2E = (tsConfPath = '', withGqlPlugin = true) => {
-  const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+export const tsJestConfigE2E = (
+  tsConfPath = '',
+  withGqlPlugin = true,
+  overrideTsJestConfig?: any,
+) => {
+  const tsConfigFile = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+  const { tsconfig, ...restTsJest } = overrideTsJestConfig ?? {};
 
   const conf: any = {
     diagnostics: false,
     isolatedModules: true,
     tsconfig: {
-      ...(tsConfig?.config.compilerOptions ?? {}),
+      ...(tsConfigFile?.config.compilerOptions ?? {}),
+      ...(tsconfig ?? {}),
     },
+    ...restTsJest,
   };
 
   if (withGqlPlugin) {
@@ -40,14 +47,16 @@ export const tsJestConfigE2E = (tsConfPath = '', withGqlPlugin = true) => {
   return conf;
 };
 
-export const tsJestConfig = (tsConfPath = '') => {
-  const tsConfig = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+export const tsJestConfig = (tsConfPath = '', overrideTsJestConfig?: any) => {
+  const tsConfigFile = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+  const { tsconfig, ...restTsJest } = overrideTsJestConfig ?? {};
 
-  return {
+  const config = {
     tsconfig: {
-      ...(tsConfig?.config.compilerOptions ?? {}),
+      ...(tsConfigFile?.config.compilerOptions ?? {}),
       emitDecoratorMetadata: false,
       experimentalDecorators: false,
+      ...(tsconfig ?? {}),
     },
     diagnostics: false,
     // Setting isolatedModules to true improves the performance but it
@@ -59,7 +68,10 @@ export const tsJestConfig = (tsConfPath = '') => {
     // - https://github.com/kulshekhar/ts-jest/issues/1166
     // - https://stackoverflow.com/questions/57516328/unexpected-uncovered-branch-in-jest-coverage
     isolatedModules: true,
+    ...restTsJest,
   };
+
+  return config;
 };
 
 export const coverageThreshold = (
@@ -185,46 +197,6 @@ const defaultConf = (
   }
 
   return config;
-};
-
-export interface E2EOptions {
-  alias?: string;
-  e2eDirname: string;
-  rootDirname: string;
-  defaultConfOptions?: IDefaultConfOptions;
-  confOverride?: JestConfigWithTsJest;
-  withGqlPlugins?: boolean;
-}
-
-export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
-  let conf: JestConfigWithTsJest = {
-    ...defaultConf(
-      `${options.rootDirname}`,
-      options.defaultConfOptions,
-      tsJestConfigE2E(
-        path.resolve(`${options.e2eDirname}/tsconfig.json`),
-        options.withGqlPlugins ?? false,
-      ),
-    ),
-    testRegex: '.*\\.e2e-spec\\.ts$',
-    setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
-    roots: [`${options.e2eDirname}`],
-    bail: 1,
-  };
-
-  if (options.alias) {
-    conf.displayName = `e2e/${options.alias}`;
-    // conf.name = `e2e/${options.alias}`;
-  }
-
-  if (options.confOverride) {
-    conf = {
-      ...conf,
-      ...options.confOverride,
-    };
-  }
-
-  return conf;
 };
 
 export default defaultConf;

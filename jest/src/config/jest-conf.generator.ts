@@ -8,6 +8,7 @@ import defaultConf, {
   coverageThreshold,
   IDefaultConfOptions,
   tsJestConfig,
+  tsJestConfigE2E,
 } from './jest-def.config';
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
 import _yargs from 'yargs';
@@ -44,6 +45,7 @@ export interface IOptions {
   tsConfigPath?: { (proj: IProjectInfo): string };
   coverageOutputPath?: { (subProjectPath: string): string };
   defaultConfOptions?: IDefaultConfOptions;
+  tsJestConfig?: any;
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -95,6 +97,7 @@ export function jestConfGenerator(
           `${rootPath}/${proj.path}/tsconfig.${
             proj.type === 'library' ? 'lib' : 'app'
           }.json`,
+        options.tsJestConfig,
       ),
     ),
     globals: globals(),
@@ -217,3 +220,45 @@ export function jestConfGenerator(
 
   return config;
 }
+
+export interface E2EOptions {
+  alias?: string;
+  e2eDirname: string;
+  rootDirname: string;
+  defaultConfOptions?: IDefaultConfOptions;
+  confOverride?: JestConfigWithTsJest;
+  withGqlPlugins?: boolean;
+  tsJestConfig?: any;
+}
+
+export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
+  let conf: JestConfigWithTsJest = {
+    ...defaultConf(
+      `${options.rootDirname}`,
+      options.defaultConfOptions,
+      tsJestConfigE2E(
+        path.resolve(`${options.e2eDirname}/tsconfig.json`),
+        options.withGqlPlugins ?? false,
+        options.tsJestConfig,
+      ),
+    ),
+    testRegex: '.*\\.e2e-spec\\.ts$',
+    setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
+    roots: [`${options.e2eDirname}`],
+    bail: 1,
+  };
+
+  if (options.alias) {
+    conf.displayName = `e2e/${options.alias}`;
+    // conf.name = `e2e/${options.alias}`;
+  }
+
+  if (options.confOverride) {
+    conf = {
+      ...conf,
+      ...options.confOverride,
+    };
+  }
+
+  return conf;
+};
