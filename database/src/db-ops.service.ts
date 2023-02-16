@@ -31,7 +31,7 @@ export class DbOpsService {
 
   public async create() {
     for (const v of this.dbConnections) {
-      const schemaName = v.dbName;
+      const schemaName = v.conn.driver.schema;
       if (!schemaName) {
         this.loggerService.log(`Schema name not defined for ${v.dbName}`);
         continue;
@@ -64,8 +64,13 @@ export class DbOpsService {
   public async drop() {
     for (const v of this.dbConnections) {
       const queryRunner = v.conn.createQueryRunner();
-      this.loggerService.debug?.(`Dropping ${v.dbName}`);
-      await queryRunner.dropSchema(v.dbName, true, true);
+      if (!v.conn.driver.schema) {
+        this.loggerService.error(`Schema name not defined for ${v.dbName}`);
+        continue;
+      }
+
+      this.loggerService.debug?.(`Dropping ${v.conn.driver.schema}`);
+      await queryRunner.dropSchema(v.conn.driver.schema.toString(), true, true);
     }
   }
 
