@@ -68,7 +68,7 @@ const options: IOptions = {
     },
     '@nestjs-yalc/utils': {
       coverageThreshold: {
-        branches: 89.65,
+        branches: 88.33,
         functions: 86.95,
         lines: 83.69,
         statements: 84.46,

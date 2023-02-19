@@ -3,7 +3,7 @@ import { jest } from '@jest/globals';
 import { importMockedEsm } from './esm.helper.js';
 
 export async function createNestJsGraphqlMock(importMeta: { url: string }) {
-  const mockedGraphql = (await importMockedEsm(
+  const mockedGraphql: Record<string, any> = (await importMockedEsm(
     '@nestjs/graphql',
     importMeta,
     true,
@@ -11,7 +11,7 @@ export async function createNestJsGraphqlMock(importMeta: { url: string }) {
 
   class Fake {}
   // mock everything as a jest.fn
-  Object.keys(mockedGraphql).forEach((key) => {
+  Object.keys(mockedGraphql).forEach((key: string) => {
     mockedGraphql[key].mockImplementation?.(() => jest.fn());
   });
   // except these that should be a class
