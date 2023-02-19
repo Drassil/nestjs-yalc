@@ -1,7 +1,17 @@
-import 'reflect-metadata';
-import { SkeletonModule } from '../index.js';
+import { expect, jest, describe, it } from '@jest/globals';
 
-import * as helpers from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import 'reflect-metadata';
+import { mockNestJSGraphql } from '@nestjs-yalc/jest';
+import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
+
+const helpers = await importMockedEsm(
+  '@nestjs-yalc/crud-gen/crud-gen.helpers.js',
+  import.meta,
+);
+
+await mockNestJSGraphql(import.meta);
+
+const { SkeletonModule } = await import('../index.js');
 
 describe('Test skeleton module', () => {
   it('should register the module', () => {

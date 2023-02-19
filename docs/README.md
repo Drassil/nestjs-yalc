@@ -15,7 +15,6 @@ Nest-yalc stands for Nestjs - Yet Another Library Collection
 
 ## Documentation
 
-
 - [How to create graphql API with nestjs-yalc/crud-gen](./api-creation.md)
 
 - [How to use the Api-Strategy library](./api-strategy.md)
@@ -42,3 +41,16 @@ Then you should be able to browse the coverage reports via: [http://127.0.0.1:80
 ## Pipeline
 
 Currently our github pipeline checks that the linter and the tests are passing with 100% of coverage threshold
+
+## Directories and file names
+
+the nestjs-yalc directory structure is flat to let it be integrated in other projects easily
+
+- tsconfig.\*.json
+  - tsconfig.json -> used by the compiler and the IDE
+  - tsconfig.test.json -> used by jest
+  - tsconfig.dev.json -> used by other dev tools such as eslint
+- test.js
+- examples/ ->
+- docs/ -> used for the the github pages markdown
+- [other_libraries]/

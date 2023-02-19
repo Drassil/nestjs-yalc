@@ -1,15 +1,30 @@
+import {
+  expect,
+  jest,
+  describe,
+  it,
+  beforeEach,
+  beforeAll,
+  afterAll,
+  afterEach,
+} from '@jest/globals';
+
+import { mockNestJSGraphql } from '@nestjs-yalc/jest';
+await mockNestJSGraphql(import.meta);
+
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
 import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ModuleRef } from '@nestjs/core';
 import 'reflect-metadata';
-const { lowerCaseEmailMiddleware, SkeletonUserResolver } = await import(
-  '../index.js'
-);
 import { type SkeletonUser } from '../skeleton-user.entity.js';
 import { type SkeletonUserService } from '../skeleton-user.service.js';
+
 const { skeletonUserServiceFactory } = await import(
   '../skeleton-user.service.js'
+);
+const { lowerCaseEmailMiddleware, SkeletonUserResolver } = await import(
+  '../index.js'
 );
 
 describe('Test skeleton user resolver', () => {

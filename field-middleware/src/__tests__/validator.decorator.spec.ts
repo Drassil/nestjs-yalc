@@ -1,10 +1,22 @@
+import {
+  expect,
+  jest,
+  describe,
+  it,
+  beforeEach,
+  beforeAll,
+  afterAll,
+  afterEach,
+} from '@jest/globals';
 import { expect, jest } from '@jest/globals';
 import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
+import { DeepMocked } from '@golevelup/ts-jest';
 
-const ValidatorHelper = await importMockedEsm(
+const ValidatorHelper = (await importMockedEsm(
   '../validator.helper.js',
   import.meta,
-);
+)) as DeepMocked<typeof import('../validator.helper.js')>;
+
 const Validator = await import('../validator.decorator.js');
 
 const { StringFormatEnum } = await import('../string-format.enum.js');

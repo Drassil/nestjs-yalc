@@ -1,19 +1,5 @@
 {
   "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": false
-  },
-  "include": [
-    "**/src/**/*.ts"
-  ],
-  "exclude": [
-    "**/node_modules",
-    "**/*spec.ts",
-    "**/__tests__",
-    "**/__mocks__",
-    "**/.webpack"
-  ]
+  "include": ["**/src/**/*.ts", ".eslintrc.cjs"],
+  "exclude": ["**/node_modules"]
 }

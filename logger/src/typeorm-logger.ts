@@ -23,7 +23,7 @@ export class TypeORMLogger implements Logger {
   ): any {
     if (!this.isLoggerEnabled) return;
 
-    this.eventEmitter.emitAsync(LoggerEvent.QUERY_LOG, query);
+    void this.eventEmitter.emitAsync(LoggerEvent.QUERY_LOG, query);
     /* istanbul ignore next */
     this.logger.debug?.(`query: ${query}, parameters: ${parameters}`);
   }
@@ -38,7 +38,7 @@ export class TypeORMLogger implements Logger {
   ): any {
     if (!this.isLoggerEnabled) return;
 
-    this.eventEmitter.emitAsync(LoggerEvent.QUERY_ERROR, query, error);
+    void this.eventEmitter.emitAsync(LoggerEvent.QUERY_ERROR, query, error);
     /* istanbul ignore next */
     this.logger.error?.(
       `error: ${error}, query: ${query}, parameters: ${parameters}`,
@@ -55,7 +55,7 @@ export class TypeORMLogger implements Logger {
   ): any {
     if (!this.isLoggerEnabled) return;
 
-    this.eventEmitter.emitAsync(LoggerEvent.QUERY_SLOW, query, time);
+    void this.eventEmitter.emitAsync(LoggerEvent.QUERY_SLOW, query, time);
     /* istanbul ignore next */
     this.logger.warn?.(
       `SLOW QUERY!!!! time: ${time}, query: ${query}, parameters: ${parameters}`,

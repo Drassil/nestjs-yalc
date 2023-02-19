@@ -17,5 +17,8 @@ export function getDBNameByConnection(connName: string) {
 
 export const dbConnectionMap = (c: DataSource) => ({
   conn: c,
-  dbName: c.options.database?.toString() ?? getDBNameByConnection(c.name),
+  dbName:
+    c.options.database?.toString() ??
+    c.driver.schema ??
+    getDBNameByConnection(c.name),
 });

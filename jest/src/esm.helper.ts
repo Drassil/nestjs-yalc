@@ -7,6 +7,7 @@
  */
 import * as path from 'path';
 import * as url from 'url';
+import { jest } from '@jest/globals';
 
 function forEachDeep(
   obj: any,
@@ -21,7 +22,7 @@ function forEachDeep(
     property: string | undefined = undefined,
     parent = null,
     objPath: any = [],
-  ) {
+  ): any {
     return value && typeof value === 'object' && objPath.length <= options.depth
       ? Object.entries(value).forEach(([key, val]) =>
           walk(val, key, value, [...objPath, key]),
@@ -33,7 +34,8 @@ function forEachDeep(
 const NOOP = (x: any) => x;
 export async function importMockedEsm(
   moduleSpecifier: any,
-  importMeta: { jest: any; url: string },
+  importMeta: { url: string },
+  skipActualMock = false,
   factory = NOOP,
 ) {
   let modulePath = moduleSpecifier;
@@ -45,20 +47,26 @@ export async function importMockedEsm(
     modulePath = path.relative(thisMetaPath, absolutePath);
   }
 
-  const { jest } = importMeta;
   const module = await import(modulePath);
 
   const moduleCopy = { ...module };
   forEachDeep(moduleCopy, ([prop, value]: any, obj: { [x: string]: any }) => {
     if (typeof value === 'function') {
-      obj[prop] = jest.fn(value);
+      try {
+        obj[prop] = jest.fn(value);
+      } catch (e) {
+        // catch the TypeError: Cannot set property X of [object Object] which has only a getter
+        // console.error(e);
+      }
       // re-adding stinky dynamic custom properties which jest.fn() may has removed
       Object.assign(obj[prop], value);
     }
   });
 
   const moduleMock = factory(moduleCopy);
-  jest.unstable_mockModule(moduleSpecifier, () => moduleMock);
+
+  if (!skipActualMock)
+    jest.unstable_mockModule(moduleSpecifier, () => moduleMock);
 
   return moduleMock;
 }

@@ -1,4 +1,4 @@
-import { AnyFunction } from '@nestjs-yalc/types';
+import { AnyFunction } from '@nestjs-yalc/types/globals.js';
 import {
   combineLatest,
   MonoTypeOperatorFunction,
@@ -25,14 +25,14 @@ import util from 'node:util';
  * @returns Observable which wraps the input.
  */
 export function wrapIntoObservable<T>(
-  input: Promise<T> | Observable<T> | T | void,
+  input: Promise<T> | { (): Promise<T> } | Observable<T> | T | void,
 ): Observable<T> {
   if (input === null || input === undefined) {
     return EMPTY;
   }
 
   if (util.types.isAsyncFunction(input)) {
-    return from(input as Promise<T>);
+    return from((input as { (): Promise<T> })());
   }
 
   if (isObservable(input)) {

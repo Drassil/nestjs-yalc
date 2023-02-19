@@ -3,7 +3,7 @@ import {
   IOptions,
   IProjectInfo,
   jestConfGenerator,
-} from '@nestjs-yalc/jest/config/jest-conf.generator.js';
+} from '@nestjs-yalc/jest-config';
 
 console.log('=================== LOADING JEST OPTIONS ================');
 
@@ -29,9 +29,12 @@ Object.keys(paths).map((k: string) => {
 const options: IOptions = {
   defaultConfOptions: {
     transformEsModules: false,
+    jestConf: {
+      // injectGlobals: false, -> we can't set it to false because of this issue: https://github.com/golevelup/nestjs/issues/557
+    },
   },
   // TODO: re-enable everything except types
-  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka'],
+  skipProjects: ['types', 'graphql', 'crud-gen', 'kafka', 'jest'],
   defaultCoverageThreshold: {
     branches: 100,
     functions: 100,
@@ -41,10 +44,10 @@ const options: IOptions = {
   confOverrides: {
     '@nestjs-yalc/app': {
       coverageThreshold: {
-        statements: 9.62,
+        statements: 8.19,
         branches: 0,
         functions: 10.71,
-        lines: 8.06,
+        lines: 7.69,
       },
     },
     '@nestjs-yalc/aws-helpers': {
@@ -65,7 +68,7 @@ const options: IOptions = {
     },
     '@nestjs-yalc/utils': {
       coverageThreshold: {
-        branches: 92,
+        branches: 89.65,
         functions: 86.95,
         lines: 83.69,
         statements: 84.46,

@@ -196,7 +196,6 @@ export function jestConfGenerator(
 
   config = {
     coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
-    coverageProvider: 'v8',
     rootDir: `${rootPath}`,
     coverageThreshold: coverageThreshold(
       projects.filter((v: any) =>

@@ -18,12 +18,18 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@skeleton-app/skeleton-base-app": [
-        "libs/skeleton-base-app/src"
-      ],
-      "@skeleton-app/skeleton-base-app/*": [
-        "libs/skeleton-base-app/src/*"
-      ]
+      "@skeleton-app/skeleton-base-app": ["libs/skeleton-base-app/src"],
+      "@skeleton-app/skeleton-base-app/*": ["libs/skeleton-base-app/src/*"]
     }
-  }
+  },
+  "include": ["apps/**/src/**/*.ts", "libs/**/src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "apps/**/*.spec.ts",
+    "libs/**/*.spec.ts",
+    "apps/**/*.test.ts",
+    "libs/**/*.test.ts"
+  ]
 }

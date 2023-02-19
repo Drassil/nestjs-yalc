@@ -17,9 +17,7 @@ export async function runLambdaCliOperation(
     // after an error is by catching it here
     // and set a promise rejection. We should investigate why it's happening
     // since it should exit automatically after a thrown error
-    Promise.reject(error);
-
-    return {};
+    return Promise.reject(error);
   }
 
   return {

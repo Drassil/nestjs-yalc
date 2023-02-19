@@ -5,6 +5,7 @@ import * as readTsConfig from 'get-tsconfig';
 // import { pathsToModuleNameMapper } from 'ts-jest';
 import { defaults } from 'jest-config';
 import type { JestConfigWithTsJest } from 'ts-jest';
+import type { Config } from 'jest';
 
 export const coveragePathIgnorePatterns = [
   '/env/dist/',
@@ -48,7 +49,15 @@ export const tsJestConfigE2E = (
 };
 
 export const tsJestConfig = (tsConfPath = '', overrideTsJestConfig?: any) => {
-  const tsConfigFile = readTsConfig.getTsconfig(path.resolve(tsConfPath));
+  const tsConfigFile = readTsConfig.getTsconfig(
+    path.resolve(path.dirname(tsConfPath)),
+    path.basename(tsConfPath),
+  );
+
+  if (tsConfigFile?.path !== tsConfPath) {
+    throw new Error(`Cannot find ${tsConfPath}`);
+  }
+
   const { tsconfig, ...restTsJest } = overrideTsJestConfig ?? {};
 
   const config = {
@@ -128,6 +137,7 @@ export interface IDefaultConfOptions {
    */
   transformEsModules?: string[] | boolean;
   tsJestConf?: any;
+  jestConf?: Config;
 }
 
 /**
@@ -176,7 +186,8 @@ const defaultConf = (
     },
     errorOnDeprecated: true,
     // extensionsToTreatAsEsm: ['.ts'],
-    // injectGlobals: true
+    // injectGlobals: false,
+    ...options?.jestConf,
   };
 
   if (options.transformEsModules) {

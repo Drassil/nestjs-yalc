@@ -44,7 +44,7 @@ export class FakerHelper {
   // Date is returned in format YYYY-MM-DD
   randomBirthDate = (start = 18, end = 100) => {
     const birthDate = faker.date.past(end - start);
-    birthDate.setFullYear(birthDate.getFullYear() - start);
+    birthDate.setUTCFullYear(birthDate.getUTCFullYear() - start);
     // const [mm, dd, yyyy] = birthDate.format('yyyy-MM-dd').toLocaleString().split(',')[0].split('/');
     let yyyy = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(
       birthDate,

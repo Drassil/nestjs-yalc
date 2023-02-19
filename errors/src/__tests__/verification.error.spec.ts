@@ -1,3 +1,13 @@
+import {
+  expect,
+  jest,
+  describe,
+  it,
+  beforeEach,
+  beforeAll,
+  afterAll,
+  afterEach,
+} from '@jest/globals';
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { AdditionalVerificationNeededException } from '../verification.error.js';
 

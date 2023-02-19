@@ -19,7 +19,8 @@ import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 // import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
-import { EventEmitter2 } from 'eventemitter2';
+import eventemitter2 from 'eventemitter2';
+const { EventEmitter2 } = eventemitter2;
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 

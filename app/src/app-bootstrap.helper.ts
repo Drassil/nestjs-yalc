@@ -56,6 +56,8 @@ export class AppBootstrap {
       process.exit(0);
     }
 
+    // no need to wait here
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.listen();
 
     return this;
@@ -70,7 +72,7 @@ export class AppBootstrap {
       globalsOptions: options?.globalsOptions,
     });
 
-    this.applyBootstrapGlobals(options?.globalsOptions);
+    await this.applyBootstrapGlobals(options?.globalsOptions);
 
     await this.getApp().init();
 
@@ -137,7 +139,7 @@ export class AppBootstrap {
     return this.module;
   }
 
-  applyBootstrapGlobals(options?: IGlobalOptions) {
+  async applyBootstrapGlobals(options?: IGlobalOptions) {
     this.getApp().useGlobalPipes(
       new ValidationPipe({ validateCustomDecorators: true }),
     );
@@ -147,7 +149,7 @@ export class AppBootstrap {
       options?.apiPrefix ?? (this.getConf()?.apiPrefix || ''),
     );
     this.getApp().useLogger(this.loggerService);
-    this.getApp().register(fastifyCookie as any, {});
+    await this.getApp().register(fastifyCookie as any, {});
 
     /**
      * @todo refactor using a factory function to share with all services
