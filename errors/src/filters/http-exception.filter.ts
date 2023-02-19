@@ -1,41 +1,35 @@
-import { GqlExceptionFilter, GqlArgumentsHost } from '@nestjs/graphql';
-import {
-  HttpException,
-  ArgumentsHost,
-  Catch,
-  LoggerService,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { GqlExceptionFilter, GqlArgumentsHost } from "@nestjs/graphql";
+import * as common from "@nestjs/common";
 import {
   LoginError,
   MissingArgumentsError,
-  UnauthorizedError,
-} from '@nestjs-yalc/errors';
-import { ExceptionContextEnum } from '../errors.enum.js';
-import { EntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
-import { FastifyReply as FResponse } from 'fastify';
-import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
-import { BadRequestError } from '../input-validation.error.js';
+  UnauthorizedError
+} from "@nestjs-yalc/errors";
+import { ExceptionContextEnum } from "../errors.enum.js";
+import { EntityError } from "@nestjs-yalc/crud-gen/entity.error.js";
+import { FastifyReply as FResponse } from "fastify";
+import { GqlError } from "@nestjs-yalc/graphql/plugins/gql.error.js";
+import { BadRequestError } from "../input-validation.error.js";
 
 type HttpErrorType =
-  | HttpException
+  | common.HttpException
   | LoginError
   | MissingArgumentsError
   | UnauthorizedError
   | GqlError
   | BadRequestError;
-@Catch(
-  HttpException,
+@common.Catch(
+  common.HttpException,
   LoginError,
   MissingArgumentsError,
   UnauthorizedError,
   GqlError,
-  BadRequestError,
+  BadRequestError
 )
 export class HttpExceptionFilter implements GqlExceptionFilter {
-  constructor(private logger: LoggerService) {}
+  constructor(private logger: common.LoggerService) {}
 
-  catch(error: Error | HttpErrorType, host: ArgumentsHost) {
+  catch(error: Error | HttpErrorType, host: common.ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
 
     // TODO: Validate when monitoring is in place if we need an eventEmitter here instead of log
@@ -43,13 +37,13 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
       // Base logging for normal operation execution errors
       case error instanceof MissingArgumentsError:
       case error instanceof UnauthorizedError:
-      case error instanceof UnauthorizedException: // Thrown by NestJS Auth Guard
+      case error instanceof common.UnauthorizedException: // Thrown by NestJS Auth Guard
       case error instanceof LoginError:
       case error instanceof BadRequestError:
         this.logger.log(
           (<LoginError>error).systemMessage ?? error.message,
           error.stack,
-          ExceptionContextEnum.HTTP,
+          ExceptionContextEnum.HTTP
         );
         break;
       // Log original error message (for now only if is an EntityError)
@@ -59,7 +53,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
           entityError.originalError?.message
             ? entityError.originalError.message
             : error,
-          ExceptionContextEnum.HTTP,
+          ExceptionContextEnum.HTTP
         );
         break;
       case error instanceof GqlError:
@@ -72,10 +66,10 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
         break;
     }
 
-    if (gqlHost.getType() === 'http') {
+    if (gqlHost.getType() === "http") {
       const ctx = host.switchToHttp();
       const response = ctx.getResponse<FResponse>();
-      const status = (error as HttpException).getStatus();
+      const status = (error as common.HttpException).getStatus();
       return response.status(status).send((error as any).response);
     }
     return error;

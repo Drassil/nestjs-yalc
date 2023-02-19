@@ -1,3 +1,5 @@
+// @ts-nocheck - TODO: FIX THIS
+
 import {
   Args,
   ArgsOptions,
@@ -40,7 +42,7 @@ import {
 } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ContextId, ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { Mutation } from '@nestjs/graphql';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import {
   filterTypeToNativeType,
   getEntityRelations,

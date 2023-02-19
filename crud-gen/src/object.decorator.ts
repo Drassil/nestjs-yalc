@@ -1,3 +1,5 @@
+// @ts-nocheck - TODO: FIX THIS
+
 import { FieldMapperProperty, IFieldMapper } from '@nestjs-yalc/interfaces';
 import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';

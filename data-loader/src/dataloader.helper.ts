@@ -17,10 +17,8 @@ import {
 } from '@nestjs-yalc/crud-gen/generic-service.service.js';
 import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
-// import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
-import eventemitter2 from 'eventemitter2';
-const { EventEmitter2 } = eventemitter2;
+import eventemitter2, { type EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 
@@ -142,14 +140,14 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
     this.batchFn = async (findManyOptions: CrudGenFindManyOptions<Entity>) => {
       const randomId = Math.random();
 
-      this.eventEmitter?.emitAsync(
+      void this.eventEmitter?.emitAsync(
         EventCrudGen.START_TRANSACTION,
         findManyOptions.info?.fieldName,
         randomId,
       );
 
       const data = await getFn(findManyOptions);
-      this.eventEmitter?.emitAsync(
+      void this.eventEmitter?.emitAsync(
         EventCrudGen.END_TRANSACTION,
         findManyOptions.info?.fieldName,
         randomId,
@@ -173,14 +171,19 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
     let DLKey = this.keyMap.get(findOptions);
 
     if (!DLKey) {
+      const sort =
+        typeof findOptions.select?.sort === 'function'
+          ? findOptions.select.sort().join(',')
+          : '';
+
       // concat different information to create a proper dataloader key
-      DLKey = `${findOptions.select?.sort?.().join(',')}|${JSON.stringify(
+      DLKey = `${sort}|${JSON.stringify(
         findOptions.where ?? { filters: {} },
       )}|${JSON.stringify(findOptions.subQueryFilters)}|${JSON.stringify(
         findOptions.order ?? {},
       )}|${JSON.stringify(findOptions.take ?? {})}|${JSON.stringify(
         findOptions.skip ?? {},
-      )}|${searchKey}`;
+      )}|${searchKey.toString()}`;
 
       this.keyMap.set(findOptions, DLKey);
     }
@@ -272,7 +275,7 @@ export const getFn =
     return service.getEntityListCrudGen(findManyOptions, true);
   };
 
-export function DataLoaderFactory<Entity>(
+export function DataLoaderFactory<Entity extends Record<string, any>>(
   defaultSearchKey: keyof Entity,
   entity: ClassType,
   serviceToken?: string,
@@ -289,7 +292,10 @@ export function DataLoaderFactory<Entity>(
         eventEmitter,
       );
     },
-    inject: [serviceToken ?? getServiceToken(entity), EventEmitter2],
+    inject: [
+      serviceToken ?? getServiceToken(entity),
+      eventemitter2.EventEmitter2,
+    ],
     scope: Scope.REQUEST,
   };
 }

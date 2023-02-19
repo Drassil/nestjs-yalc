@@ -1,9 +1,4 @@
-import {
-  ExecutionContext,
-  Inject,
-  Injectable,
-  LoggerService,
-} from '@nestjs/common';
+import * as common from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { APP_LOGGER_SERVICE } from '@nestjs-yalc/app/def.const.js';
 import { AppEvents } from './app.events.js';
@@ -11,9 +6,11 @@ import { AppEvents } from './app.events.js';
 /**
  * Application service
  */
-@Injectable()
+@common.Injectable()
 export class BaseAppService {
-  constructor(@Inject(APP_LOGGER_SERVICE) protected logger: LoggerService) {}
+  constructor(
+    @common.Inject(APP_LOGGER_SERVICE) protected logger: common.LoggerService,
+  ) {}
 
   /**
    * Hello world function
@@ -23,7 +20,7 @@ export class BaseAppService {
   }
 
   @OnEvent(AppEvents.BEFORE_ALL_ROUTES)
-  handleBeforeAllRoutes(context: ExecutionContext) {
+  handleBeforeAllRoutes(context: common.ExecutionContext) {
     const handlerName = context.getHandler().name;
     // exclude special handlers such as _service
     if (!handlerName.startsWith('_') && handlerName.includes('_'))

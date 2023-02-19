@@ -41,7 +41,7 @@ export class GqlComplexityHelper {
         const queryContext = schema?.getQueryType()?.getFields()[name.value];
 
         GqlComplexityHelper.customMaxDepth =
-          queryContext?.extensions?.complexity ?? MAX_DEPTH;
+          (queryContext?.extensions?.complexity as number) ?? MAX_DEPTH;
 
         const totalOperations = selectionSet.selections.length;
         if (totalOperations > MAX_EXECUTABLE_DEFINITIONS) {

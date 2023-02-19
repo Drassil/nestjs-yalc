@@ -1,13 +1,16 @@
+// @ts-nocheck - TODO: FIX THIS
+
 import {
   QueryBuilderHelper,
   ReplicationMode,
 } from '@nestjs-yalc/database/query-builder.helper.js';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { ClassType } from '@nestjs-yalc/types';
-import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type.js';
 import {
   EntityRepository,
   FindOptionsUtils,
+  ObjectLiteral,
   Repository,
   SelectQueryBuilder,
 } from 'typeorm';
@@ -23,7 +26,9 @@ import './query-builder.helpers'; // must be imported here
 
 export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
 
-export class CrudGenRepository<Entity> extends Repository<Entity> {
+export class CrudGenRepository<
+  Entity extends ObjectLiteral,
+> extends Repository<Entity> {
   protected entity: EntityClassOrSchema;
 
   /**

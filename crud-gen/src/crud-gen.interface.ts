@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import {
   ArgsOptions,
   GqlExecutionContext,
@@ -186,7 +186,8 @@ export interface ICrudGenFindExtraOptions {
   _aliasType?: string;
 }
 
-export interface CrudGenFindManyOptions<T = any> extends FindManyOptions<T> {
+export interface CrudGenFindManyOptions<T = any>
+  extends Omit<FindManyOptions<T>, 'where'> {
   where?: IWhereCondition;
   /** Contains useful information about the graphql request */
   info?: GraphQLResolveInfo;

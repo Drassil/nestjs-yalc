@@ -7,7 +7,7 @@ import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import {
   ClassProvider,
   ExistingProvider,
@@ -17,9 +17,14 @@ import {
 } from '@nestjs/common';
 import { ReturnTypeFuncValue } from '@nestjs/graphql';
 import { GraphQLResolveInfo } from 'graphql';
-import { Equal, getMetadataArgsStorage, SelectQueryBuilder } from 'typeorm';
-import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs';
-import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs';
+import {
+  Equal,
+  getMetadataArgsStorage,
+  ObjectLiteral,
+  SelectQueryBuilder,
+} from 'typeorm';
+import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs.js';
+import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs.js';
 import { createWhere, getFindOperator } from './crud-gen-args.decorator.js';
 import {
   isCombinedWhereModel,
@@ -152,7 +157,7 @@ export const forceFilterWorker = (
   return where;
 };
 
-export function whereObjectToSqlString<Entity>(
+export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   queryBuilder: SelectQueryBuilder<Entity> | undefined,
   where: IWhereCondition,
   alias?: string,
@@ -336,7 +341,7 @@ export function isIFieldAndFilterMapper(
   return val?.field !== undefined;
 }
 
-export interface IDependencyObject<Entity> {
+export interface IDependencyObject<Entity extends ObjectLiteral> {
   providers: Array<FactoryProvider | Provider>;
   repository: ClassType<CrudGenRepository<Entity>>;
 }
@@ -367,7 +372,9 @@ interface IDataLoaderOptions<Entity> {
   entityModel?: ClassType<Entity>;
 }
 
-export interface ICrudGenDependencyFactoryOptions<Entity> {
+export interface ICrudGenDependencyFactoryOptions<
+  Entity extends ObjectLiteral,
+> {
   entityModel: ClassType<Entity>;
   resolver?:
     | Omit<IGenericResolverOptions<Entity>, 'entityModel'>
@@ -385,7 +392,7 @@ export function isProviderOverride(
   return !!casted.provider;
 }
 
-export function CrudGenDependencyFactory<Entity>({
+export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
   entityModel,
   dataloader,
   resolver,
@@ -728,7 +735,7 @@ export function applySelectOnFind<T = any>(
   } else {
     const selection = findOptions.select ?? [];
 
-    selection.push(key);
+    if (Array.isArray(selection)) selection.push(key);
 
     findOptions.select = selection;
   }

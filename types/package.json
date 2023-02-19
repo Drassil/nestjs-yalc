@@ -1,11 +1,11 @@
 {
   "name": "@types/nestjs-yalc",
   "type": "module",
-  "main": "./src/index.d.ts",
   "types": "./src/index.d.ts",
   "files": [
     "./src/index.d.ts",
     "./src/globals.d.ts",
+    "./src/globals.enum.ts",
     "./src/modules.d.ts"
   ],
   "exports": {

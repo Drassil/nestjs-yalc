@@ -1,4 +1,4 @@
-import { Spread } from '@nestjs-yalc/types';
+import { Spread } from '@nestjs-yalc/types/globals.js';
 
 /**
  * Used to check if a value is contained in a enum object

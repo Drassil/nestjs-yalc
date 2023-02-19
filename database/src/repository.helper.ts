@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 //TODO Complete the implementation of the switch connection, create and initialize dynamicaly the WalletRepository
-import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type.js';
 import {
   AbstractRepository,
   Connection,

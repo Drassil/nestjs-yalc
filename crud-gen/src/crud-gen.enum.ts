@@ -1,4 +1,4 @@
-import { AnyFunction, ClassType } from '@nestjs-yalc/types';
+import { AnyFunction, ClassType } from '@nestjs-yalc/types/globals.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { registerEnumType } from '@nestjs/graphql';
 import { getMappedTypeProperties } from './crud-gen.helpers.js';

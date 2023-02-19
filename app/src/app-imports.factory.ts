@@ -18,20 +18,24 @@ import { AppContextService } from './app-context.service.js';
 import { IDbConfType } from '@nestjs-yalc/database/conf.interface.js';
 import { getConfNameByConnection } from '@nestjs-yalc/database/conn.helper.js';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BuildSchemaOptions, GraphQLFederationModule } from '@nestjs/graphql';
+import { BuildSchemaOptions, GraphQLModule } from '@nestjs/graphql';
 import { JwtModule } from '@nestjs/jwt';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { IServiceConf } from './conf.type.js';
 import { GraphQLError } from 'graphql/error';
 import { GraphQLFormattedError } from 'graphql/error';
-import { AppLoggerModule } from '../logger/app-logger.module.js';
+// import { AppLoggerModule } from '@nestjs-yalc/logger/app-logger.module.js';
 import { TypeORMLogger } from '@nestjs-yalc/logger/typeorm-logger.js';
 import { CURAPP_CONF_ALIAS } from './def.const.js';
 import { AppEvents } from './app.events.js';
 import { GqlComplexityPlugin } from '@nestjs-yalc/graphql/plugins/gql-complexity.plugin.js';
 import { ApolloServerPlugin } from 'apollo-server-plugin-base';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
+import {
+  ApolloFederationDriver,
+  ApolloFederationDriverConfig,
+} from '@nestjs/apollo';
 
 import * as dotenv from 'dotenv';
 dotenv.config(); // preload .env root file before all the others
@@ -102,7 +106,7 @@ export function AppDependencyFactory(
   // import (re-instantiating) them when they are required by other modules
   const imports: ImportType[] = [
     configModule,
-    AppLoggerModule.forRoot(context, configModule),
+    // AppLoggerModule.forRoot(context, configModule),
     AppContextModule,
     HttpModule,
   ];
@@ -159,8 +163,10 @@ export function AppDependencyFactory(
 
   if (gqlModules.length) {
     imports.push(
-      GraphQLFederationModule.forRootAsync({
+      GraphQLModule.forRootAsync<ApolloFederationDriverConfig>({
+        driver: ApolloFederationDriver,
         imports: [ApolloPluginsModule.forRoot()],
+        // @ts-ignore - TODO: FIXME
         useFactory: async (
           configService: ConfigService,
           appContext: AppContextService,
@@ -214,8 +220,8 @@ export function AppDependencyFactory(
             // Makes sure not too much info. is revealed when reporting errors in non-dev stages
             // @url: https://github.com/nestjs/graphql/issues/1053#issuecomment-740739410
             formatError: (error: GraphQLError) => {
-              const message =
-                error.extensions?.exception?.response?.message || error.message;
+              const exception: any = error.extensions?.exception;
+              const message = exception?.response?.message || error.message;
 
               if (conf && (conf.isDev || conf.isTest)) {
                 return {
@@ -244,7 +250,14 @@ export function AppDependencyFactory(
                   }
                 : false,
             debug: conf?.isDev,
-            context: async ({ request, reply, ...rest }) => {
+            context: async ({
+              request,
+              reply,
+              ...rest
+            }: {
+              request: any;
+              reply: any;
+            }) => {
               await eventEmitter.emitAsync(
                 AppEvents.BEFORE_GQL_CONTEXT_MIDDLEWARE,
                 request,
@@ -279,9 +292,7 @@ export function AppDependencyFactory(
       JwtModule.registerAsync({
         imports: [configModule],
         useFactory: async (configService: ConfigService) => ({
-          secret:
-            configService.get<IServiceConf>(CURAPP_CONF_ALIAS)
-              ?.jwtSecretPrivate,
+          secret: configService.get<any>(CURAPP_CONF_ALIAS)?.jwtSecretPrivate,
           signOptions: {
             expiresIn: 3600,
           },

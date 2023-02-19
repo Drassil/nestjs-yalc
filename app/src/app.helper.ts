@@ -1,4 +1,4 @@
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { DynamicModule, INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import lodash from 'lodash';

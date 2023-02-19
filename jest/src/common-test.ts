@@ -1,15 +1,16 @@
 /* istanbul ignore file */
+import { expect, jest, describe, it } from "@jest/globals";
 
-import { ClassType, FactoryType } from '@nestjs-yalc/interfaces/common.type.js';
-import * as faker from 'faker';
-import { getTestFilenameWithoutExtension } from './helpers.js';
+import { ClassType, FactoryType } from "@nestjs-yalc/interfaces/common.type.js";
+import { faker } from "@faker-js/faker";
+import { getTestFilenameWithoutExtension } from "./helpers.js";
 
 export function classesAreDefinedTest(
   moduleName: string,
-  classList: ClassType[],
+  classList: ClassType[]
 ) {
   describe(`${getTestFilenameWithoutExtension(
-    moduleName,
+    moduleName
   )} classes test`, () => {
     for (const aClass of classList) {
       it(`should be able to create ${aClass.name} class instance`, () => {
@@ -22,28 +23,28 @@ export function classesAreDefinedTest(
 
 export function factoriesAreDefinedTest(
   moduleName: string,
-  factoryList: FactoryType[],
+  factoryList: FactoryType[]
 ) {
   describe(`${getTestFilenameWithoutExtension(
-    moduleName,
+    moduleName
   )} factories test`, () => {
     it(`All the factories should be defined`, () => {
       for (const aFactory of factoryList) {
         let instance = aFactory(faker);
         expect(instance).toBeDefined();
 
-        jest.spyOn(faker.datatype, 'number').mockReturnValue(0);
-        jest.spyOn(faker.datatype, 'boolean').mockReturnValue(false);
+        jest.spyOn(faker.datatype, "number").mockReturnValue(0);
+        jest.spyOn(faker.datatype, "boolean").mockReturnValue(false);
         instance = aFactory(faker);
         expect(instance).toBeDefined();
 
-        jest.spyOn(faker.datatype, 'number').mockReturnValue(1);
-        jest.spyOn(faker.datatype, 'boolean').mockReturnValue(true);
+        jest.spyOn(faker.datatype, "number").mockReturnValue(1);
+        jest.spyOn(faker.datatype, "boolean").mockReturnValue(true);
         instance = aFactory(faker);
         expect(instance).toBeDefined();
 
-        jest.spyOn(faker.datatype, 'number').mockRestore();
-        jest.spyOn(faker.datatype, 'boolean').mockRestore();
+        jest.spyOn(faker.datatype, "number").mockRestore();
+        jest.spyOn(faker.datatype, "boolean").mockRestore();
       }
     });
   });

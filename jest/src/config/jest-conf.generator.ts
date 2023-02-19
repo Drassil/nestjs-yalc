@@ -1,17 +1,17 @@
 /* istanbul ignore file */
 
-import * as path from 'path';
-import type { JestConfigWithTsJest } from 'ts-jest';
+import * as path from "path";
+import type { JestConfigWithTsJest } from "ts-jest";
 import defaultConf, {
   coveragePathIgnorePatterns,
   globals,
   coverageThreshold,
   IDefaultConfOptions,
   tsJestConfig,
-  tsJestConfigE2E,
-} from './jest-def.config';
+  tsJestConfigE2E
+} from "./jest-def.config";
 // import { options as jestOptionObject } from 'jest-cli/build/cli/args';
-import _yargs from 'yargs';
+import _yargs from "yargs";
 const yargs = _yargs.default;
 
 interface IAppDep {
@@ -26,7 +26,7 @@ export interface IAppProjSetting {
 export interface IProjectInfo {
   path: string;
   sourcePath: string;
-  type: 'library' | 'application' | string;
+  type: "library" | "application" | string;
 }
 
 export interface IOptions {
@@ -62,32 +62,32 @@ export function jestConfGenerator(
   appProjectsSettings: {
     [key: string]: IAppProjSetting;
   },
-  options: IOptions,
+  options: IOptions
 ): JestConfigWithTsJest {
   const createProjectSets = (projects: any[]) => {
     const _projectSets: { [key: string]: any } = {};
     for (const app in appProjectsSettings) {
       _projectSets[app] = projects.filter((p) =>
         appProjectsSettings[app].deps.some((v) =>
-          p.displayName.startsWith(`unit/${v.name}`),
-        ),
+          p.displayName.startsWith(`unit/${v.name}`)
+        )
       );
     }
 
     return {
       ..._projectSets,
-      all: projects,
+      all: projects
     };
   };
 
-  const cacheDirBase = '/tmp/jest_rs/';
+  const cacheDirBase = "/tmp/jest_rs/";
 
   let projects = [];
 
   const confFactory = (
     projName: string,
     proj: IProjectInfo,
-    projects?: any,
+    projects?: any
   ) => ({
     ...defaultConf(
       `${rootPath}/`,
@@ -95,10 +95,10 @@ export function jestConfGenerator(
       tsJestConfig(
         options.tsConfigPath?.(proj) ??
           `${rootPath}/${proj.path}/tsconfig.${
-            proj.type === 'library' ? 'lib' : 'app'
+            proj.type === "library" ? "lib" : "app"
           }.json`,
-        options.tsJestConfig,
-      ),
+        options.tsJestConfig
+      )
     ),
     globals: globals(),
     // name: `unit/${projName}`,
@@ -110,9 +110,9 @@ export function jestConfGenerator(
     setupFiles: [`${__dirname}/jest.setup.ts`],
     coverageThreshold: coverageThreshold(
       projects,
-      options.defaultCoverageThreshold,
+      options.defaultCoverageThreshold
     ),
-    coveragePathIgnorePatterns,
+    coveragePathIgnorePatterns
   });
 
   for (const projName of Object.keys(projectList)) {
@@ -126,7 +126,7 @@ export function jestConfGenerator(
 
       if (options.confOverrides) {
         const overrideKey = Object.keys(options.confOverrides).find(
-          (v) => projName.startsWith(v) && v,
+          (v) => projName.startsWith(v) && v
         );
 
         const overrideConf =
@@ -143,15 +143,15 @@ export function jestConfGenerator(
 
   const projectSets: { [key: string]: any } = createProjectSets(projects);
 
-  const selectedProj = process.env.npm_config_bcaproj || 'all';
+  const selectedProj = process.env.npm_config_bcaproj || "all";
 
   projects = projectSets[selectedProj];
 
   // use argv to catch the path argument in any position
   const argv: any = yargs(process.argv.slice(2))
-    .command('$0 [path]', 'test path', (yargs) => {
-      return yargs.positional('path', {
-        describe: 'test path',
+    .command("$0 [path]", "test path", (yargs) => {
+      return yargs.positional("path", {
+        describe: "test path"
       });
     })
     .showHelpOnFail(false)
@@ -161,20 +161,20 @@ export function jestConfGenerator(
     }).argv;
 
   const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
-  const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
+  const testPath: string = typeof possiblePath === "string" ? possiblePath : "";
 
   // eslint-disable-next-line no-console
-  console.debug('possiblePath', possiblePath);
+  console.debug("possiblePath", possiblePath);
 
   let config: any = {};
 
   // "." must be converted to "/"
-  let subProjectPath = testPath.startsWith('.') ? testPath.slice(1) : testPath;
+  let subProjectPath = testPath.startsWith(".") ? testPath.slice(1) : testPath;
   subProjectPath = subProjectPath.startsWith(rootPath)
     ? subProjectPath.slice(rootPath.length)
     : subProjectPath;
   // we always need "/" at the beginning of the string
-  subProjectPath = subProjectPath.startsWith('/')
+  subProjectPath = subProjectPath.startsWith("/")
     ? subProjectPath
     : `/${subProjectPath}`;
 
@@ -192,27 +192,27 @@ export function jestConfGenerator(
     subProjectPath = subProjectPath.substring(0, lastIndexOfSrc);
 
   // eslint-disable-next-line no-console
-  console.debug('Subproject path:', subProjectPath ?? '');
+  console.debug("Subproject path:", subProjectPath ?? "");
 
   config = {
-    coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
+    coverageReporters: ["json-summary", "json", "lcov", "text", "clover"],
     rootDir: `${rootPath}`,
     coverageThreshold: coverageThreshold(
       projects.filter((v: any) =>
-        v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
+        v.rootDir.startsWith(`${rootPath}${subProjectPath}`)
       ),
-      options.defaultCoverageThreshold,
+      options.defaultCoverageThreshold
     ),
     coverageDirectory: path.join(
       rootPath,
       options.coverageOutputPath?.(subProjectPath) ??
-        `docs/compodoc/jestcoverage/${subProjectPath}`,
+        `docs/compodoc/jestcoverage/${subProjectPath}`
     ),
     collectCoverageFrom: [
       `**/*.{js,ts}`,
-      '!**/node_modules/**',
-      '!**/.warmup/**',
-    ],
+      "!**/node_modules/**",
+      "!**/.warmup/**"
+    ]
   };
 
   config.projects = projects;
@@ -238,13 +238,13 @@ export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
       tsJestConfigE2E(
         path.resolve(`${options.e2eDirname}/tsconfig.json`),
         options.withGqlPlugins ?? false,
-        options.tsJestConfig,
-      ),
+        options.tsJestConfig
+      )
     ),
-    testRegex: '.*\\.e2e-spec\\.ts$',
+    testRegex: ".*\\.e2e-spec\\.ts$",
     setupFilesAfterEnv: [`${options.e2eDirname}/jest.e2e-setup.ts`],
     roots: [`${options.e2eDirname}`],
-    bail: 1,
+    bail: 1
   };
 
   if (options.alias) {
@@ -255,7 +255,7 @@ export const createE2EConfig = (options: E2EOptions): JestConfigWithTsJest => {
   if (options.confOverride) {
     conf = {
       ...conf,
-      ...options.confOverride,
+      ...options.confOverride
     };
   }
 

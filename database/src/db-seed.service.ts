@@ -1,23 +1,25 @@
 /* istanbul ignore file */
 
-import { factory, useSeeding } from 'typeorm-seeding';
-import { ConfigureOption } from 'typeorm-seeding/dist/connection';
-import { Injectable, LoggerService, Provider } from '@nestjs/common';
-import { Connection } from 'typeorm';
-import { ConfigService } from '@nestjs/config';
-import { IDbConfType } from './conf.interface.js';
-import { getConfNameByConnection } from './conn.helper.js';
+// @ts-nocheck -- TODO: FIX THIS
+
+import { factory, useSeeding } from "typeorm-seeding";
+import { ConfigureOption } from "typeorm-seeding/dist/connection.js";
+import * as common from "@nestjs/common";
+import { DataSource } from "typeorm";
+import { ConfigService } from "@nestjs/config";
+import { IDbConfType } from "./conf.interface.js";
+import { getConfNameByConnection } from "./conn.helper.js";
 
 /**
  * Application service
  */
-@Injectable()
+@common.Injectable()
 export class SeedService {
   constructor(
-    private dbConnections: Connection[],
-    private loggerService: LoggerService,
+    private dbConnections: DataSource[],
+    private loggerService: common.LoggerService,
     private configService: ConfigService,
-    private configPath: string,
+    private configPath: string
   ) {}
 
   public async closeAllConnections() {
@@ -26,9 +28,9 @@ export class SeedService {
     }
   }
 
-  private async clearDatabase(connection: Connection, name: string) {
+  private async clearDatabase(connection: DataSource, name: string) {
     const dbConf = this.configService.get<IDbConfType>(
-      getConfNameByConnection(connection.name),
+      getConfNameByConnection(connection.name)
     );
 
     if (!dbConf?.seeds || dbConf?.seeds.length === 0) return;
@@ -36,7 +38,7 @@ export class SeedService {
     this.resetConnection();
 
     this.loggerService.debug?.(
-      `Clear ${name} on connection: ${connection.name}...`,
+      `Clear ${name} on connection: ${connection.name}...`
     );
 
     const queryRunner = connection.createQueryRunner();
@@ -45,22 +47,22 @@ export class SeedService {
       connection.entityMetadatas.map(async (meta) => {
         const skipTable = await queryRunner.hasTable(meta.tableName);
 
-        if (meta.tableType === 'view' || !skipTable) {
+        if (meta.tableType === "view" || !skipTable) {
           this.loggerService.debug?.(
-            `Skip truncating ${name}.${meta.tableName}`,
+            `Skip truncating ${name}.${meta.tableName}`
           );
           return;
         }
         this.loggerService.debug?.(`Truncating ${name}.${meta.tableName}`);
         await queryRunner.clearTable(meta.tableName);
-      }),
+      })
     );
     this.loggerService.debug?.(`Database ${name} cleared!`);
   }
 
-  private async seedDatabase(connection: Connection, name: string) {
+  private async seedDatabase(connection: DataSource, name: string) {
     const dbConf = this.configService.get<IDbConfType>(
-      getConfNameByConnection(connection.name),
+      getConfNameByConnection(connection.name)
     );
 
     if (!dbConf?.seeds || dbConf?.seeds.length === 0) return;
@@ -69,8 +71,8 @@ export class SeedService {
 
     const option: ConfigureOption = {
       root: this.configPath,
-      configName: 'ormconfig',
-      connection: connection.name,
+      configName: "ormconfig",
+      connection: connection.name
     };
 
     this.resetConnection();
@@ -85,7 +87,7 @@ export class SeedService {
       // eslint-disable-next-line no-console
       console.time(label);
       this.loggerService.debug?.(`Running seeder ${seeder.name} on ${name}`);
-      await new seeder().run(factory, connection);
+      await new seeder().run(connection);
       // eslint-disable-next-line no-console
       console.timeEnd(label);
     }
@@ -94,7 +96,7 @@ export class SeedService {
   }
 
   public async seedDatabases(reseed: boolean /*, _databases*/) {
-    this.loggerService.debug?.('Seeding db...');
+    this.loggerService.debug?.("Seeding db...");
 
     if (reseed) {
       await Promise.all(
@@ -102,9 +104,9 @@ export class SeedService {
           if (!connection.options.database) return;
           await this.clearDatabase(
             connection,
-            connection.options.database.toString(),
+            connection.options.database.toString()
           );
-        }),
+        })
       );
     }
 
@@ -116,21 +118,21 @@ export class SeedService {
 
           await this.seedDatabase(
             connection,
-            connection.options.database.toString(),
+            connection.options.database.toString()
           );
         });
       } else {
         if (!connection.options.database) continue;
         await this.seedDatabase(
           connection,
-          connection.options.database.toString(),
+          connection.options.database.toString()
         );
       }
     }
 
     await Promise.all(promiseList.map((fn) => fn()));
 
-    this.loggerService.debug?.('Seeding completed!');
+    this.loggerService.debug?.("Seeding completed!");
   }
 
   /**
@@ -138,40 +140,40 @@ export class SeedService {
    *
    */
   private resetConnection() {
-    global['TypeORM_Seeding_Connection'] = {
+    global["TypeORM_Seeding_Connection"] = {
       configureOption: {
         root: process.cwd(),
-        configName: '',
-        connection: '',
+        configName: "",
+        connection: ""
       },
       ormConfig: undefined,
       connection: undefined,
-      overrideConnectionOptions: {},
+      overrideConnectionOptions: {}
     };
   }
 
-  private setConnection(connection: Connection | undefined) {
-    global['TypeORM_Seeding_Connection']['connection'] = connection;
+  private setConnection(connection: DataSource | undefined) {
+    global["TypeORM_Seeding_Connection"]["connection"] = connection;
   }
 }
 
 export const SeedServiceFactory = (
   configPath: string,
   loggerService: string,
-  connectionTokens: any[],
-): Provider => ({
+  connectionTokens: any[]
+): common.Provider => ({
   provide: SeedService,
   useFactory: async (
     configService: ConfigService,
-    loggerService: LoggerService,
-    ...dbConnections: Connection[]
+    loggerService: common.LoggerService,
+    ...dbConnections: DataSource[]
   ) => {
     return new SeedService(
       dbConnections,
       loggerService,
       configService,
-      configPath,
+      configPath
     );
   },
-  inject: [ConfigService, loggerService, ...connectionTokens],
+  inject: [ConfigService, loggerService, ...connectionTokens]
 });

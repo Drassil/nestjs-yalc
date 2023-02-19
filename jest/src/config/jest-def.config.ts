@@ -1,30 +1,29 @@
 /* istanbul ignore file */
 
-import * as path from 'path';
-import * as readTsConfig from 'get-tsconfig';
+import * as path from "path";
+import * as readTsConfig from "get-tsconfig";
 // import { pathsToModuleNameMapper } from 'ts-jest';
-import { defaults } from 'jest-config';
-import type { JestConfigWithTsJest } from 'ts-jest';
-import type { Config } from 'jest';
+import { defaults } from "jest-config";
+import type { JestConfigWithTsJest } from "ts-jest";
 
 export const coveragePathIgnorePatterns = [
-  '/env/dist/',
-  '/node_modules/',
-  '/database/seeds/',
-  '/database/migrations/',
-  '/test/feature/',
+  "/env/dist/",
+  "/node_modules/",
+  "/database/seeds/",
+  "/database/migrations/",
+  "/test/feature/"
 ];
 
 export const globals = () => {
   return {
-    __JEST_DISABLE_DB: true,
+    __JEST_DISABLE_DB: true
   };
 };
 
 export const tsJestConfigE2E = (
-  tsConfPath = '',
+  tsConfPath = "",
   withGqlPlugin = true,
-  overrideTsJestConfig?: any,
+  overrideTsJestConfig?: any
 ) => {
   const tsConfigFile = readTsConfig.getTsconfig(path.resolve(tsConfPath));
   const { tsconfig, ...restTsJest } = overrideTsJestConfig ?? {};
@@ -34,24 +33,24 @@ export const tsJestConfigE2E = (
     isolatedModules: true,
     tsconfig: {
       ...(tsConfigFile?.config.compilerOptions ?? {}),
-      ...(tsconfig ?? {}),
+      ...(tsconfig ?? {})
     },
-    ...restTsJest,
+    ...restTsJest
   };
 
   if (withGqlPlugin) {
     conf.astTransformers = {
-      before: [path.join(__dirname, 'gql-plugin.js')],
+      before: [path.join(__dirname, "gql-plugin.js")]
     };
   }
 
   return conf;
 };
 
-export const tsJestConfig = (tsConfPath = '', overrideTsJestConfig?: any) => {
+export const tsJestConfig = (tsConfPath = "", overrideTsJestConfig?: any) => {
   const tsConfigFile = readTsConfig.getTsconfig(
     path.resolve(path.dirname(tsConfPath)),
-    path.basename(tsConfPath),
+    path.basename(tsConfPath)
   );
 
   if (tsConfigFile?.path !== tsConfPath) {
@@ -65,7 +64,7 @@ export const tsJestConfig = (tsConfPath = '', overrideTsJestConfig?: any) => {
       ...(tsConfigFile?.config.compilerOptions ?? {}),
       emitDecoratorMetadata: false,
       experimentalDecorators: false,
-      ...(tsconfig ?? {}),
+      ...(tsconfig ?? {})
     },
     diagnostics: false,
     // Setting isolatedModules to true improves the performance but it
@@ -77,7 +76,7 @@ export const tsJestConfig = (tsConfPath = '', overrideTsJestConfig?: any) => {
     // - https://github.com/kulshekhar/ts-jest/issues/1166
     // - https://stackoverflow.com/questions/57516328/unexpected-uncovered-branch-in-jest-coverage
     isolatedModules: true,
-    ...restTsJest,
+    ...restTsJest
   };
 
   return config;
@@ -89,13 +88,13 @@ export const coverageThreshold = (
     branches: 100,
     functions: 100,
     lines: 100,
-    statements: 100,
-  },
+    statements: 100
+  }
 ) => {
   const coverage: Record<string, any> = {
     global: {
-      ...defaultCoverageThreshold,
-    },
+      ...defaultCoverageThreshold
+    }
   };
 
   projects.map((project) => {
@@ -115,13 +114,13 @@ export const coverageThreshold = (
     // }
 
     coverage[project.rootDir] = {
-      ...defaultCoverageThreshold,
+      ...defaultCoverageThreshold
     };
 
     if (project?.coverageThreshold) {
       coverage[project.rootDir] = {
         ...coverage[project.rootDir],
-        ...project?.coverageThreshold,
+        ...project?.coverageThreshold
       };
     }
   });
@@ -137,7 +136,7 @@ export interface IDefaultConfOptions {
    */
   transformEsModules?: string[] | boolean;
   tsJestConf?: any;
-  jestConf?: Config;
+  jestConf?: any;
 }
 
 /**
@@ -148,7 +147,7 @@ export interface IDefaultConfOptions {
 const defaultConf = (
   dirname: string,
   options: IDefaultConfOptions = {},
-  tsJestConfig: any = {},
+  tsJestConfig: any = {}
 ): JestConfigWithTsJest => {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const compilerOptions = require(`${dirname}/tsconfig.json`).compilerOptions;
@@ -160,26 +159,26 @@ const defaultConf = (
   const config: JestConfigWithTsJest = {
     rootDir: dirname,
     modulePathIgnorePatterns: [
-      '<rootDir>/var/',
-      '<rootDir>/env/',
-      '<rootDir>/docs/',
-      '<rootDir>/node_modules/',
+      "<rootDir>/var/",
+      "<rootDir>/env/",
+      "<rootDir>/docs/",
+      "<rootDir>/node_modules/"
     ],
-    preset: 'ts-jest/presets/default-esm',
-    testEnvironment: 'node',
-    moduleFileExtensions: [...defaults.moduleFileExtensions, 'ts'], // add typescript to the default options
-    testRegex: '.*\\.spec\\.ts$',
+    preset: "ts-jest/presets/default-esm",
+    testEnvironment: "node",
+    moduleFileExtensions: [...defaults.moduleFileExtensions, "ts"], // add typescript to the default options
+    testRegex: ".*\\.spec\\.ts$",
     transform: {
-      '^.+\\.(t|j)sx?$': [
-        'ts-jest',
+      "^.+\\.(t|j)sx?$": [
+        "ts-jest",
         {
           useESM: true,
-          ...tsJestConfig,
-        },
-      ],
+          ...tsJestConfig
+        }
+      ]
     },
     moduleNameMapper: {
-      '^(\\.{1,2}/.*)\\.js$': '$1', // for ESM support
+      "^(\\.{1,2}/.*)\\.js$": "$1" // for ESM support
       // ...pathsToModuleNameMapper(compilerOptions.paths, {
       //   prefix: dirname,
       // }),
@@ -187,7 +186,7 @@ const defaultConf = (
     errorOnDeprecated: true,
     // extensionsToTreatAsEsm: ['.ts'],
     // injectGlobals: false,
-    ...options?.jestConf,
+    ...options?.jestConf
   };
 
   if (options.transformEsModules) {
@@ -195,15 +194,15 @@ const defaultConf = (
       ...(Array.isArray(options.transformEsModules)
         ? options.transformEsModules
         : []),
-      'aggregate-error',
-      'clean-stack',
-      'escape-string-regexp',
-      'indent-string',
-      'p-map',
-    ].join('|');
+      "aggregate-error",
+      "clean-stack",
+      "escape-string-regexp",
+      "indent-string",
+      "p-map"
+    ].join("|");
 
     config.transformIgnorePatterns = [
-      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`,
+      `[/\\\\]node_modules[/\\\\](?!${esModules}).+\\.(js|jsx)$`
     ];
   }
 

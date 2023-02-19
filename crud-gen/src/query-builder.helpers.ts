@@ -1,18 +1,18 @@
-import { SelectQueryBuilder } from 'typeorm';
+import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
 import {
   formatRawSelection,
-  getDestinationFieldName,
-} from './crud-gen.helpers.js';
+  getDestinationFieldName
+} from "./crud-gen.helpers.js";
 import {
   getCrudGenFieldMetadataList,
-  ICrudGenFieldMetadata,
-} from './object.decorator.js';
+  ICrudGenFieldMetadata
+} from "./object.decorator.js";
 
 /**
  * Monkey patching query builder
  */
 
-declare module 'typeorm' {
+declare module "typeorm" {
   interface SelectQueryBuilder<Entity> {
     getMany(this: SelectQueryBuilder<Entity>): Promise<Entity[]>;
     getOne(this: SelectQueryBuilder<Entity>): Promise<Entity | undefined>;
@@ -29,12 +29,12 @@ SelectQueryBuilder.prototype.getMany = async function () {
     for (const [propertyKey, field] of Object.entries<
       ICrudGenFieldMetadata<any>
     >(metaInfo)) {
-      if (field.mode === 'derived' && field.dst) {
+      if (field.mode === "derived" && field.dst) {
         const itemKey = formatRawSelection(
           getDestinationFieldName(field.dst),
           propertyKey,
           this.alias,
-          true,
+          true
         );
 
         entity[propertyKey] = item[itemKey];
@@ -55,14 +55,14 @@ SelectQueryBuilder.prototype.getOne = async function () {
   const metaInfo = getCrudGenFieldMetadataList(entities[0].constructor) ?? {};
 
   for (const [propertyKey, field] of Object.entries<ICrudGenFieldMetadata<any>>(
-    metaInfo,
+    metaInfo
   )) {
-    if (field.mode === 'derived' && field.dst) {
+    if (field.mode === "derived" && field.dst) {
       const itemKey = formatRawSelection(
         getDestinationFieldName(field.dst),
         propertyKey,
         this.alias,
-        true,
+        true
       );
       entities[0][propertyKey] = raw[0][itemKey];
     }
@@ -71,4 +71,6 @@ SelectQueryBuilder.prototype.getOne = async function () {
   return entities[0];
 };
 
-export class SelectQueryBuilderPatched<T> extends SelectQueryBuilder<T> {}
+export class SelectQueryBuilderPatched<
+  T extends ObjectLiteral
+> extends SelectQueryBuilder<T> {}

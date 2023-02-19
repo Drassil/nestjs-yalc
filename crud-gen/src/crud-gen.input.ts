@@ -1,4 +1,5 @@
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { AnyFunction } from '@nestjs-yalc/types/globals.js';
 import {
   Field,
   HideField,
@@ -249,7 +250,7 @@ export function agJoinArgFactory<Entity>(
   resolverInfoList.forEach((r) => {
     const type = r.relation.type;
     if (typeof type !== 'string') {
-      const typeClass = type();
+      const typeClass = (type as AnyFunction)();
       @InputType(`${entityModel.name}${r.relation.propertyName}JoinInputType`)
       class JoinFullInput extends IntersectionType(
         JoinInput,

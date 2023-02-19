@@ -1,6 +1,6 @@
 import { IDbConfObject } from '@nestjs-yalc/database/conf.interface.js';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper.js';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { EntitySchema } from 'typeorm';
 import { Seeder } from 'typeorm-seeding';

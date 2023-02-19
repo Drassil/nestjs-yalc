@@ -3,7 +3,7 @@ import { SkeletonUser } from './skeleton-user.entity.js';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
-import { ClassType } from '@nestjs-yalc/types';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 

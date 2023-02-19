@@ -1,19 +1,14 @@
-import { GqlExceptionFilter, GqlArgumentsHost } from '@nestjs/graphql';
-import {
-  ArgumentsHost,
-  Catch,
-  InternalServerErrorException,
-  LoggerService,
-} from '@nestjs/common';
+import { GqlExceptionFilter, GqlArgumentsHost } from "@nestjs/graphql";
+import * as common from "@nestjs/common";
 // We can import more errors from the typeorm/error folder if necessary, nothing is exported though, so use explicit paths.
-import { EntityNotFoundError, ConnectionNotFoundError } from 'typeorm';
-import { ExceptionContextEnum } from '../errors.enum.js';
+import { EntityNotFoundError, ConnectionNotFoundError } from "typeorm";
+import { ExceptionContextEnum } from "../errors.enum.js";
 
-@Catch(EntityNotFoundError, ConnectionNotFoundError)
+@common.Catch(EntityNotFoundError, ConnectionNotFoundError)
 export class DatabaseExceptionFilter implements GqlExceptionFilter {
-  constructor(private logger: LoggerService) {}
+  constructor(private logger: common.LoggerService) {}
 
-  catch(error: Error, host: ArgumentsHost) {
+  catch(error: Error, host: common.ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
     gqlHost.getType();
 
@@ -32,7 +27,7 @@ export class DatabaseExceptionFilter implements GqlExceptionFilter {
       // @url: https://github.com/typeorm/typeorm/issues/3479
       case error instanceof EntityNotFoundError:
         this.logger.error(error, ExceptionContextEnum.DATABASE);
-        error = new InternalServerErrorException(error);
+        error = new common.InternalServerErrorException(error);
         // Sentry.captureException(error);
         break;
       // Log critically any other error, because those are not expected normally
