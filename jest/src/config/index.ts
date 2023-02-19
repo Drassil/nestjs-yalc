@@ -1,2 +1,2 @@
-export * from './jest-conf.generator.js';
-export * from './jest-def.config.js';
+export * from './jest-conf.generator';
+export * from './jest-def.config';

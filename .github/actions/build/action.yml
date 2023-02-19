@@ -1,0 +1,29 @@
+name: 'action-build'
+description: 'Action to run the build'
+inputs:
+  working-directory:
+    description: 'Working directory'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
+        submodules: 'recursive'
+
+    - name: Setup
+      id: setup
+      with:
+        node_version: ${{ env.NODE_VERSION }}
+        install_command: ci
+        package_json_dir: ${{ github.workspace }}/${{ inputs.working-directory }}
+      uses: drassil/gh-actions-collection/node-setup@master
+
+    - name: Test build
+      shell: bash
+      working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}
+      run: |
+        npm run build

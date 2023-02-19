@@ -4,12 +4,12 @@ import 'reflect-metadata';
 import { mockNestJSGraphql } from '@nestjs-yalc/jest';
 import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
 
+await mockNestJSGraphql(import.meta);
+
 const helpers = await importMockedEsm(
   '@nestjs-yalc/crud-gen/crud-gen.helpers.js',
   import.meta,
 );
-
-await mockNestJSGraphql(import.meta);
 
 const { SkeletonModule } = await import('../index.js');
 

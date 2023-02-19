@@ -9,7 +9,7 @@ import {
 } from '@jest/globals';
 
 import { FakerHelper } from '../faker-helper.js';
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 enum testEnum {
   KEY = 'value',

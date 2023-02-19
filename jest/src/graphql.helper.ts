@@ -10,7 +10,11 @@ export async function createNestJsGraphqlMock(importMeta: { url: string }) {
   )) as DeepMocked<typeof import('@nestjs/graphql')>;
 
   class Fake {}
-  mockedGraphql.InputType.mockImplementation((() => jest.fn()) as any);
+  // mock everything as a jest.fn
+  Object.keys(mockedGraphql).forEach((key) => {
+    mockedGraphql[key].mockImplementation?.(() => jest.fn());
+  });
+  // except these that should be a class
   mockedGraphql.OmitType.mockImplementation((() => Fake) as any);
   mockedGraphql.PickType.mockImplementation((() => Fake) as any);
   mockedGraphql.PartialType.mockImplementation((() => Fake) as any);

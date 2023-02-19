@@ -60,7 +60,7 @@ export type AppModuleMetadata = Required<
  * create a test app module with the same imports of the actual app
  */
 export function AppDependencyFactory(
-  context: string,
+  _context: string,
   confs: any[],
   dbConnNames: string[],
   gqlModules: any[],
