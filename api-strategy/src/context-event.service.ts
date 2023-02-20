@@ -1,4 +1,4 @@
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { Injectable } from '@nestjs/common';
 import { IEventStrategy } from './context-event.interface.js';
 

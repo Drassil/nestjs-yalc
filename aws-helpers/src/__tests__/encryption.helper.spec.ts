@@ -218,7 +218,7 @@ describe('Encryption helper test', () => {
     const envVariableToDecrypt = {
       ['TEST_ENV']: 'TEST_ENV',
     };
-    await $.setEnvironmentVariableFromSsm(envVariableToDecrypt);
+    await $.setEnvironmentVariablesFromSsm(envVariableToDecrypt);
     expect(process.env['TEST_ENV']).toBe('someString');
   });
 });

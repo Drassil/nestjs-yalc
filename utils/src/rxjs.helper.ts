@@ -1,4 +1,4 @@
-import { AnyFunction } from '@nestjs-yalc/types/globals.js';
+import { AnyFunction } from '@nestjs-yalc/types/globals.d.js';
 import {
   combineLatest,
   MonoTypeOperatorFunction,

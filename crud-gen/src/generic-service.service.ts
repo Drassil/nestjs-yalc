@@ -24,7 +24,7 @@ import { FindConditions } from 'typeorm';
 import { FindManyOptions } from 'typeorm';
 import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
 import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getProviderToken } from './crud-gen.helpers.js';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';

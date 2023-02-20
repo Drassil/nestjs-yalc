@@ -1,4 +1,4 @@
-import { HTTPMethods } from '@nestjs-yalc/types/globals.js';
+import { HTTPMethods } from '@nestjs-yalc/types/globals.d.js';
 import { OutgoingHttpHeaders, IncomingHttpHeaders } from 'node:http2';
 import { IApiCallStrategy } from '../context-call.interface.js';
 

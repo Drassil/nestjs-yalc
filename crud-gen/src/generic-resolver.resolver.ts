@@ -42,7 +42,7 @@ import {
 } from '@nestjs-yalc/data-loader/dataloader.helper.js';
 import { ContextId, ContextIdFactory, ModuleRef } from '@nestjs/core';
 import { Mutation } from '@nestjs/graphql';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import {
   filterTypeToNativeType,
   getEntityRelations,

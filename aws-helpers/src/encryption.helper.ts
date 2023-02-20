@@ -146,7 +146,7 @@ export const decryptSsmVariable = async (
  * This function set the process.env variables passed as paramenter with the corrisponding ssm variable decrypted
  * @param envVariableToDecrypt mapping variable between process.env and ssm variables name
  */
-export const setEnvironmentVariableFromSsm = async (envVariableToDecrypt: {
+export const setEnvironmentVariablesFromSsm = async (envVariableToDecrypt: {
   [key: string]: string;
 }) => {
   for (const variable of Object.keys(envVariableToDecrypt)) {

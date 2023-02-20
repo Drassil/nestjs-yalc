@@ -1,4 +1,4 @@
-import { ClassType, Mixin } from '@nestjs-yalc/types/globals.js';
+import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { Field, ObjectType } from '@nestjs/graphql';
 import { CreateDateColumn, UpdateDateColumn } from 'typeorm';

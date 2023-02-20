@@ -5,7 +5,7 @@ import {
   IHttpCallStrategyResponse,
 } from './http-abstract-call.strategy.js';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {

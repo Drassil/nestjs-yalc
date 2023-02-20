@@ -9,7 +9,7 @@ import {
 } from './crud-gen.input.js';
 import { FilterScalar } from './filter.scalar.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { RowDefaultValues } from './crud-gen.enum.js';
 
 export interface IAgQueryParams<T = any> {

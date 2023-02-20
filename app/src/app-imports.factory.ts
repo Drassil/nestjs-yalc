@@ -30,7 +30,7 @@ import { CURAPP_CONF_ALIAS } from './def.const.js';
 import { AppEvents } from './app.events.js';
 import { GqlComplexityPlugin } from '@nestjs-yalc/graphql/plugins/gql-complexity.plugin.js';
 import { ApolloServerPlugin } from 'apollo-server-plugin-base';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import {
   ApolloFederationDriver,

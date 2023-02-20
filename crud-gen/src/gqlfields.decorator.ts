@@ -9,7 +9,7 @@ import {
   formatRawSelectionWithoutAlias,
   objectToFieldMapper,
 } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { removeSymbolicSelection } from './crud-gen-args.decorator.js';
 import {

@@ -5,7 +5,7 @@ import {
   ReplicationMode,
 } from '@nestjs-yalc/database/query-builder.helper.js';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type.js';
 import {
   EntityRepository,

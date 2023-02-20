@@ -15,7 +15,7 @@ import {
   GenericService,
   getServiceToken,
 } from '@nestjs-yalc/crud-gen/generic-service.service.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
 import eventemitter2, { type EventEmitter2 } from 'eventemitter2';

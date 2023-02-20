@@ -1,4 +1,4 @@
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 export function isClass(func: any): func is ClassType {
   return (

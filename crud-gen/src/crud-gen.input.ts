@@ -1,5 +1,5 @@
-import { ClassType } from '@nestjs-yalc/types/globals.js';
-import { AnyFunction } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
+import { AnyFunction } from '@nestjs-yalc/types/globals.d.js';
 import {
   Field,
   HideField,

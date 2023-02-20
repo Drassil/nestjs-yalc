@@ -1,7 +1,7 @@
 /* istanbul ignore file */
 
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import {
   ArgsOptions,
   GqlExecutionContext,

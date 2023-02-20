@@ -1,6 +1,6 @@
 import { IEventStrategy } from '../context-event.interface.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 export class NestLocalEventStrategy<P = any, O = any>
   implements IEventStrategy
