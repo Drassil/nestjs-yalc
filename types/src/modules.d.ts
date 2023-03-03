@@ -5,3 +5,5 @@ declare module '@nestjs-yalc';
 declare module 'fastify-xml-body-parser';
 declare module 'kafkajs-snappy';
 declare module 'kafkajs';
+
+export {};
