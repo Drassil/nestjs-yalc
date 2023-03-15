@@ -38,7 +38,7 @@ export class DbMigrateService {
 
     if (selMigrations) {
       this.loggerService.debug?.(
-        `Selected migrations ${JSON.stringify(options.selMigrations)}`,
+        `Selected migrations ${JSON.stringify(selMigrations)}`,
       );
     }
 
