@@ -1,18 +1,18 @@
-import { ObjectLiteral, SelectQueryBuilder } from "typeorm";
+import { ObjectLiteral, SelectQueryBuilder } from 'typeorm';
 import {
   formatRawSelection,
-  getDestinationFieldName
-} from "./crud-gen.helpers.js";
+  getDestinationFieldName,
+} from './crud-gen.helpers.js';
 import {
-  getCrudGenFieldMetadataList,
-  ICrudGenFieldMetadata
-} from "./object.decorator.js";
+  getModelFieldMetadataList,
+  IModelFieldMetadata,
+} from './object.decorator.js';
 
 /**
  * Monkey patching query builder
  */
 
-declare module "typeorm" {
+declare module 'typeorm' {
   interface SelectQueryBuilder<Entity> {
     getMany(this: SelectQueryBuilder<Entity>): Promise<Entity[]>;
     getOne(this: SelectQueryBuilder<Entity>): Promise<Entity | undefined>;
@@ -23,18 +23,18 @@ SelectQueryBuilder.prototype.getMany = async function () {
   const { entities, raw } = await this.getRawAndEntities();
 
   const items = entities.map((entity, index) => {
-    const metaInfo = getCrudGenFieldMetadataList(entity.constructor) ?? {};
+    const metaInfo = getModelFieldMetadataList(entity.constructor) ?? {};
     const item = raw[index];
 
-    for (const [propertyKey, field] of Object.entries<
-      ICrudGenFieldMetadata<any>
-    >(metaInfo)) {
-      if (field.mode === "derived" && field.dst) {
+    for (const [propertyKey, field] of Object.entries<IModelFieldMetadata<any>>(
+      metaInfo,
+    )) {
+      if (field.mode === 'derived' && field.dst) {
         const itemKey = formatRawSelection(
           getDestinationFieldName(field.dst),
           propertyKey,
           this.alias,
-          true
+          true,
         );
 
         entity[propertyKey] = item[itemKey];
@@ -52,17 +52,17 @@ SelectQueryBuilder.prototype.getOne = async function () {
 
   if (!Array.isArray(entities) || entities.length <= 0) return entities[0];
 
-  const metaInfo = getCrudGenFieldMetadataList(entities[0].constructor) ?? {};
+  const metaInfo = getModelFieldMetadataList(entities[0].constructor) ?? {};
 
-  for (const [propertyKey, field] of Object.entries<ICrudGenFieldMetadata<any>>(
-    metaInfo
+  for (const [propertyKey, field] of Object.entries<IModelFieldMetadata<any>>(
+    metaInfo,
   )) {
-    if (field.mode === "derived" && field.dst) {
+    if (field.mode === 'derived' && field.dst) {
       const itemKey = formatRawSelection(
         getDestinationFieldName(field.dst),
         propertyKey,
         this.alias,
-        true
+        true,
       );
       entities[0][propertyKey] = raw[0][itemKey];
     }
@@ -72,5 +72,5 @@ SelectQueryBuilder.prototype.getOne = async function () {
 };
 
 export class SelectQueryBuilderPatched<
-  T extends ObjectLiteral
+  T extends ObjectLiteral,
 > extends SelectQueryBuilder<T> {}

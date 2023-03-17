@@ -18,7 +18,7 @@ import {
 } from './crud-gen.enum.js';
 import { IWhereCondition } from './crud-gen.type.js';
 import type { IKeyMeta } from './gqlfields.decorator.js';
-import { IFieldAndFilterMapper } from './object.decorator.js';
+import { IModelFieldAndFilterMapper } from './object.decorator.js';
 
 export interface IBaseFilterModel {
   filterType: FilterType;
@@ -241,7 +241,7 @@ export interface ICrudGenArgsSingleOptions {
    * @deprecated use fieldType instead
    * @property fieldMap is used internally to convert names of exposed fields to database fields
    */
-  fieldMap?: IFieldMapper | IFieldAndFilterMapper;
+  fieldMap?: IFieldMapper | IModelFieldAndFilterMapper;
   /**
    * @property fieldType is used internally to retrieve information about the returned type
    */

@@ -1,12 +1,12 @@
 import {
-  CrudGenField,
+  ,
   CrudGenObject,
-  getCrudGenFieldMetadata,
+  getModelFieldMetadata,
   getCrudGenObjectMetadata,
-  hasCrudGenFieldMetadata,
-  hasCrudGenFieldMetadataList,
+  hasModelFieldMetadata,
+  hasModelFieldMetadataList,
   hasCrudGenObjectMetadata,
-  ICrudGenFieldMetadata,
+  IModelFieldMetadata,
 } from '../object.decorator.js';
 import { TestEntityDto } from '../__mocks__/entity.mock.js';
 import { fixedIncludefilterOption } from '../__mocks__/filter.mocks.js';
@@ -16,7 +16,7 @@ import * as NestGraphql from '@nestjs/graphql';
 import { FieldOptions, ReturnTypeFunc } from '@nestjs/graphql';
 import { BaseEntity } from 'typeorm';
 
-const fixedCrudGenFieldMetadata: ICrudGenFieldMetadata = {
+const fixedModelFieldMetadata: IModelFieldMetadata = {
   gqlOptions: {},
   gqlType: () => String,
 };
@@ -25,23 +25,23 @@ describe('ObjectDecorator', () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
-  it('Should decorate properly a property with CrudGenField', () => {
+  it('Should decorate properly a property with ModelField', () => {
     class TestObject {
-      @CrudGenField(fixedCrudGenFieldMetadata)
+      @(fixedModelFieldMetadata)
       decoratedProperty = {};
 
       property = 'notDecorated';
     }
 
-    expect(hasCrudGenFieldMetadataList(TestObject)).toBeTruthy();
+    expect(hasModelFieldMetadataList(TestObject)).toBeTruthy();
 
-    let metadata = getCrudGenFieldMetadata(TestObject, 'decoratedProperty');
+    let metadata = getModelFieldMetadata(TestObject, 'decoratedProperty');
     expect([metadata.dst, metadata.src]).toEqual(
       expect.arrayContaining(['decoratedProperty', 'decoratedProperty']),
     );
 
-    metadata = getCrudGenFieldMetadata(TestObject, 'property');
-    expect(hasCrudGenFieldMetadata(TestObject, 'property')).toBeFalsy();
+    metadata = getModelFieldMetadata(TestObject, 'property');
+    expect(hasModelFieldMetadata(TestObject, 'property')).toBeFalsy();
     expect(metadata).toBeUndefined();
   });
 
@@ -57,7 +57,7 @@ describe('ObjectDecorator', () => {
   it('Should copy the metadata from an object to another', () => {
     @CrudGenObject({ filters: fixedIncludefilterOption })
     class BaseDecoratedClass {
-      @CrudGenField({})
+      @({})
       baseDecoratedProperty: 'string';
     }
 
@@ -77,16 +77,16 @@ describe('ObjectDecorator', () => {
   });
 
   it('Should decorate properly a property with a custom gqlOptions', () => {
-    const metadata = getCrudGenFieldMetadata(TestEntityDto, 'id');
+    const metadata = getModelFieldMetadata(TestEntityDto, 'id');
     expect([metadata.dst, metadata.src]).toEqual(
       expect.arrayContaining(['id']),
     );
-    expect(hasCrudGenFieldMetadata(TestEntityDto, 'id')).toBeTruthy();
+    expect(hasModelFieldMetadata(TestEntityDto, 'id')).toBeTruthy();
   });
 
-  it('Should CrudGenField work properly with default values', () => {
+  it('Should ModelField work properly with default values', () => {
     jest
-      .spyOn(ObjectDecorator, 'getCrudGenFieldMetadataList')
+      .spyOn(ObjectDecorator, 'getModelFieldMetadataList')
       .mockReturnValue({});
 
     const mockedNestGraphql = NestGraphql as jest.Mocked<typeof NestGraphql>;
@@ -95,12 +95,12 @@ describe('ObjectDecorator', () => {
     let gqlOptions: FieldOptions | undefined = undefined;
     let gqlType: ReturnTypeFunc | undefined = () => BaseEntity;
 
-    let crudGenFieldDecorator = CrudGenField({
+    let modelFieldDecorator = ({
       gqlType,
       gqlOptions,
     });
 
-    crudGenFieldDecorator({}, 'propertyKey');
+    modelFieldDecorator({}, 'propertyKey');
 
     expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
       gqlType,
@@ -111,12 +111,12 @@ describe('ObjectDecorator', () => {
     gqlOptions = { name: 'name' };
     gqlType = undefined;
 
-    crudGenFieldDecorator = CrudGenField({
+    modelFieldDecorator = ({
       gqlType,
       gqlOptions,
     });
 
-    crudGenFieldDecorator({}, 'propertyKey');
+    modelFieldDecorator({}, 'propertyKey');
     expect(mockedNestGraphql.addFieldMetadata).toHaveBeenCalledWith(
       gqlOptions,
       gqlOptions,

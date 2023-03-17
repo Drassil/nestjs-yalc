@@ -13,8 +13,8 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { removeSymbolicSelection } from './crud-gen-args.decorator.js';
 import {
-  ICrudGenFieldMetadata,
-  IFieldAndFilterMapper,
+  IModelFieldMetadata,
+  IModelFieldAndFilterMapper,
 } from './object.decorator.js';
 
 export interface IGqlAgSingleParams {
@@ -22,12 +22,12 @@ export interface IGqlAgSingleParams {
 }
 
 export interface IKeyMeta {
-  fieldMapper: FieldMapperProperty | ICrudGenFieldMetadata;
+  fieldMapper: FieldMapperProperty | IModelFieldMetadata;
   isNested?: boolean;
   rawSelect: string;
 }
 
-export const GqlCrudGenFieldsMapper = (
+export const GqlModelFieldsMapper = (
   data: IFieldMapper | ReturnTypeFuncValue | ClassType,
   info: GraphQLResolveInfo,
 ): { keys: string[]; keysMeta: { [key: string]: IKeyMeta } } => {
@@ -44,7 +44,7 @@ export const GqlCrudGenFieldsMapper = (
   const keysMeta: { [key: string]: IKeyMeta } = {};
 
   const processSubItems = (
-    mapper: IFieldAndFilterMapper,
+    mapper: IModelFieldAndFilterMapper,
     item: any,
     prefix = '',
     path = '',
@@ -194,7 +194,7 @@ export const GqlInfoGenerator = (
 ): string[] => {
   const gqlCtx = GqlExecutionContext.create(ctx);
   const info = gqlCtx.getInfo();
-  return GqlCrudGenFieldsMapper(data, info).keys;
+  return GqlModelFieldsMapper(data, info).keys;
 };
 
 export const GqlFieldsMap = createParamDecorator(GqlInfoGenerator);

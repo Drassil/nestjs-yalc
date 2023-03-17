@@ -6,7 +6,7 @@ import {
   PartialType,
 } from '@nestjs/graphql';
 import {
-  CrudGenField,
+  ModelField,
   CrudGenObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { SkeletonUser } from './skeleton-user.entity.js';
@@ -17,7 +17,7 @@ import { SkeletonPhoneType } from './skeleton-phone.dto.js';
 @ObjectType()
 @CrudGenObject()
 export class SkeletonUserType extends SkeletonUser {
-  @CrudGenField<SkeletonPhoneType>({
+  @ModelField<SkeletonPhoneType>({
     relation: {
       type: () => SkeletonPhoneType,
       relationType: 'one-to-many',
@@ -32,7 +32,7 @@ export class SkeletonUserType extends SkeletonUser {
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @CrudGenField({
+  @ModelField({
     gqlType: returnValue(UUIDScalar),
     gqlOptions: {
       name: 'ID',
@@ -42,7 +42,7 @@ export class SkeletonUserType extends SkeletonUser {
   })
   guid: string;
 
-  @CrudGenField({
+  @ModelField({
     gqlOptions: {
       description: "It's the combination of firstName and lastName",
     },

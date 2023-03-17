@@ -63,15 +63,15 @@ import {
 } from './generic-service.service.js';
 import {
   DstExtended,
-  getCrudGenFieldMetadataList,
+  getModelFieldMetadataList,
   getCrudGenObjectMetadata,
-  ICrudGenFieldMetadata,
-  IFieldAndFilterMapper,
+  IModelFieldMetadata,
+  IModelFieldAndFilterMapper,
   isDstExtended,
 } from './object.decorator.js';
 export const columnConversion = (
   key: string,
-  data: IFieldMapper | { [key: string]: ICrudGenFieldMetadata } | undefined,
+  data: IFieldMapper | { [key: string]: IModelFieldMetadata } | undefined,
 ): string => {
   if (data) {
     const dst = data[key]?.dst ?? key;
@@ -270,10 +270,10 @@ const objectToFieldMapperCache = new WeakMap();
 export const objectToFieldMapper = (
   object:
     | IFieldMapper
-    | IFieldAndFilterMapper
+    | IModelFieldAndFilterMapper
     | ReturnTypeFuncValue
     | ClassType,
-): IFieldAndFilterMapper => {
+): IModelFieldAndFilterMapper => {
   if (typeof object !== 'symbol') {
     const cached = objectToFieldMapperCache.get(object);
     if (cached) {
@@ -281,7 +281,7 @@ export const objectToFieldMapper = (
     }
   }
 
-  let fieldMapper: IFieldAndFilterMapper = { field: {} };
+  let fieldMapper: IModelFieldAndFilterMapper = { field: {} };
 
   fieldMapper.extraInfo = {};
 
@@ -290,7 +290,7 @@ export const objectToFieldMapper = (
   if (objectMetadata) {
     fieldMapper.filterOption = objectMetadata;
 
-    const fieldMetadataList = getCrudGenFieldMetadataList(object as any);
+    const fieldMetadataList = getModelFieldMetadataList(object as any);
 
     if (fieldMetadataList) {
       for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -316,7 +316,7 @@ export const objectToFieldMapper = (
   } else if (isFieldMapper(object)) {
     fieldMapper.field = object;
   } else if (isIFieldAndFilterMapper(object as any)) {
-    fieldMapper = object as IFieldAndFilterMapper;
+    fieldMapper = object as IModelFieldAndFilterMapper;
   } /**
   @todo rework or delete, it throws an error with enum as gqlType
   
@@ -336,8 +336,8 @@ export const objectToFieldMapper = (
 };
 
 export function isIFieldAndFilterMapper(
-  val: IFieldMapper | IFieldAndFilterMapper,
-): val is IFieldAndFilterMapper {
+  val: IFieldMapper | IModelFieldAndFilterMapper,
+): val is IModelFieldAndFilterMapper {
   return val?.field !== undefined;
 }
 
@@ -503,7 +503,7 @@ export function filterTypeToNativeType(type: FilterType) {
 export interface IRelationInfo {
   relation: RelationMetadataArgs;
   join: JoinColumnMetadataArgs | undefined;
-  agField?: ICrudGenFieldMetadata;
+  agField?: IModelFieldMetadata;
 }
 
 export function getEntityRelations<Entity, DTO = Entity>(
@@ -522,7 +522,7 @@ export function getEntityRelations<Entity, DTO = Entity>(
       (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
-  const crudGenMetadata = getCrudGenFieldMetadataList(dto ?? entityModel);
+  const crudGenMetadata = getModelFieldMetadataList(dto ?? entityModel);
 
   return relations.map((r: RelationMetadataArgs) => ({
     relation: r,
@@ -543,7 +543,7 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
   );
 
   // to get crud-gen fields
-  const fieldMetadataList = getCrudGenFieldMetadataList(entityModel);
+  const fieldMetadataList = getModelFieldMetadataList(entityModel);
 
   if (fieldMetadataList) {
     for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -583,7 +583,7 @@ export function applyJoinArguments(
   findManyOptions: CrudGenFindManyOptions,
   alias: string,
   join: { [index: string]: JoinArgOptions },
-  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
+  fieldMapper: { [key: string]: IModelFieldMetadata },
 ): void {
   const _joinObject: {
     alias: string;
@@ -608,7 +608,7 @@ export function applyJoinArguments(
     }
 
     const type = fieldMapper[table].gqlType?.();
-    const _fieldMapper: IFieldAndFilterMapper = type
+    const _fieldMapper: IModelFieldAndFilterMapper = type
       ? objectToFieldMapper(type)
       : { field: {} };
 
@@ -702,7 +702,7 @@ export function formatRawSelection(
 export function applySelectOnFind<T = any>(
   findOptions: CrudGenFindManyOptions,
   field: keyof T,
-  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
+  fieldMapper: { [key: string]: IModelFieldMetadata },
   /**
    * If it's a nested field, you need to specify a path
    */

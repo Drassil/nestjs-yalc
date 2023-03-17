@@ -1,5 +1,5 @@
-import { createParamDecorator, ExecutionContext } from "@nestjs/common";
-import { Args, GqlExecutionContext } from "@nestjs/graphql";
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { Args, GqlExecutionContext } from '@nestjs/graphql';
 import {
   Not,
   Equal,
@@ -12,23 +12,23 @@ import {
   Between,
   In,
   IsNull,
-  ObjectLiteral
-} from "typeorm";
-import { GqlCrudGenFieldsMapper } from "@nestjs-yalc/crud-gen/gqlfields.decorator.js";
-import { IFieldMapper } from "@nestjs-yalc/interfaces/maps.interface.js";
+  ObjectLiteral,
+} from 'typeorm';
+import { GqlModelFieldsMapper } from '@nestjs-yalc/crud-gen/gqlfields.decorator.js';
+import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import {
   IAgQueryParams,
   agQueryParamsFactory,
-  agQueryParamsNoPaginationFactory
-} from "./crud-gen.args.js";
+  agQueryParamsNoPaginationFactory,
+} from './crud-gen.args.js';
 import {
   GeneralFilters,
   FilterType,
   SortDirection,
   Operators,
   ExtraArgsStrategy,
-  RowDefaultValues
-} from "./crud-gen.enum.js";
+  RowDefaultValues,
+} from './crud-gen.enum.js';
 import {
   CrudGenFindManyOptions,
   DateFilterModel,
@@ -39,14 +39,14 @@ import {
   ISimpleFilterModel,
   ISetFilterModel,
   ICrudGenArgsOptions,
-  ICrudGenArgsSingleOptions
-} from "./crud-gen.interface.js";
+  ICrudGenArgsSingleOptions,
+} from './crud-gen.interface.js';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
-  IWhereConditionType
-} from "./crud-gen.type.js";
+  IWhereConditionType,
+} from './crud-gen.type.js';
 import {
   applyJoinArguments,
   columnConversion,
@@ -55,32 +55,32 @@ import {
   getDestinationFieldName,
   isAskingForCount,
   isSymbolic,
-  objectToFieldMapper
-} from "./crud-gen.helpers.js";
+  objectToFieldMapper,
+} from './crud-gen.helpers.js';
 import {
   CrudGenError,
   CrudGenFilterNotSupportedError,
   CrudGenFilterProhibited,
   CrudGenInvalidArgumentError,
-  CrudGenInvalidOperatorError
-} from "./crud-gen.error.js";
-import { DateHelper } from "@nestjs-yalc/utils/date.helper.js";
-import { agJoinArgFactory } from "./crud-gen.input.js";
-import returnValue from "@nestjs-yalc/utils/returnValue.js";
-import { GraphQLResolveInfo } from "graphql";
-import { FilterOption, FilterOptionType } from "./object.decorator.js";
+  CrudGenInvalidOperatorError,
+} from './crud-gen.error.js';
+import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
+import { agJoinArgFactory } from './crud-gen.input.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
+import { GraphQLResolveInfo } from 'graphql';
+import { FilterOption, FilterOptionType } from './object.decorator.js';
 import {
   ArgumentsError,
-  MissingArgumentsError
-} from "@nestjs-yalc/crud-gen/missing-arguments.error.js";
+  MissingArgumentsError,
+} from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
 import {
   isCombinedFilterModel,
   isDateFilterModel,
   isFilterModel,
   isNumberFilterModel,
   isSetFilterModel,
-  isTextFilterModel
-} from "./crud-gen-type-checker.utils.js";
+  isTextFilterModel,
+} from './crud-gen-type-checker.utils.js';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {
@@ -104,7 +104,7 @@ export function getTextFilter(filter: string, firstParameter: string) {
 export function getNumberFilter(
   filter: string,
   firstParameter: number,
-  secondParameter?: number
+  secondParameter?: number,
 ): FindOperator<number> {
   switch (filter.toLowerCase()) {
     case GeneralFilters.EQUALS.toLowerCase():
@@ -123,7 +123,7 @@ export function getNumberFilter(
       return Between(firstParameter, secondParameter) as FindOperator<number>;
     default:
       throw new CrudGenFilterNotSupportedError(
-        `filter: ${filter} type: NUMBER`
+        `filter: ${filter} type: NUMBER`,
       );
   }
 }
@@ -131,7 +131,7 @@ export function getNumberFilter(
 export function getDateFilter(
   filter: string,
   firstParameter: string,
-  secondParameter?: string
+  secondParameter?: string,
 ) {
   switch (filter.toLowerCase()) {
     case GeneralFilters.EQUALS.toLowerCase():
@@ -150,11 +150,11 @@ export function getDateFilter(
         23,
         59,
         59,
-        999
+        999,
       );
       return Between(
         DateHelper.dateToSQLDateTime(new Date(dateFrom)),
-        DateHelper.dateToSQLDateTime(new Date(dateTo))
+        DateHelper.dateToSQLDateTime(new Date(dateTo)),
       );
     default:
       throw new CrudGenFilterNotSupportedError(`filter: ${filter} type: DATE`);
@@ -163,7 +163,7 @@ export function getDateFilter(
 
 export function filterSwitch(
   filter: FilterModel,
-  filterName?: string
+  filterName?: string,
 ): FindOperator<number | string | Date | null> {
   let arg1: findOperatorTypes = undefined;
   let arg2: findOperatorTypes = undefined;
@@ -196,7 +196,7 @@ export function getFindOperator(
   filterType: FilterType,
   filterName: string,
   arg1: any,
-  arg2?: any
+  arg2?: any,
 ): FindOperator<number | string | Date | null> {
   if (filterName.toLowerCase() === GeneralFilters.ISNULL.toLowerCase()) {
     return IsNull();
@@ -212,13 +212,13 @@ export function getFindOperator(
       return In(arg1);
     default:
       throw new CrudGenFilterNotSupportedError(
-        `filter: ${filterName} type: ${filterType}`
+        `filter: ${filterName} type: ${filterType}`,
       );
   }
 }
 
 export function convertFilter(
-  filter: FilterModel | ICombinedSimpleModel
+  filter: FilterModel | ICombinedSimpleModel,
 ): FindOperator<string | number | Date | null> | ICombinedWhereModel {
   if (isCombinedFilterModel(filter)) {
     if (
@@ -230,7 +230,7 @@ export function convertFilter(
     return {
       operator: filter.operator,
       filter_1: convertFilter(filter.condition1),
-      filter_2: convertFilter(filter.condition2)
+      filter_2: convertFilter(filter.condition2),
     };
   }
 
@@ -239,7 +239,7 @@ export function convertFilter(
   let filterToApply;
   if (
     !isSetFilterModel(filter) &&
-    filter.type.startsWith("not") &&
+    filter.type.startsWith('not') &&
     filter.type !== GeneralFilters.NOT
   ) {
     filterToApply = Not(filterSwitch(filter, filter.type.substring(3)));
@@ -254,7 +254,7 @@ export function resolveFilter(
     | ICombinedSimpleModel
     | ISimpleFilterModel
     | DateFilterModel
-    | ISetFilterModel
+    | ISetFilterModel,
 ): IWhereConditionType {
   let filterToApply: FindOperator<findOperatorTypes> | ICombinedWhereModel;
   if (
@@ -274,13 +274,13 @@ export function createWhere(
   filtersObject: FilterInput,
   fieldMapper: IFieldMapper | undefined,
   alias?: string,
-  where: IWhereCondition = { filters: {} }
+  where: IWhereCondition = { filters: {} },
 ): IWhereCondition {
   if (!filtersObject) {
     return where;
   }
 
-  const prefix = alias ? `${alias}.` : "";
+  const prefix = alias ? `${alias}.` : '';
 
   const filtersObjectCleared: FilterModel[] = [];
 
@@ -294,7 +294,7 @@ export function createWhere(
        */
       if (exprTypes.length > 1) {
         throw new CrudGenError(
-          `Field can't use more than one expression type on same expression: ${exprTypes}`
+          `Field can't use more than one expression type on same expression: ${exprTypes}`,
         );
       }
 
@@ -303,7 +303,7 @@ export function createWhere(
       const expr = field[exprType];
 
       if (!expr || !expr.field)
-        throw new Error("Expression not found! It should never happen");
+        throw new Error('Expression not found! It should never happen');
 
       const dbFieldName = columnConversion(expr.field, fieldMapper);
 
@@ -312,7 +312,7 @@ export function createWhere(
       filtersObjectCleared.push({
         ...expr,
         field: filterName,
-        filterType: exprType as any /**@todo fix type */
+        filterType: exprType as any /**@todo fix type */,
       });
     });
   }
@@ -330,7 +330,7 @@ export function createWhere(
       // after processing the filter, we take advantage of a function to perform all the necessary checks
       // and manage the filter cases based on the type of the filter itself
       childExpressions.push({
-        filters: { [key]: resolveFilter(expr) }
+        filters: { [key]: resolveFilter(expr) },
       });
     } else {
       throw new CrudGenFilterNotSupportedError(`${JSON.stringify(expr)}`);
@@ -339,7 +339,7 @@ export function createWhere(
 
   if (filtersObject.childExpressions) {
     filtersObject.childExpressions.forEach((expr) =>
-      childExpressions.push(createWhere(expr, fieldMapper))
+      childExpressions.push(createWhere(expr, fieldMapper)),
     );
   }
 
@@ -351,7 +351,7 @@ export function createWhere(
 export function removeSymbolicSelection(
   select: string[],
   data: IFieldMapper | undefined,
-  path: string
+  path: string,
 ): string[] {
   for (let i = 0; i < select.length; i++) {
     if (isSymbolic(data, path + select[i])) {
@@ -364,11 +364,11 @@ export function removeSymbolicSelection(
 
 export function checkFilterScope(
   where: IWhereCondition,
-  filterOption: FilterOption
+  filterOption: FilterOption,
 ) {
   for (const key of Object.keys(where.filters)) {
     if (
-      !key.includes(".") &&
+      !key.includes('.') &&
       filterOption.fields &&
       (filterOption.type === FilterOptionType.INCLUDE
         ? !filterOption.fields.includes(key)
@@ -387,7 +387,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
   params: ICrudGenArgsOptions | undefined,
   ctx: GqlExecutionContext,
   args: IAgQueryParams,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ): CrudGenFindManyOptions {
   let filterOption: FilterOption | undefined;
   let fieldMapper: IFieldMapper = {};
@@ -402,9 +402,9 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
 
   const defaultSorting = params?.defaultValue?.sorting;
   // MAP query fields -> select
-  const { keys, keysMeta } = GqlCrudGenFieldsMapper(
+  const { keys, keysMeta } = GqlModelFieldsMapper(
     fieldType ?? {},
-    ctx.getInfo()
+    ctx.getInfo(),
   );
 
   // MAP filter -> where
@@ -418,7 +418,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
 
   // MAP sorting -> order
   const order: {
-    [P in keyof Entity]?: "ASC" | "DESC" | 1 | -1;
+    [P in keyof Entity]?: 'ASC' | 'DESC' | 1 | -1;
   } = {};
 
   const sorting = args.sorting ?? defaultSorting;
@@ -426,9 +426,9 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
     sorting.forEach((sortParams) => {
       const col = sortParams.colId.toString();
       let colName: keyof Entity;
-      if (fieldMapper[col]?.mode === "derived") {
+      if (fieldMapper[col]?.mode === 'derived') {
         colName = formatRawSelectionWithoutAlias(
-          getDestinationFieldName(fieldMapper[col].dst)
+          getDestinationFieldName(fieldMapper[col].dst),
           // fieldMapper[col]._propertyName ?? fieldMapper[col].dst,
         );
       } else {
@@ -436,7 +436,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
       }
 
       const val = sortParams.sort?.toUpperCase();
-      const sortDir: "ASC" | "DESC" = <SortDirection>val ?? "ASC";
+      const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
       order[colName] = sortDir;
     });
   }
@@ -450,7 +450,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
       return requestRow;
     } else {
       throw new CrudGenError(
-        `Invalid max number of row selected: cannot exeed max ${maxRow}`
+        `Invalid max number of row selected: cannot exeed max ${maxRow}`,
       );
     }
   };
@@ -467,17 +467,17 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
       case ExtraArgsStrategy.AT_LEAST_ONE:
         if (
           args.length <= 0 ||
-          extraArgsKeys.every((argName) => typeof args[argName] === "undefined")
+          extraArgsKeys.every((argName) => typeof args[argName] === 'undefined')
         )
           throw new MissingArgumentsError();
         break;
       case ExtraArgsStrategy.ONLY_ONE:
         if (
           extraArgsKeys.filter(
-            (argName) => typeof args[argName] !== "undefined"
+            (argName) => typeof args[argName] !== 'undefined',
           ).length > 1
         )
-          throw new ArgumentsError("You must define only one extra arguments");
+          throw new ArgumentsError('You must define only one extra arguments');
         break;
       case ExtraArgsStrategy.DEFAULT:
       default:
@@ -503,7 +503,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
       forcedFilters.push({
         key: argName, // the column name mapping is executed internally
         value,
-        descriptors: params.extraArgs[argName]
+        descriptors: params.extraArgs[argName],
       });
     }
 
@@ -521,15 +521,15 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
       skipCount,
       args: extraParameter,
       _fieldMapper: fieldMapper,
-      _keysMeta: keysMeta
-    }
+      _keysMeta: keysMeta,
+    },
   };
   if (params?.entityType && args.join) {
     applyJoinArguments(
       findManyOptions,
       params.entityType.name,
       args.join,
-      fieldMapper
+      fieldMapper,
     );
   }
 
@@ -538,7 +538,7 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
 
 export const CrudGenArgsFactory = <T>(
   data: ICrudGenArgsOptions | undefined,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ): CrudGenFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
@@ -546,7 +546,7 @@ export const CrudGenArgsFactory = <T>(
     data,
     gqlCtx,
     gqlCtx.getArgs(),
-    gqlCtx.getInfo()
+    gqlCtx.getInfo(),
   );
 
   return params;
@@ -564,7 +564,7 @@ export const CrudGenCombineDecorators = (params: ICrudGenArgsOptions) => {
       if (params.extraArgs[argName].hidden) continue;
 
       argDecorators.push(
-        Args(argName, params.extraArgs[argName].options ?? {})
+        Args(argName, params.extraArgs[argName].options ?? {}),
       );
     }
   }
@@ -573,15 +573,15 @@ export const CrudGenCombineDecorators = (params: ICrudGenArgsOptions) => {
   if (params.entityType) {
     const JoinOptionInput = agJoinArgFactory(
       params.entityType,
-      params.defaultValue
+      params.defaultValue,
     );
 
     if (JoinOptionInput) {
-      joinArg = Args("join", {
+      joinArg = Args('join', {
         type:
           /*istanbul ignore next */
           () => JoinOptionInput,
-        nullable: true
+        nullable: true,
       });
     }
   }
@@ -600,7 +600,7 @@ export const CrudGenArgs = (params: ICrudGenArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
-      agQueryParamsFactory(params.defaultValue, params.entityType)
+      agQueryParamsFactory(params.defaultValue, params.entityType),
     );
   }
 
@@ -616,7 +616,7 @@ export const CrudGenArgsNoPagination = (params: ICrudGenArgsOptions) => {
   const gqlOptions = params.gql ?? {};
   if (!gqlOptions.type) {
     gqlOptions.type = returnValue(
-      agQueryParamsNoPaginationFactory(params.defaultValue, params.entityType)
+      agQueryParamsNoPaginationFactory(params.defaultValue, params.entityType),
     );
   }
 
@@ -628,7 +628,7 @@ export const CrudGenArgsNoPagination = (params: ICrudGenArgsOptions) => {
 export function CrudGenArgsSingleDecoratorMapper<T>(
   params: ICrudGenArgsOptions | undefined,
   args: IAgQueryParams,
-  info: GraphQLResolveInfo
+  info: GraphQLResolveInfo,
 ): CrudGenFindManyOptions<T> {
   const findManyOptions: CrudGenFindManyOptions = {};
 
@@ -637,11 +637,11 @@ export function CrudGenArgsSingleDecoratorMapper<T>(
     if (fieldType) {
       const fieldMapper = objectToFieldMapper(fieldType);
 
-      const { keys, keysMeta } = GqlCrudGenFieldsMapper(fieldType, info);
+      const { keys, keysMeta } = GqlModelFieldsMapper(fieldType, info);
       findManyOptions.select = keys;
       findManyOptions.extra = {
         _keysMeta: keysMeta,
-        _fieldMapper: fieldMapper.field
+        _fieldMapper: fieldMapper.field,
       };
 
       if (params.entityType && args.join) {
@@ -649,7 +649,7 @@ export function CrudGenArgsSingleDecoratorMapper<T>(
           findManyOptions,
           params.entityType.name,
           args.join,
-          fieldMapper.field
+          fieldMapper.field,
         );
       }
     }
@@ -660,19 +660,19 @@ export function CrudGenArgsSingleDecoratorMapper<T>(
 
 export const CrudGenArgsSingleDecoratorFactory = <T>(
   data: ICrudGenArgsOptions | undefined,
-  ctx: ExecutionContext
+  ctx: ExecutionContext,
 ): CrudGenFindManyOptions<T> => {
   const gqlCtx = GqlExecutionContext.create(ctx);
 
   return CrudGenArgsSingleDecoratorMapper<T>(
     data,
     gqlCtx.getArgs(),
-    gqlCtx.getInfo()
+    gqlCtx.getInfo(),
   );
 };
 
 export const CrudGenArgsSingleDecorator = createParamDecorator(
-  CrudGenArgsSingleDecoratorFactory
+  CrudGenArgsSingleDecoratorFactory,
 );
 
 export const CrudGenArgsSingle = (params: ICrudGenArgsSingleOptions) => {
@@ -681,11 +681,11 @@ export const CrudGenArgsSingle = (params: ICrudGenArgsSingleOptions) => {
     const JoinOptionInput = agJoinArgFactory(params.entityType);
 
     if (JoinOptionInput) {
-      joinArg = Args("join", {
+      joinArg = Args('join', {
         type:
           /*istanbul ignore next */
           () => JoinOptionInput,
-        nullable: true
+        nullable: true,
       });
     }
   }

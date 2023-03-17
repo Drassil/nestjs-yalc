@@ -21,7 +21,7 @@ import {
 } from './crud-gen.helpers.js';
 import { CrudGenFindManyOptions } from './crud-gen.interface.js';
 import { IWhereFilters } from './crud-gen.type.js';
-import { ICrudGenFieldMetadata } from './object.decorator.js';
+import { IModelFieldMetadata } from './object.decorator.js';
 import './query-builder.helpers'; // must be imported here
 
 export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
@@ -128,7 +128,7 @@ export class CrudGenRepository<
          * in order to apply the extra conditions
          */
         Object.keys(joinInfo).forEach((key) => {
-          const fieldInfo = extra?._fieldMapper?.[key] as ICrudGenFieldMetadata;
+          const fieldInfo = extra?._fieldMapper?.[key] as IModelFieldMetadata;
 
           if (!fieldInfo?.relation) return;
 

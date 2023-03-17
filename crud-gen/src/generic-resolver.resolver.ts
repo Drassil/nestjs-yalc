@@ -48,7 +48,7 @@ import {
   getEntityRelations,
   IRelationInfo,
 } from './crud-gen.helpers.js';
-import { getCrudGenFieldMetadataList } from './object.decorator.js';
+import { getModelFieldMetadataList } from './object.decorator.js';
 import { CrudGenError } from './crud-gen.error.js';
 import { ExtraArgsStrategy } from './crud-gen.enum.js';
 import { IAgQueryParams } from './crud-gen.args.js';
@@ -843,7 +843,7 @@ export function resolverFactory<
     options.dto,
   );
 
-  const fieldMetadataList = getCrudGenFieldMetadataList(returnType);
+  const fieldMetadataList = getModelFieldMetadataList(returnType);
   if (fieldMetadataList) {
     Object.keys(fieldMetadataList).forEach((propertyName) => {
       const field = fieldMetadataList[propertyName];

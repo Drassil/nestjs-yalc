@@ -22,7 +22,7 @@ export function isDstExtended(dst: string | DstExtended): dst is DstExtended {
   return !!_dst.name && !!_dst.transformer;
 }
 
-export interface ICrudGenFieldMetadata<T = any>
+export interface IModelFieldMetadata<T = any>
   extends Omit<FieldMapperProperty, 'dst'> {
   dst?: string | DstExtended;
   src?: string;
@@ -84,11 +84,11 @@ export function getPrototype(target: Record<string, unknown> | ClassType): any {
   return isClass(target) || !target.prototype ? target : target.prototype;
 }
 
-export const CrudGenField = <T = any>({
+export const ModelField = <T = any>({
   gqlType,
   gqlOptions,
   ...options
-}: ICrudGenFieldMetadata<T>): PropertyDecorator => {
+}: IModelFieldMetadata<T>): PropertyDecorator => {
   return (target: any, property: string | symbol) => {
     const classConstructor = target.constructor;
     const propertyName = property.toString();
@@ -129,23 +129,23 @@ export const CrudGenField = <T = any>({
   };
 };
 
-export const getCrudGenFieldMetadataList = (
+export const getModelFieldMetadataList = (
   target: Record<string, unknown> | ClassType,
-): { [key: string]: ICrudGenFieldMetadata } | undefined => {
+): { [key: string]: IModelFieldMetadata } | undefined => {
   return Reflect.getMetadata(CRUDGEN_FIELD_METADATA_KEY, getPrototype(target));
 };
 
-export const hasCrudGenFieldMetadataList = (
+export const hasModelFieldMetadataList = (
   target: Record<string, unknown> | ClassType,
 ): boolean => {
   return Reflect.hasMetadata(CRUDGEN_FIELD_METADATA_KEY, getPrototype(target));
 };
 
-export const getCrudGenFieldMetadata = (
+export const getModelFieldMetadata = (
   target: Record<string, unknown> | ClassType,
   propertyName: string | symbol,
-): ICrudGenFieldMetadata | undefined => {
-  const metadata = getCrudGenFieldMetadataList(target);
+): IModelFieldMetadata | undefined => {
+  const metadata = getModelFieldMetadataList(target);
 
   const name = propertyName.toString();
 
@@ -154,7 +154,7 @@ export const getCrudGenFieldMetadata = (
   return metadata[name];
 };
 
-export const hasCrudGenFieldMetadata = (
+export const hasModelFieldMetadata = (
   target: Record<string, unknown> | ClassType,
   propertyName: string,
 ): boolean => {
@@ -176,7 +176,7 @@ export const CrudGenObject = (
       const copyFrom = metadata.copyFrom;
       metadata = { ...metadata, ...getCrudGenObjectMetadata(copyFrom) };
 
-      const fieldMetadata = { ...getCrudGenFieldMetadataList(copyFrom) };
+      const fieldMetadata = { ...getModelFieldMetadataList(copyFrom) };
 
       Reflect.defineMetadata(CRUDGEN_FIELD_METADATA_KEY, fieldMetadata, target);
     }
@@ -223,7 +223,7 @@ export type CrudGenObjectOptions = {
   filters?: FilterOption;
 };
 
-export interface IFieldAndFilterMapper {
+export interface IModelFieldAndFilterMapper {
   field: IFieldMapper;
   //When filterOption is set we can manage filters on fields with an inclusion/exclusion strategy
   filterOption?: FilterOption;

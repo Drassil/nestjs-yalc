@@ -1,6 +1,6 @@
 import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
 import {
-  CrudGenField,
+  ModelField,
   CrudGenObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { SkeletonPhone } from './skeleton-phone.entity.js';
@@ -11,7 +11,7 @@ import { SkeletonUserType } from './skeleton-user.dto.js';
 @ObjectType()
 @CrudGenObject()
 export class SkeletonPhoneType extends SkeletonPhone {
-  @CrudGenField({
+  @ModelField({
     gqlType: /* istanbul ignore next */ () => SkeletonUserType,
     // relation: {
     //   relationType: 'one-to-many',
@@ -19,7 +19,7 @@ export class SkeletonPhoneType extends SkeletonPhone {
   })
   SkeletonUser?: SkeletonUserType;
 
-  @CrudGenField({ gqlType: returnValue(UUIDScalar) })
+  @ModelField({ gqlType: returnValue(UUIDScalar) })
   userId: string;
 }
 

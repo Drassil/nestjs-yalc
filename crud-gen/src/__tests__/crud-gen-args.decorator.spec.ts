@@ -794,9 +794,8 @@ describe('Crud-gen args decorator', () => {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
-    const decorator = crudGenArgsDecorator.CrudGenCombineDecorators(
-      argsOptions,
-    );
+    const decorator =
+      crudGenArgsDecorator.CrudGenCombineDecorators(argsOptions);
     decorator({}, 'key', 0);
     expect(decorator).toEqual(expect.any(Function));
   });
@@ -815,16 +814,15 @@ describe('Crud-gen args decorator', () => {
       },
       gql: undefined,
     };
-    const decorator = crudGenArgsDecorator.CrudGenCombineDecorators(
-      defaultArgsOptions,
-    );
+    const decorator =
+      crudGenArgsDecorator.CrudGenCombineDecorators(defaultArgsOptions);
     expect(decorator).toEqual(expect.any(Function));
   });
 
   describe('Check CrudGenArgsSingleDecoratorMapper', () => {
-    const qqlCrudGenFieldsMapper = jest.spyOn(
+    const qqlModelFieldsMapper = jest.spyOn(
       GqlCrudGenDecorator,
-      'GqlCrudGenFieldsMapper',
+      'GqlModelFieldsMapper',
     );
 
     const objectToFieldMapper = jest.spyOn(
@@ -833,7 +831,7 @@ describe('Crud-gen args decorator', () => {
     );
 
     beforeEach(() => {
-      qqlCrudGenFieldsMapper.mockReturnValueOnce({
+      qqlModelFieldsMapper.mockReturnValueOnce({
         keys: ['field'],
         keysMeta: { field: {} },
       });
@@ -841,7 +839,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     afterEach(() => {
-      qqlCrudGenFieldsMapper.mockReset();
+      qqlModelFieldsMapper.mockReset();
       objectToFieldMapper.mockReset();
     });
 
@@ -877,7 +875,7 @@ describe('Crud-gen args decorator', () => {
       );
 
       expect(result.select).toEqual(['field']);
-      expect(qqlCrudGenFieldsMapper).toHaveBeenCalled();
+      expect(qqlModelFieldsMapper).toHaveBeenCalled();
       expect(objectToFieldMapper).toHaveBeenCalled();
     });
 
@@ -900,7 +898,7 @@ describe('Crud-gen args decorator', () => {
         mockedInfo,
       );
       expect(result).toEqual({});
-      expect(qqlCrudGenFieldsMapper).not.toHaveBeenCalled();
+      expect(qqlModelFieldsMapper).not.toHaveBeenCalled();
       expect(objectToFieldMapper).not.toHaveBeenCalled();
     });
   });

@@ -29,7 +29,7 @@ import { getProviderToken } from './crud-gen.helpers.js';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import {
-  getCrudGenFieldMetadataList,
+  getModelFieldMetadataList,
   isDstExtended,
 } from './object.decorator.js';
 
@@ -498,7 +498,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     const newEntityWrite = new entity();
 
-    const fieldMetadataList = getCrudGenFieldMetadataList(this.entityRead);
+    const fieldMetadataList = getModelFieldMetadataList(this.entityRead);
 
     for (const propertyName of Object.keys(entityRead)) {
       const fieldMetadata = fieldMetadataList?.[propertyName];
