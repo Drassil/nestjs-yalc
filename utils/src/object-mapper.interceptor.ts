@@ -20,6 +20,7 @@ export function objectMapperInterceptor<
      * Can also be used to transform the data before mapping
      */
     transformData?: { (data: any): any };
+    callback?: { (inputData: any, outputData: any): any };
   } = {},
 ) {
   @Injectable()
@@ -32,12 +33,15 @@ export function objectMapperInterceptor<
             : data;
 
           if (Array.isArray(_data)) {
-            return _data.map((item) => objectMapper(item, mapper));
+            const result = _data.map((item) => objectMapper(item, mapper));
+            return options.callback?.(data, result) ?? result;
           }
 
-          return objectMapper(_data, mapper, {
+          const result = objectMapper(_data, mapper, {
             copyNonMappedProperties: options.copyNonMappedProperties,
           });
+
+          return options.callback?.(data, result) ?? result;
         }),
       );
     }
