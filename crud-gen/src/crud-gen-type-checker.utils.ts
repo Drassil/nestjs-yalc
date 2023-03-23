@@ -10,8 +10,11 @@ import {
   INumberFilterModel,
   ISetFilterModel,
   ITextFilterModel,
-} from './crud-gen.interface.js';
-import { findOperatorTypes, IWhereConditionType } from './crud-gen.type.js';
+} from './api-graphql/crud-gen-gql.interface.js';
+import {
+  findOperatorTypes,
+  IWhereConditionType,
+} from './api-graphql/crud-gen-gql.type.js';
 
 export function isFilterInputStrict(
   currentFilter:

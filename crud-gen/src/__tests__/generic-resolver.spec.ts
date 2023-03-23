@@ -28,8 +28,8 @@ import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
 import { IModelFieldMetadata } from '../object.decorator.js';
 import { BaseEntity } from 'typeorm';
-import { CrudGenFindManyOptions } from '../crud-gen.interface.js';
-import { FilterType } from '../crud-gen.enum.js';
+import { CrudGenFindManyOptions } from '../crud-gen-gql.interface.js';
+import { FilterType } from '../crud-gen-gql.enum.js';
 import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
 import { IRelationInfo } from '../crud-gen.helpers.js';
 
@@ -298,7 +298,7 @@ describe('Generic Resolver', () => {
       new TestEntityRelation(),
     );
 
-    mockedGenericService.getEntityListCrudGen.mockResolvedValue([
+    mockedGenericService.getEntityListExtended.mockResolvedValue([
       [new TestEntityRelation()],
       1,
     ]);

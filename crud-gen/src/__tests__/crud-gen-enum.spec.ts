@@ -1,5 +1,5 @@
 import { BaseEntity } from 'typeorm';
-import { entityFieldsEnumFactory } from '../crud-gen.enum.js';
+import { entityFieldsEnumGqlFactory } from '../crud-gen-gql.enum.js';
 import * as CrudGenHelper from '../crud-gen.helpers.js';
 
 const fixedProperty = 'columId';
@@ -19,7 +19,7 @@ describe('entityFieldsEnumFactory', () => {
     );
 
     mockedGetMappedTypeProperties.mockReturnValue([fixedProperty]);
-    fieldsEnum = entityFieldsEnumFactory(TestEntity);
+    fieldsEnum = entityFieldsEnumGqlFactory(TestEntity);
   });
 
   afterEach(() => {
@@ -33,7 +33,7 @@ describe('entityFieldsEnumFactory', () => {
   });
 
   it('should return a define enum from cache', () => {
-    const cachedFildsEnum = entityFieldsEnumFactory(TestEntity);
+    const cachedFildsEnum = entityFieldsEnumGqlFactory(TestEntity);
     expect(mockedGetMappedTypeProperties).toHaveBeenCalledTimes(0);
     expect(cachedFildsEnum).toStrictEqual(fieldsEnum);
   });
@@ -42,7 +42,7 @@ describe('entityFieldsEnumFactory', () => {
     function objectFunction() {
       this.value = 'value';
     }
-    const result = entityFieldsEnumFactory(objectFunction);
+    const result = entityFieldsEnumGqlFactory(objectFunction);
     expect(result).toBeDefined();
   });
 });

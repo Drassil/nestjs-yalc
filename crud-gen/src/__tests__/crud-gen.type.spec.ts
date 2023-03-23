@@ -1,17 +1,17 @@
-import * as $ from "../crud-gen.type.js";
+import * as $ from '../crud-gen-gql.type.js';
 
 class Test {
   testField: string;
 }
 
-class TestConnection implements $.IConnection {
-  name = "";
+class TestConnection implements $.IConnectionGql {
+  name = '';
   nodes = [];
-  pageData = new $.PageDataCrudGen();
+  pageData = new $.PageDataCrudGenGql();
 }
 
-describe("CrudGen Gql type test", () => {
-  it("Check creation", async () => {
+describe('CrudGen Gql type test', () => {
+  it('Check creation', async () => {
     const testCrudGenType = $.default<Test>(Test);
     const classed = new testCrudGenType();
 
@@ -19,11 +19,11 @@ describe("CrudGen Gql type test", () => {
     expect(classed).toBeDefined();
   });
 
-  it("Check already existing typemap", async () => {
-    $.typeMap["Test"] = TestConnection;
+  it('Check already existing typemap', async () => {
+    $.typeMap['Test'] = TestConnection;
     const testCrudGenType = $.default<Test>(Test);
 
     expect(testCrudGenType).toBeDefined();
-    delete $.typeMap["Test"];
+    delete $.typeMap['Test'];
   });
 });

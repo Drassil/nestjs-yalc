@@ -5,7 +5,7 @@ import {
   SortModel,
   sortModelFactory,
 } from '../crud-gen.input.js';
-import * as CrudGenEnum from '../crud-gen.enum.js';
+import * as CrudGenEnum from '../crud-gen-gql.enum.js';
 import * as CrudGenHelpers from '../crud-gen.helpers.js';
 import { TestEntity, TestEntityRelation } from '../__mocks__/entity.mock.js';
 

@@ -15,7 +15,7 @@ import {
 import {
   CrudGenArgs,
   CrudGenArgsSingle,
-} from '@nestjs-yalc/crud-gen/crud-gen-args.decorator.js';
+} from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-args-gql.decorator.js';
 
 import {
   applyDecorators,
@@ -23,19 +23,19 @@ import {
   Inject,
   UseInterceptors,
 } from '@nestjs/common';
-import { CrudGenInterceptor } from '@nestjs-yalc/crud-gen/crud-gen.interceptor.js';
+import { CrudGenGqlInterceptor } from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.interceptor.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   IIDArg,
-} from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
+} from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.interface.js';
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/crud-gen/generic-service.service.js';
+} from '@nestjs-yalc/crud-gen/typeorm/generic.service.js';
 import { IDecoratorType, IFieldMapper } from '@nestjs-yalc/interfaces';
-import CrudGenGqlType from './crud-gen.type.js';
+import CrudGenGqlType from './crud-gen-gql.type.js';
 import {
   getDataloaderToken,
   GQLDataLoader,
@@ -47,12 +47,12 @@ import {
   filterTypeToNativeType,
   getEntityRelations,
   IRelationInfo,
-} from './crud-gen.helpers.js';
-import { getModelFieldMetadataList } from './object.decorator.js';
-import { CrudGenError } from './crud-gen.error.js';
-import { ExtraArgsStrategy } from './crud-gen.enum.js';
-import { IAgQueryParams } from './crud-gen.args.js';
-import { InputArgs } from '@nestjs-yalc/crud-gen/gqlmapper.decorator.js';
+} from '../crud-gen.helpers.js';
+import { getModelFieldMetadataList } from '../object.decorator.js';
+import { CrudGenError } from '../crud-gen.error.js';
+import { ExtraArgsStrategy } from '../crud-gen.enum.js';
+import { ICrudGenParams } from '../crud-gen.args.js';
+import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import { GetContext } from '@nestjs-yalc/utils/nest.decorator.js';
 export interface IGenericResolver {
@@ -68,7 +68,7 @@ export interface IGenericResolverMethodOptions {
    */
   fieldMap?: IFieldMapper;
   decorators?: IDecoratorType[];
-  defaultValue?: IAgQueryParams;
+  defaultValue?: ICrudGenParams;
   /**
    * Filters with direct arguments
    */
@@ -290,7 +290,7 @@ export function defineFieldResolver<Entity extends Record<string, any> = any>(
       ResolveField(returnValue(CrudGenGqlType<Entity>(relType)), {
         nullable: resolverInfo.agField?.gqlOptions?.nullable,
       })(resolver.prototype, resolverInfo.relation.propertyName, descriptor);
-      UseInterceptors(new CrudGenInterceptor())(
+      UseInterceptors(new CrudGenGqlInterceptor())(
         resolver.prototype,
         resolverInfo.relation.propertyName,
         descriptor,
@@ -409,12 +409,10 @@ export function defineGetSingleResource<Entity>(
     ): Promise<Entity | null> {
       const dataLoader: GQLDataLoader<Entity> = this.dataLoader;
 
-      const gqlCtx = GqlExecutionContext.create(ctx);
-
       let finalId;
       if (methodOptions.idName && isIDArg(methodOptions.idName)) {
         finalId = methodOptions.idName.filterMiddleware
-          ? methodOptions.idName.filterMiddleware(gqlCtx, id)
+          ? methodOptions.idName.filterMiddleware(ctx, id)
           : id;
       } else {
         finalId = id;
@@ -495,7 +493,7 @@ export function defineGetGridResource<Entity>(
     value: async function (
       findOptions: CrudGenFindManyOptions,
     ): Promise<[Entity[], number]> {
-      return (<GenericService<Entity>>this.service).getEntityListCrudGen(
+      return (<GenericService<Entity>>this.service).getEntityListExtended(
         findOptions,
         true,
       );
@@ -522,7 +520,7 @@ export function defineGetGridResource<Entity>(
     ),
   )(resolver.prototype, queryName, descriptor);
 
-  UseInterceptors(new CrudGenInterceptor())(
+  UseInterceptors(new CrudGenGqlInterceptor())(
     resolver.prototype,
     queryName,
     descriptor,
@@ -541,7 +539,7 @@ export function defineGetGridResource<Entity>(
       entityType,
       extraArgs: methodOptions.extraArgs,
       extraArgsStrategy: methodOptions.extraArgsStrategy,
-      // type: returnValue(agQueryParamsFactory(methodOptions.defaultValue)),
+      // type: returnValue(crudGenParamsFactory(methodOptions.defaultValue)),
     })(resolver.prototype, queryName, 0);
 
     if (methodOptions.extraArgs) {

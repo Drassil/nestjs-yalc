@@ -96,3 +96,12 @@ export function objectSetProp(
 
   return obj;
 }
+
+export function objectsHaveSameKeys(...objects: any[]) {
+  const allKeys = objects.reduce(
+    (keys, object) => keys.concat(Object.keys(object)),
+    [],
+  );
+  const union = new Set(allKeys);
+  return objects.every((object) => union.size === Object.keys(object).length);
+}

@@ -1,86 +1,70 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Args, GqlExecutionContext } from '@nestjs/graphql';
+import { IFieldMapper } from '@nestjs-yalc/interfaces';
+import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
 import {
-  Not,
   Equal,
+  Like,
   FindOperator,
   LessThan,
   LessThanOrEqual,
   MoreThan,
   MoreThanOrEqual,
-  Like,
   Between,
   In,
   IsNull,
+  Not,
   ObjectLiteral,
+  FindOptionsOrder,
 } from 'typeorm';
-import { GqlModelFieldsMapper } from '@nestjs-yalc/crud-gen/gqlfields.decorator.js';
-import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import {
-  IAgQueryParams,
-  agQueryParamsFactory,
-  agQueryParamsNoPaginationFactory,
-} from './crud-gen.args.js';
+  isSetFilterModel,
+  isDateFilterModel,
+  isNumberFilterModel,
+  isCombinedFilterModel,
+  isFilterModel,
+  isTextFilterModel,
+} from '../crud-gen-type-checker.utils.js';
 import {
   GeneralFilters,
   FilterType,
-  SortDirection,
   Operators,
-  ExtraArgsStrategy,
+  SortDirection,
   RowDefaultValues,
-} from './crud-gen.enum.js';
+} from '../crud-gen.enum.js';
 import {
-  CrudGenFindManyOptions,
-  DateFilterModel,
-  FilterInput,
-  FilterModel,
-  ICombinedWhereModel,
-  ICombinedSimpleModel,
-  ISimpleFilterModel,
-  ISetFilterModel,
-  ICrudGenArgsOptions,
-  ICrudGenArgsSingleOptions,
-} from './crud-gen.interface.js';
-import {
-  findOperatorTypes,
-  IFilterArg,
-  IWhereCondition,
-  IWhereConditionType,
-} from './crud-gen.type.js';
+  CrudGenFilterNotSupportedError,
+  CrudGenInvalidArgumentError,
+  CrudGenInvalidOperatorError,
+  CrudGenError,
+  CrudGenFilterProhibited,
+} from '../crud-gen.error.js';
 import {
   applyJoinArguments,
   columnConversion,
-  forceFilters,
   formatRawSelectionWithoutAlias,
   getDestinationFieldName,
-  isAskingForCount,
   isSymbolic,
   objectToFieldMapper,
-} from './crud-gen.helpers.js';
+} from '../crud-gen.helpers.js';
 import {
-  CrudGenError,
-  CrudGenFilterNotSupportedError,
-  CrudGenFilterProhibited,
-  CrudGenInvalidArgumentError,
-  CrudGenInvalidOperatorError,
-} from './crud-gen.error.js';
-import { DateHelper } from '@nestjs-yalc/utils/date.helper.js';
-import { agJoinArgFactory } from './crud-gen.input.js';
-import returnValue from '@nestjs-yalc/utils/returnValue.js';
-import { GraphQLResolveInfo } from 'graphql';
-import { FilterOption, FilterOptionType } from './object.decorator.js';
+  FilterModel,
+  ICombinedSimpleModel,
+  ICombinedWhereModel,
+  ISimpleFilterModel,
+  DateFilterModel,
+  ISetFilterModel,
+  FilterInput,
+  CrudGenFindManyOptions,
+  ICrudGenBaseParams,
+  ICrudGenArgsOptions,
+  ISortModelStrict,
+} from '../api-graphql/crud-gen-gql.interface.js';
 import {
-  ArgumentsError,
-  MissingArgumentsError,
-} from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
-import {
-  isCombinedFilterModel,
-  isDateFilterModel,
-  isFilterModel,
-  isNumberFilterModel,
-  isSetFilterModel,
-  isTextFilterModel,
-} from './crud-gen-type-checker.utils.js';
+  findOperatorTypes,
+  IWhereConditionType,
+  IWhereCondition,
+  IKeyMeta,
+} from '../api-graphql/crud-gen-gql.type.js';
+import { FilterOption, FilterOptionType } from '../object.decorator.js';
 
 export function getTextFilter(filter: string, firstParameter: string) {
   switch (filter.toLowerCase()) {
@@ -383,12 +367,12 @@ export function checkFilterScope(
   }
 }
 
-export function mapCrudGenParams<Entity extends ObjectLiteral>(
+export function mapCrudGenParam<Entity extends ObjectLiteral>(
   params: ICrudGenArgsOptions | undefined,
-  ctx: GqlExecutionContext,
-  args: IAgQueryParams,
-  info: GraphQLResolveInfo,
-): CrudGenFindManyOptions {
+  select: { keys: string[]; keysMeta?: { [key: string]: IKeyMeta } },
+  args: ICrudGenBaseParams,
+  options: { isCount?: boolean } = {},
+) {
   let filterOption: FilterOption | undefined;
   let fieldMapper: IFieldMapper = {};
   const fieldType = params?.fieldType ?? params?.fieldMap ?? params?.entityType;
@@ -401,11 +385,6 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
   }
 
   const defaultSorting = params?.defaultValue?.sorting;
-  // MAP query fields -> select
-  const { keys, keysMeta } = GqlModelFieldsMapper(
-    fieldType ?? {},
-    ctx.getInfo(),
-  );
 
   // MAP filter -> where
   let where = args.filters
@@ -417,113 +396,45 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
   }
 
   // MAP sorting -> order
-  const order: {
-    [P in keyof Entity]?: 'ASC' | 'DESC' | 1 | -1;
-  } = {};
-
-  const sorting = args.sorting ?? defaultSorting;
-  if (sorting) {
-    sorting.forEach((sortParams) => {
-      const col = sortParams.colId.toString();
-      let colName: keyof Entity;
-      if (fieldMapper[col]?.mode === 'derived') {
+  const order: FindOptionsOrder<Entity> = mapSortingParamsToTypeORM(
+    args.sorting ?? defaultSorting ?? [],
+    (col: string | number | Symbol) => {
+      let colName = col.toString();
+      if (fieldMapper[colName]?.mode === 'derived') {
         colName = formatRawSelectionWithoutAlias(
-          getDestinationFieldName(fieldMapper[col].dst),
+          getDestinationFieldName(fieldMapper[colName].dst),
           // fieldMapper[col]._propertyName ?? fieldMapper[col].dst,
         );
       } else {
-        colName = columnConversion(col, fieldMapper);
+        colName = columnConversion(colName, fieldMapper);
       }
 
-      const val = sortParams.sort?.toUpperCase();
-      const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
-      order[colName] = sortDir;
-    });
-  }
+      return colName;
+    },
+  );
 
   // MAP startRow/endRow -> take/skip
-  const maxRow = params?.options?.maxRow ?? RowDefaultValues.MAX_ROW;
-  const skip = args.startRow ?? RowDefaultValues.START_ROW;
+  const { take, skip } = mapPaginationParamsToTypeORM(
+    args.startRow,
+    args.endRow,
+    params?.options?.maxRow,
+  );
 
-  const checkMaxRow = (requestRow: number) => {
-    if (maxRow === 0 || requestRow < maxRow) {
-      return requestRow;
-    } else {
-      throw new CrudGenError(
-        `Invalid max number of row selected: cannot exeed max ${maxRow}`,
-      );
-    }
-  };
-
-  // args.endRow is always defined due to the default value in agQueryParamsFactory!
-  const take = args.endRow && checkMaxRow(args.endRow - skip);
-
-  const skipCount = !isAskingForCount(ctx.getInfo());
-
-  const extraParameter: { [key: string]: any } = {};
-  if (params?.extraArgs) {
-    const extraArgsKeys = Object.keys(params.extraArgs);
-    switch (params.extraArgsStrategy) {
-      case ExtraArgsStrategy.AT_LEAST_ONE:
-        if (
-          args.length <= 0 ||
-          extraArgsKeys.every((argName) => typeof args[argName] === 'undefined')
-        )
-          throw new MissingArgumentsError();
-        break;
-      case ExtraArgsStrategy.ONLY_ONE:
-        if (
-          extraArgsKeys.filter(
-            (argName) => typeof args[argName] !== 'undefined',
-          ).length > 1
-        )
-          throw new ArgumentsError('You must define only one extra arguments');
-        break;
-      case ExtraArgsStrategy.DEFAULT:
-      default:
-      // nothing to do
-    }
-
-    const forcedFilters: IFilterArg[] = [];
-    for (const argName of Object.keys(params.extraArgs)) {
-      if (
-        params.extraArgs[argName].filterCondition === GeneralFilters.VIRTUAL
-      ) {
-        extraParameter[argName] = args[argName];
-        continue;
-      }
-
-      let value = args[argName];
-      const filterMiddleware = params.extraArgs[argName].filterMiddleware;
-
-      if (filterMiddleware) {
-        value = filterMiddleware(ctx, value);
-      }
-
-      forcedFilters.push({
-        key: argName, // the column name mapping is executed internally
-        value,
-        descriptors: params.extraArgs[argName],
-      });
-    }
-
-    where = forceFilters(where, forcedFilters, fieldMapper);
-  }
+  const skipCount = !options.isCount;
 
   const findManyOptions: CrudGenFindManyOptions = {
     skip,
     take,
     order,
-    select: keys,
+    select: select.keys,
     where,
-    info,
     extra: {
       skipCount,
-      args: extraParameter,
       _fieldMapper: fieldMapper,
-      _keysMeta: keysMeta,
+      _keysMeta: select.keysMeta,
     },
   };
+
   if (params?.entityType && args.join) {
     applyJoinArguments(
       findManyOptions,
@@ -536,163 +447,46 @@ export function mapCrudGenParams<Entity extends ObjectLiteral>(
   return findManyOptions;
 }
 
-export const CrudGenArgsFactory = <T>(
-  data: ICrudGenArgsOptions | undefined,
-  ctx: ExecutionContext,
-): CrudGenFindManyOptions<T> => {
-  const gqlCtx = GqlExecutionContext.create(ctx);
+export function mapPaginationParamsToTypeORM(
+  startRow?: number,
+  endRow?: number,
+  maxRow?: number,
+) {
+  const max = maxRow ?? RowDefaultValues.MAX_ROW;
+  const skip = startRow ?? RowDefaultValues.START_ROW;
 
-  const params = mapCrudGenParams(
-    data,
-    gqlCtx,
-    gqlCtx.getArgs(),
-    gqlCtx.getInfo(),
-  );
-
-  return params;
-};
-
-export const CrudGenArgsMapper = createParamDecorator(CrudGenArgsFactory);
-
-/**
- * Combine multiple param decorators
- */
-export const CrudGenCombineDecorators = (params: ICrudGenArgsOptions) => {
-  const argDecorators: ParameterDecorator[] = [];
-  if (params.extraArgs) {
-    for (const argName of Object.keys(params.extraArgs)) {
-      if (params.extraArgs[argName].hidden) continue;
-
-      argDecorators.push(
-        Args(argName, params.extraArgs[argName].options ?? {}),
+  const checkMaxRow = (requestRow: number) => {
+    if (max === 0 || requestRow < max) {
+      return requestRow;
+    } else {
+      throw new CrudGenError(
+        `Invalid max number of row selected: cannot exeed max ${max}`,
       );
     }
-  }
-
-  let joinArg: ParameterDecorator;
-  if (params.entityType) {
-    const JoinOptionInput = agJoinArgFactory(
-      params.entityType,
-      params.defaultValue,
-    );
-
-    if (JoinOptionInput) {
-      joinArg = Args('join', {
-        type:
-          /*istanbul ignore next */
-          () => JoinOptionInput,
-        nullable: true,
-      });
-    }
-  }
-
-  const args = Args(params.gql ?? {});
-  const mapper = CrudGenArgsMapper(params);
-  return function (target: any, key: string, index: number) {
-    args(target, key, index);
-    joinArg && joinArg(target, key, index);
-    argDecorators.map((d) => d(target, key, index));
-    mapper(target, key, index);
   };
-};
 
-export const CrudGenArgs = (params: ICrudGenArgsOptions) => {
-  const gqlOptions = params.gql ?? {};
-  if (!gqlOptions.type) {
-    gqlOptions.type = returnValue(
-      agQueryParamsFactory(params.defaultValue, params.entityType),
-    );
-  }
+  const take = (endRow && checkMaxRow(endRow - skip)) || max;
 
-  params.gql = gqlOptions;
-
-  return CrudGenCombineDecorators(params);
-};
-
-/**
- * Combine multiple param decorators
- */
-export const CrudGenArgsNoPagination = (params: ICrudGenArgsOptions) => {
-  const gqlOptions = params.gql ?? {};
-  if (!gqlOptions.type) {
-    gqlOptions.type = returnValue(
-      agQueryParamsNoPaginationFactory(params.defaultValue, params.entityType),
-    );
-  }
-
-  params.gql = gqlOptions;
-
-  return CrudGenCombineDecorators(params);
-};
-
-export function CrudGenArgsSingleDecoratorMapper<T>(
-  params: ICrudGenArgsOptions | undefined,
-  args: IAgQueryParams,
-  info: GraphQLResolveInfo,
-): CrudGenFindManyOptions<T> {
-  const findManyOptions: CrudGenFindManyOptions = {};
-
-  if (params) {
-    const fieldType = params.fieldType ?? params.entityType;
-    if (fieldType) {
-      const fieldMapper = objectToFieldMapper(fieldType);
-
-      const { keys, keysMeta } = GqlModelFieldsMapper(fieldType, info);
-      findManyOptions.select = keys;
-      findManyOptions.extra = {
-        _keysMeta: keysMeta,
-        _fieldMapper: fieldMapper.field,
-      };
-
-      if (params.entityType && args.join) {
-        applyJoinArguments(
-          findManyOptions,
-          params.entityType.name,
-          args.join,
-          fieldMapper.field,
-        );
-      }
-    }
-  }
-
-  return findManyOptions;
+  return { skip, take };
 }
 
-export const CrudGenArgsSingleDecoratorFactory = <T>(
-  data: ICrudGenArgsOptions | undefined,
-  ctx: ExecutionContext,
-): CrudGenFindManyOptions<T> => {
-  const gqlCtx = GqlExecutionContext.create(ctx);
+export function mapSortingParamsToTypeORM<TInputType = any, TEntityType = any>(
+  sorting: ISortModelStrict<TInputType>[],
+  transform?: (col: keyof TInputType) => keyof TEntityType,
+) {
+  const order: FindOptionsOrder<TEntityType> = {};
 
-  return CrudGenArgsSingleDecoratorMapper<T>(
-    data,
-    gqlCtx.getArgs(),
-    gqlCtx.getInfo(),
-  );
-};
+  if (sorting) {
+    sorting.forEach((sortParams) => {
+      const col = sortParams.colId;
+      let colName: keyof TEntityType = transform?.(col) ?? (col as any);
 
-export const CrudGenArgsSingleDecorator = createParamDecorator(
-  CrudGenArgsSingleDecoratorFactory,
-);
-
-export const CrudGenArgsSingle = (params: ICrudGenArgsSingleOptions) => {
-  let joinArg: ParameterDecorator;
-  if (params.entityType) {
-    const JoinOptionInput = agJoinArgFactory(params.entityType);
-
-    if (JoinOptionInput) {
-      joinArg = Args('join', {
-        type:
-          /*istanbul ignore next */
-          () => JoinOptionInput,
-        nullable: true,
-      });
-    }
+      const val = sortParams.sort?.toUpperCase();
+      const sortDir: 'ASC' | 'DESC' = <SortDirection>val ?? 'ASC';
+      /** @todo fix typehinting error when we remove 'as any' */
+      order[colName] = sortDir as any;
+    });
   }
 
-  const mapper = CrudGenArgsSingleDecorator(params);
-  return function (target: any, key: string, index: number) {
-    joinArg && joinArg(target, key, index);
-    mapper(target, key, index);
-  };
-};
+  return order;
+}

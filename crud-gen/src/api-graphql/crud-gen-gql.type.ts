@@ -1,12 +1,15 @@
 import { ObjectType, Field, HideField } from '@nestjs/graphql';
 import { Type } from '@nestjs/common';
-import { FindManyOptions, FindOperator } from 'typeorm';
+import { FindManyOptions, FindOperator, ObjectLiteral } from 'typeorm';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
-import { IExtraArg, ICombinedWhereModel } from './crud-gen.interface.js';
-import { Operators } from './crud-gen.enum.js';
+import { IExtraArg, ICombinedWhereModel } from './crud-gen-gql.interface.js';
+import { Operators } from '../crud-gen.enum.js';
+import { FieldMapperProperty } from '@nestjs-yalc/interfaces';
+import { IModelFieldMetadata } from '../object.decorator.js';
+import { IConnection, IPageDataCrudGen } from '../crud-gen.interface.js';
 
 @ObjectType()
-export class PageDataCrudGen {
+export class PageDataCrudGenGql implements IPageDataCrudGen {
   @Field()
   public count!: number;
 
@@ -17,28 +20,26 @@ export class PageDataCrudGen {
   public endRow!: number;
 }
 
-export interface IConnection {
-  name: string;
-  nodes: any[];
-  pageData: PageDataCrudGen;
+export interface IConnectionGql extends IConnection {
+  pageData: PageDataCrudGenGql;
 }
 
 export const typeMap: {
-  [key: string]: { new (name: string): IConnection };
+  [key: string]: { new (name: string): IConnectionGql };
 } = {};
 export default function CrudGenGqlType<T>(type: Type<T>): any {
   const { name } = type;
   if (typeMap[`${name}`]) return typeMap[`${name}`];
 
   @ObjectType(`${name}Connection`, { isAbstract: true })
-  class Connection implements IConnection {
+  class Connection implements IConnectionGql {
     @HideField() // internally used
     public name = `${name}Connection`;
 
     @Field(returnValue([type]), { nullable: true })
     public nodes!: T[];
-    @Field(returnValue(PageDataCrudGen), { nullable: true })
-    public pageData!: PageDataCrudGen;
+    @Field(returnValue(PageDataCrudGenGql), { nullable: true })
+    public pageData!: PageDataCrudGenGql;
   }
   typeMap[`${name}`] = Connection;
 
@@ -74,14 +75,14 @@ export type IWhereConditionType =
   | RecursiveAndFindOperator<findOperatorTypes>[]
   | ICombinedWhereModel;
 
-export type IWhereFilters = {
-  [key: string]: IWhereConditionType;
-};
+export type IWhereFilters<Entity extends ObjectLiteral> = Partial<{
+  [key in keyof Entity]: IWhereConditionType;
+}>;
 
-export interface IWhereCondition {
+export interface IWhereCondition<Entity extends ObjectLiteral = any> {
   operator?: Operators;
-  filters: IWhereFilters;
-  childExpressions?: IWhereCondition[];
+  filters: IWhereFilters<Entity>;
+  childExpressions?: IWhereCondition<Entity>[];
 }
 
 export interface IFilterArg {
@@ -94,4 +95,10 @@ export interface ISelect {
   field: string;
   isRaw?: boolean;
   isNested?: boolean;
+}
+
+export interface IKeyMeta {
+  fieldMapper: FieldMapperProperty | IModelFieldMetadata;
+  isNested?: boolean;
+  rawSelect: string;
 }

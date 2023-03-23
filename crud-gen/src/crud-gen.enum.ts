@@ -1,6 +1,5 @@
 import { AnyFunction, ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
-import { registerEnumType } from '@nestjs/graphql';
 import { getMappedTypeProperties } from './crud-gen.helpers.js';
 
 export enum GeneralFilters {
@@ -38,10 +37,6 @@ export enum GeneralFilters {
   VIRTUAL = 'virtual',
 }
 
-registerEnumType(GeneralFilters, {
-  name: 'GeneralFiltersEnum',
-});
-
 export enum FilterType {
   TEXT = 'text',
   MULTI = 'multi',
@@ -50,27 +45,15 @@ export enum FilterType {
   SET = 'set',
 }
 
-registerEnumType(FilterType, {
-  name: 'FilterTypeEnum',
-});
-
 export enum Operators {
   AND = 'AND',
   OR = 'OR',
 }
 
-registerEnumType(Operators, {
-  name: 'FilterOperatorsEnum',
-});
-
 export enum SortDirection {
   DESC = 'DESC',
   ASC = 'ASC',
 }
-
-registerEnumType(SortDirection, {
-  name: 'SortDirection',
-});
 
 export enum CustomWhereKeys {
   MULTICOLUMNJOINOPTIONS = 'multiColumnJoinOptions',
@@ -103,10 +86,15 @@ export enum RowDefaultValues {
 const fieldsEnumCache = new WeakMap();
 export function entityFieldsEnumFactory<Entity>(
   entityModel: ClassType<Entity> | AnyFunction,
-): { [index: string]: string } {
+): { enum: { [index: string]: string }; cached: boolean; prototype: any } {
   let cached;
   const prototype = !isClass(entityModel) ? entityModel.prototype : entityModel;
-  if ((cached = fieldsEnumCache.get(prototype))) return cached;
+  if ((cached = fieldsEnumCache.get(prototype)))
+    return {
+      enum: cached,
+      cached: true,
+      prototype,
+    };
 
   const properties: { [x in string | number]: any } = {};
 
@@ -115,11 +103,7 @@ export function entityFieldsEnumFactory<Entity>(
   type FieldsEnumType = keyof typeof properties;
   const FieldsEnum: { [P in FieldsEnumType]: P } = { ...properties };
 
-  registerEnumType(FieldsEnum, {
-    name: `${prototype.name}FieldEnum`,
-  });
-
   fieldsEnumCache.set(prototype, FieldsEnum);
 
-  return FieldsEnum;
+  return { enum: FieldsEnum, cached: false, prototype };
 }

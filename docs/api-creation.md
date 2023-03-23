@@ -64,7 +64,7 @@ First create the entity `user-phone.entity.ts`
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -184,7 +184,7 @@ Example (`skeleton-user.entity.ts`):
 ```typescript
 @Entity('user')
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
@@ -243,7 +243,7 @@ while in the `UserPhone` entity (`user-phone.entity.ts`):
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -287,13 +287,13 @@ what should not be changed from the entity and redefine some properties instead 
 
 We can create a `skeleton-user.type.ts` with the following code and move all the GraphQL related decorators within this file.
 
-Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@CrudGenObject` one.
+Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@ModelObject` one.
 
 Example:
 
 ```typescript
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserType extends SkeletonUser {
   @ModelField<UserPhone>({
     relation: {
@@ -333,7 +333,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone'] as const,
@@ -341,14 +341,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone'] as const,
@@ -365,7 +365,7 @@ In the example above we've achieved the following:
    nestjs/graphql library to remove properties from the extended type that we do not need
 
 There are many other features available NestJS-Yalc/crud-gen, including JSON field handling, middlewares, default values and many other. Please, refer
-to the documentation of the `@ModelField` and `@CrudGenObject` decorator to know more.
+to the documentation of the `@ModelField` and `@ModelObject` decorator to know more.
 
 As last step, we have to define our DTO and the entity within the `CrudGenDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
 

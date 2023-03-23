@@ -2,7 +2,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum.js';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen-gql.enum.js';
 import {
   CrudGenConditionNotSupportedError,
   CrudGenNotPossibleError,
@@ -32,7 +32,7 @@ import {
   getDestinationFieldName,
 } from '../crud-gen.helpers.js';
 import { JoinArgOptions, JoinTypes } from '../crud-gen.input.js';
-import { IWhereCondition } from '../crud-gen.type.js';
+import { IWhereCondition } from '../crud-gen-gql.type.js';
 import * as ObjectDecorator from '../object.decorator.js';
 import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
