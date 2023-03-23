@@ -50,7 +50,10 @@ SelectQueryBuilder.prototype.getMany = async function () {
 SelectQueryBuilder.prototype.getOne = async function () {
   const { entities, raw } = await this.getRawAndEntities();
 
-  if (!Array.isArray(entities) || entities.length <= 0) return entities[0];
+  if (!Array.isArray(entities) || entities.length <= 0)
+    // we need to return null here, because if entities[0] is undefined,
+    // this is not going to throw an error in typeorm
+    return entities[0] ?? null;
 
   const metaInfo = getModelFieldMetadataList(entities[0].constructor) ?? {};
 
