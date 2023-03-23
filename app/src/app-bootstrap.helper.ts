@@ -33,12 +33,14 @@ export interface IGlobalOptions {
   apiPrefix?: string;
   filters?: ExceptionFilter[];
   abortOnError?: boolean;
+  enableSwagger?: boolean;
 }
 
 export class AppBootstrap {
   private app?: NestFastifyApplication;
   private fastifyInstance?: FastifyInstance;
   protected loggerService?: LoggerService;
+  protected isSwaggerEnabled: boolean = false;
 
   constructor(
     private appAlias: string,
@@ -139,6 +141,10 @@ export class AppBootstrap {
     return this.module;
   }
 
+  setSwaggerEnabled(enabled: boolean) {
+    this.isSwaggerEnabled = enabled;
+  }
+
   async applyBootstrapGlobals(options?: IGlobalOptions) {
     this.getApp().useGlobalPipes(
       new ValidationPipe({ validateCustomDecorators: true }),
@@ -160,11 +166,14 @@ export class AppBootstrap {
     ];
     this.getApp().useGlobalFilters(...filters);
 
-    const document = SwaggerModule.createDocument(
-      this.getApp(),
-      this.buildSwaggerConfig().build(),
-    );
-    SwaggerModule.setup('api', this.getApp(), document);
+    if (options?.enableSwagger) {
+      this.setSwaggerEnabled(true);
+      const document = SwaggerModule.createDocument(
+        this.getApp(),
+        this.buildSwaggerConfig().build(),
+      );
+      SwaggerModule.setup('api', this.getApp(), document);
+    }
 
     return this;
   }
@@ -197,12 +206,14 @@ export class AppBootstrap {
       //   http://127.0.0.1:${port}${apiPrefix}/graphql
       //   http://${domain}:${port}${apiPrefix}/graphql`);
 
-      // eslint-disable-next-line no-console
-      console.debug(`Swagger ${this.appAlias} listening on
+      if (this.isSwaggerEnabled) {
+        // eslint-disable-next-line no-console
+        console.debug(`Swagger ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/api
         http://127.0.0.1:${port}${apiPrefix}/api
         http://${domain}:${port}${apiPrefix}/api
         ${address}/api`);
+      }
 
       callback?.(port, host, domain);
     });
