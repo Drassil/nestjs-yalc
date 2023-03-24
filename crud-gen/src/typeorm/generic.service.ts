@@ -19,7 +19,7 @@ import {
   QueryFailedError,
 } from 'typeorm';
 import { FindManyOptions, FindOptionsWhere as FindConditions } from 'typeorm';
-import { GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';
+import { type GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';
 import {
   CrudGenFindManyOptions,
   ICrudGenSimpleParams,

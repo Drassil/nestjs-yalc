@@ -48,7 +48,7 @@ import {
   FilterInput,
 } from './api-graphql/crud-gen-gql.interface.js';
 import {
-  GenericTypeORMRepository,
+  type GenericTypeORMRepository,
   CGExtendedRepositoryFactory,
 } from './typeorm/generic.repository.js';
 import {
