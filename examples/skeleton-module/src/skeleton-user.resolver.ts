@@ -19,7 +19,7 @@ import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.enum.js';
+} from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,
