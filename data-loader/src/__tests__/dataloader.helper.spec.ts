@@ -193,7 +193,7 @@ describe('GQLDataLoader class', () => {
     const genericService = createMock<GenericService>();
 
     const output = [[new EntityTest('asset_1'), new EntityTest('asset_1')]];
-    genericService.getEntityListCrudGen.mockResolvedValue(output);
+    genericService.getEntityListExtended.mockResolvedValue(output);
 
     const result: FactoryProvider = DataLoaderFactory<EntityTest>(
       'databaseKey',

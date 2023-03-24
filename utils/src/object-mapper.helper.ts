@@ -41,7 +41,7 @@ function setMappedProperty<
 >(
   mapProperty:
     | ObjectMapperDestPropertyType<TInputObject, TOutputObject, TPropertyDest>
-    | boolean,
+    | true,
   inputObject: TInputObject,
   outputObject: TOutputObject,
   propertyName: keyof TInputObject,
@@ -53,9 +53,7 @@ function setMappedProperty<
     TPropertyDest
   >;
 
-  if (typeof mapProperty === 'boolean') {
-    if (mapProperty === false) return; // do not map
-
+  if (mapProperty === true) {
     options = {};
   } else {
     options = mapProperty;
@@ -97,50 +95,53 @@ export function objectMapper<
 
     const mapProperty = mapper[propertyName];
 
-    if (mapProperty === false) continue; // do not map/exclude
-
-    if (mapProperty) {
-      Object.keys(mapProperty).forEach((mapPropertyKey) => {
-        // if (typeof mapProperty === 'boolean') {
-        //   outputObject[mapPropertyKey as keyof TOutputObject] = inputObject[
-        //     propertyName
-        //   ] as any;
-        //   return;
-        // }
-
-        if (typeof mapProperty !== 'object') {
-          outputObject[mapProperty as keyof TOutputObject] = inputObject[
-            propertyName
-          ] as any;
-          return;
-        }
-
-        const mapPropertyItem = mapProperty[mapPropertyKey];
-        if (mapPropertyItem) {
-          setMappedProperty(
-            mapPropertyItem,
-            inputObject,
-            outputObject,
-            propertyName,
-            mapPropertyKey,
-          );
-        } else if (options.copyNonMappedProperties === true) {
-          outputObject[mapPropertyKey as keyof TOutputObject] = inputObject[
-            propertyName
-          ] as any;
-        }
-      });
-    } else if (options.copyNonMappedProperties === true) {
+    // handle mapping when properties are not specified but the option is enabled
+    if (mapProperty === undefined) {
       // TODO: use an option to enable this  behaviour
       // if (!Object.keys(outputObject).includes(propertyName))
       //   throw new Error(
       //     `Cannot map property ${propertyName} into the OutputObject. Property doesn't exist in the destination`,
       //   );
 
-      outputObject[propertyName as keyof TOutputObject] = inputObject[
+      if (options.copyNonMappedProperties === true)
+        outputObject[propertyName as keyof TOutputObject] = inputObject[
+          propertyName
+        ] as any;
+
+      continue;
+    }
+
+    // handle excluded properties
+    if (mapProperty === false) continue; // do not map
+
+    // handle simple mapping with a string
+    if (typeof mapProperty !== 'object') {
+      outputObject[mapProperty as keyof TOutputObject] = inputObject[
         propertyName
       ] as any;
+      continue;
     }
+
+    Object.keys(mapProperty).forEach((mapPropertyKey) => {
+      // if (typeof mapProperty === 'boolean') {
+      //   outputObject[mapPropertyKey as keyof TOutputObject] = inputObject[
+      //     propertyName
+      //   ] as any;
+      //   return;
+      // }
+
+      const mapPropertyItem = mapProperty[mapPropertyKey];
+
+      if (!mapPropertyItem) return; // do not map (should not happen)
+
+      setMappedProperty(
+        mapPropertyItem,
+        inputObject,
+        outputObject,
+        propertyName,
+        mapPropertyKey,
+      );
+    });
   }
 
   return outputObject;

@@ -186,8 +186,9 @@ export class QueryBuilderHelper {
         }
         const { driver } = queryBuilder.connection;
         if (
-          driver.options.type === 'postgres' || // postgres
-          driver.options.type === 'cockroachdb' // cockroachdb
+          driver.options &&
+          (driver.options.type === 'postgres' || // postgres
+            driver.options.type === 'cockroachdb') // cockroachdb
         ) {
           return `${aliasPath} ILIKE ${parameters[0]}`;
         }

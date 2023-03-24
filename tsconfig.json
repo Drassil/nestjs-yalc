@@ -69,6 +69,8 @@
   "include": ["**/src/**/*.ts"],
   "exclude": [
     "**/node_modules",
+    "kafka",
+    "examples",
     "test",
     "**/__mocks__",
     "**/*.spec.ts",
