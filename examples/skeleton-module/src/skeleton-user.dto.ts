@@ -7,7 +7,7 @@ import {
 } from '@nestjs/graphql';
 import {
   ModelField,
-  CrudGenObject,
+  ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { SkeletonUser } from './skeleton-user.entity.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
@@ -15,7 +15,7 @@ import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
 import { SkeletonPhoneType } from './skeleton-phone.dto.js';
 
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserType extends SkeletonUser {
   @ModelField<SkeletonPhoneType>({
     relation: {
@@ -55,7 +55,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
@@ -63,14 +63,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,

@@ -1,8 +1,8 @@
 import _DataLoader from 'dataloader';
 import { FindAndCountResult } from '@nestjs-yalc/database/query-builder.helper.js';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
-import { In } from 'typeorm';
-import { IWhereCondition } from '@nestjs-yalc/crud-gen/crud-gen.type.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.interface.js';
+import { In, ObjectLiteral } from 'typeorm';
+import { IWhereCondition } from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.type.js';
 import { Operators } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 import {
   FactoryProvider,
@@ -14,7 +14,7 @@ import {
 import {
   GenericService,
   getServiceToken,
-} from '@nestjs-yalc/crud-gen/generic-service.service.js';
+} from '@nestjs-yalc/crud-gen/typeorm/generic.service.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
@@ -28,7 +28,7 @@ export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 class _DataLoaderWithCount<
   Entity extends Record<string, any>,
 > extends _DataLoader<string, Entity[], string> {
-  private count: number;
+  private count!: number;
 
   constructor(
     batchFn: (
@@ -270,9 +270,9 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
 }
 
 export const getFn =
-  <Entity>(service: GenericService<Entity>) =>
+  <Entity extends ObjectLiteral>(service: GenericService<Entity>) =>
   async (findManyOptions: CrudGenFindManyOptions) => {
-    return service.getEntityListCrudGen(findManyOptions, true);
+    return service.getEntityListExtended(findManyOptions, true);
   };
 
 export function DataLoaderFactory<Entity extends Record<string, any>>(

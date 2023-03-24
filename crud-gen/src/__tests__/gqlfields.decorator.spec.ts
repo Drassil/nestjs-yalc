@@ -1,6 +1,6 @@
 jest.mock('@nestjs/graphql');
 jest.mock('@nestjs-yalc/crud-gen/crud-gen.args', () => ({
-  agQueryParamsFactory: jest.fn(),
+  crudGenParamsFactory: jest.fn(),
 }));
 
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';

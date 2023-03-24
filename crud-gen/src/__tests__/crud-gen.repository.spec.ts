@@ -5,11 +5,11 @@ import {
   SelectQueryBuilder,
 } from 'typeorm';
 import {
-  CrudGenRepository,
-  CrudGenRepositoryFactory,
+  CGExtendedRepository,
+  CGExtendedRepositoryFactory,
 } from '../crud-gen.repository.js';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper.js';
-import { SortDirection } from '../crud-gen.enum.js';
+import { SortDirection } from '../crud-gen-gql.enum.js';
 import { DeepMocked } from '@golevelup/ts-jest';
 import { mockQueryBuilder } from '@nestjs-yalc/jest/common-mocks.helper.js';
 import { Alias } from 'typeorm/query-builder/Alias';
@@ -100,11 +100,11 @@ const fakeFindOptionsExtended = {
 const getManyResult = [BaseEntity];
 
 describe('CrudGen Repoository', () => {
-  let newCrudGenRepository: CrudGenRepository<BaseEntity>;
+  let newCrudGenRepository: CGExtendedRepository<BaseEntity>;
   let mockedQueryBuilder: DeepMocked<SelectQueryBuilder<BaseEntity>>;
 
   beforeEach(() => {
-    newCrudGenRepository = new CrudGenRepository();
+    newCrudGenRepository = new CGExtendedRepository();
 
     mockedQueryBuilder = mockQueryBuilder<BaseEntity>();
     mockedQueryBuilder.getCount = jest.fn().mockReturnValue(1);
@@ -137,7 +137,7 @@ describe('CrudGen Repoository', () => {
     jest
       .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
-    const testData = newCrudGenRepository.getManyCrudGen({});
+    const testData = newCrudGenRepository.getManyExtended({});
     await expect(testData).resolves.toEqual(getManyResult);
   });
 
@@ -145,7 +145,7 @@ describe('CrudGen Repoository', () => {
     jest
       .spyOn(newCrudGenRepository, 'getFormattedCrudGenQueryBuilder')
       .mockReturnValueOnce(mockedQueryBuilder);
-    const testData = newCrudGenRepository.countCrudGen({});
+    const testData = newCrudGenRepository.countExtended({});
     await expect(testData).resolves.toEqual(1);
   });
 
@@ -154,7 +154,7 @@ describe('CrudGen Repoository', () => {
       .spyOn(newCrudGenRepository, 'getCrudGenQueryBuilder')
       .mockReturnValue(mockedQueryBuilder);
 
-    let testData = await newCrudGenRepository.getManyAndCountCrudGen({
+    let testData = await newCrudGenRepository.getManyAndCountExtended({
       take: 100,
     });
     expect(testData).toEqual([getManyResult, getManyResult.length]);
@@ -167,7 +167,7 @@ describe('CrudGen Repoository', () => {
       },
     };
 
-    testData = await newCrudGenRepository.getManyAndCountCrudGen(findOptions);
+    testData = await newCrudGenRepository.getManyAndCountExtended(findOptions);
     expect(testData).toEqual([
       getManyResult,
       getManyResult.length + findOptions.skip,
@@ -182,13 +182,13 @@ describe('CrudGen Repoository', () => {
       subQueryFilters: {},
     };
 
-    testData = await newCrudGenRepository.getManyAndCountCrudGen(findOptions);
+    testData = await newCrudGenRepository.getManyAndCountExtended(findOptions);
     expect(testData).toEqual([
       getManyResult,
       getManyResult.length + findOptions.skip,
     ]);
 
-    testData = await newCrudGenRepository.getManyAndCountCrudGen({
+    testData = await newCrudGenRepository.getManyAndCountExtended({
       extra: {
         skipCount: true,
       },
@@ -202,7 +202,7 @@ describe('CrudGen Repoository', () => {
     // we do not know if there are further elements, so it returns -1
     expect(testData).toEqual([getManyResult, -1]);
 
-    testData = await newCrudGenRepository.getManyAndCountCrudGen({
+    testData = await newCrudGenRepository.getManyAndCountExtended({
       extra: { skipCount: false },
     });
     expect(testData).toEqual([getManyResult, getManyResult.length]);
@@ -408,7 +408,7 @@ describe('CrudGen Repoository', () => {
         return fn();
       });
 
-    const result = await newCrudGenRepository.getOneCrudGen({});
+    const result = await newCrudGenRepository.getOneExtended({});
     expect(result).toStrictEqual(BaseEntity);
   });
 
@@ -425,7 +425,7 @@ describe('CrudGen Repoository', () => {
         return fn();
       });
 
-    const result = await newCrudGenRepository.getOneCrudGen({}, true);
+    const result = await newCrudGenRepository.getOneExtended({}, true);
     expect(result).toStrictEqual(BaseEntity);
   });
 
@@ -434,10 +434,10 @@ describe('CrudGen Repoository', () => {
       .spyOn(Typeorm, 'EntityRepository')
       .mockImplementationOnce(() => jest.fn());
 
-    let result = CrudGenRepositoryFactory<BaseEntity>(BaseEntity);
+    let result = CGExtendedRepositoryFactory<BaseEntity>(BaseEntity);
     expect(result).toBeDefined();
 
-    result = CrudGenRepositoryFactory<BaseEntity>(BaseEntity);
+    result = CGExtendedRepositoryFactory<BaseEntity>(BaseEntity);
     expect(result).toBeDefined();
 
     expect(spiedEntityRepository).toBeCalledTimes(1);

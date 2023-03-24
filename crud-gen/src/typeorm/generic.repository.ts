@@ -1,5 +1,3 @@
-// @ts-nocheck - TODO: FIX THIS
-
 import {
   QueryBuilderHelper,
   ReplicationMode,
@@ -7,29 +5,23 @@ import {
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type.js';
-import {
-  EntityRepository,
-  FindOptionsUtils,
-  ObjectLiteral,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { ObjectLiteral, Repository, SelectQueryBuilder } from 'typeorm';
 import {
   applySelectOnFind,
   objectToFieldMapper,
   whereObjectToSqlString,
-} from './crud-gen.helpers.js';
-import { CrudGenFindManyOptions } from './crud-gen.interface.js';
-import { IWhereFilters } from './crud-gen.type.js';
-import { IModelFieldMetadata } from './object.decorator.js';
-import './query-builder.helpers'; // must be imported here
+} from '../crud-gen.helpers.js';
+import { CrudGenFindManyOptions } from '../api-graphql/crud-gen-gql.interface.js';
+import { IWhereFilters } from '../api-graphql/crud-gen-gql.type.js';
+import { IModelFieldMetadata } from '../object.decorator.js';
+import '../query-builder.helpers.js'; // must be imported here
 
 export const AG_GRID_MAIN_ALIAS = 'CrudGenMainAlias';
 
-export class CrudGenRepository<
+export class GenericTypeORMRepository<
   Entity extends ObjectLiteral,
 > extends Repository<Entity> {
-  protected entity: EntityClassOrSchema;
+  protected entity!: EntityClassOrSchema;
 
   /**
    * @todo we should create a class helper/adapter for the findOptions and move this method there
@@ -156,11 +148,7 @@ export class CrudGenRepository<
       processRelationExtraConditions('left', joinCopy.leftJoinAndSelect);
     }
 
-    queryBuilder =
-      FindOptionsUtils.applyFindManyOptionsOrConditionsToQueryBuilder<Entity>(
-        queryBuilder,
-        { ...strippedFindOptions, join: joinCopy },
-      );
+    queryBuilder.setFindOptions({ ...strippedFindOptions, join: joinCopy });
 
     rawSelection.length > 0 && queryBuilder.addSelect(rawSelection);
 
@@ -248,20 +236,10 @@ export class CrudGenRepository<
     );
   }
 
-  /**
-   * Returns a List of entities based in the provided options.
-   * @param findOptions Filter options
-   */
-  public async getManyAndCountCrudGen(
+  public async processQueryBuilderWithCount(
+    queryBuilder: SelectQueryBuilder<Entity>,
     findOptions: CrudGenFindManyOptions<Entity>,
-    fieldMap?: {
-      parent: IFieldMapper;
-      joined: IFieldMapper | { [key: string]: IFieldMapper };
-    },
   ): Promise<[Entity[], number]> {
-    // console.log('==========START QUERY==============');
-    const queryBuilder = this.getCrudGenQueryBuilder(findOptions, fieldMap);
-
     const { skip = 0, take } = this.getActualLimits(findOptions);
 
     // skip count select with no limit is specified or when skipCount is true
@@ -287,7 +265,24 @@ export class CrudGenRepository<
    * Returns a List of entities based in the provided options.
    * @param findOptions Filter options
    */
-  public async getManyCrudGen(
+  public async getManyAndCountExtended(
+    findOptions: CrudGenFindManyOptions<Entity>,
+    fieldMap?: {
+      parent: IFieldMapper;
+      joined: IFieldMapper | { [key: string]: IFieldMapper };
+    },
+  ): Promise<[Entity[], number]> {
+    // console.log('==========START QUERY==============');
+    const queryBuilder = this.getCrudGenQueryBuilder(findOptions, fieldMap);
+
+    return this.processQueryBuilderWithCount(queryBuilder, findOptions);
+  }
+
+  /**
+   * Returns a List of entities based in the provided options.
+   * @param findOptions Filter options
+   */
+  public async getManyExtended(
     findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
@@ -299,7 +294,7 @@ export class CrudGenRepository<
     return queryBuilder.getMany();
   }
 
-  public async countCrudGen(
+  public async countExtended(
     findOptions: CrudGenFindManyOptions<Entity>,
     fieldMap?: {
       parent: IFieldMapper;
@@ -316,12 +311,12 @@ export class CrudGenRepository<
    * @param withFail If true ignore the fail, if false when u don't find a entity it'll trhow an error
    * @param mode Set it to true to query data after a mutation
    */
-  async getOneCrudGen(
+  async getOneExtended(
     findOptions: CrudGenFindManyOptions<Entity>,
     withFail?: boolean,
     mode?: ReplicationMode,
   ): Promise<Entity>;
-  async getOneCrudGen(
+  async getOneExtended(
     findOptions: CrudGenFindManyOptions<Entity>,
     withFail?: boolean,
     mode: ReplicationMode = ReplicationMode.SLAVE,
@@ -347,11 +342,11 @@ export class CrudGenRepository<
    * @returns where filter with conditions on entity primaryColumn
    */
   public generateFilterOnPrimaryColumn(ids: any) {
-    const filters: IWhereFilters = {};
+    const filters: IWhereFilters<Entity> = {};
     const entityPrimaryColumn = this.metadata.primaryColumns.map(
       (x) => x.propertyName,
     );
-    entityPrimaryColumn.map((key: string) => {
+    entityPrimaryColumn.map((key: keyof Entity) => {
       filters[key] = ` = '${ids[key] ?? ids}'`;
     });
 
@@ -374,20 +369,18 @@ export class CrudGenRepository<
 
 const repositoryMap = new WeakMap();
 
-export function CrudGenRepositoryFactory<Entity>(
+export function CGExtendedRepositoryFactory<Entity extends ObjectLiteral>(
   entity: ClassType<Entity>,
-): ClassType<CrudGenRepository<Entity>> {
+): ClassType<GenericTypeORMRepository<Entity>> {
   let cached;
   if ((cached = repositoryMap.get(entity))) return cached;
 
   const dynamicClass = (name: string) =>
-    ({ [name]: class extends CrudGenRepository<Entity> {} }[name]);
+    ({ [name]: class extends GenericTypeORMRepository<Entity> {} }[name]);
 
-  const repo: ClassType<CrudGenRepository<Entity>> = dynamicClass(
+  const repo: ClassType<GenericTypeORMRepository<Entity>> = dynamicClass(
     `${entity.name}Repository`,
   );
-
-  EntityRepository(entity)(repo);
 
   repositoryMap.set(entity, repo);
 

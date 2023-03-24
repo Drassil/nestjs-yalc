@@ -1,8 +1,8 @@
 import { deepMerge, objectSetProp } from '@nestjs-yalc/utils/object.helper.js';
 
 export function JsonTransformer(field: string, propertyPath: string) {
-  return (dstObj: Record<any, any>, srcValue: any) => {
+  return (dstObj: Record<any, any>, srcValue: any): any => {
     const patch = objectSetProp({}, propertyPath, srcValue);
-    dstObj[field] = deepMerge(dstObj[field] ?? {}, patch);
+    return deepMerge(dstObj[field] ?? {}, patch);
   };
 }

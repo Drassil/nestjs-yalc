@@ -1,30 +1,30 @@
-import { CrudGenDependencyFactory } from "@nestjs-yalc/crud-gen/crud-gen.helpers.js";
-import { resolverFactory } from "@nestjs-yalc/crud-gen/generic-resolver.resolver.js";
-import { GQLDataLoader } from "@nestjs-yalc/data-loader/dataloader.helper.js";
-import returnValue from "@nestjs-yalc/utils/returnValue.js";
-import { UseGuards } from "@nestjs/common";
-import { ModuleRef } from "@nestjs/core";
-import { GqlExecutionContext, Mutation, Resolver } from "@nestjs/graphql";
+import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
+import { resolverFactory } from '@nestjs-yalc/crud-gen/api-graphql/generic.resolver.js';
+import { GQLDataLoader } from '@nestjs-yalc/data-loader/dataloader.helper.js';
+import returnValue from '@nestjs-yalc/utils/returnValue.js';
+import { UseGuards } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { GqlExecutionContext, Mutation, Resolver } from '@nestjs/graphql';
 import {
   SkeletonUserType,
   SkeletonUserCreateInput,
   SkeletonUserUpdateInput,
-  SkeletonUserCondition
-} from "./skeleton-user.dto.js";
-import { SkeletonUser } from "./skeleton-user.entity.js";
-import { RoleAuth, RoleEnum } from "./role.guard.js";
-import * as skeletonUserServiceJs from "./skeleton-user.service.js";
-import { InputArgs } from "@nestjs-yalc/crud-gen/gqlmapper.decorator.js";
+  SkeletonUserCondition,
+} from './skeleton-user.dto.js';
+import { SkeletonUser } from './skeleton-user.entity.js';
+import { RoleAuth, RoleEnum } from './role.guard.js';
+import * as skeletonUserServiceJs from './skeleton-user.service.js';
+import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
 import {
   ExtraArgsStrategy,
   FilterType,
-  GeneralFilters
-} from "@nestjs-yalc/crud-gen/crud-gen.enum.js";
+  GeneralFilters,
+} from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,
   input: SkeletonUserType,
-  value: boolean
+  value: boolean,
 ) => {
   if (value === true) {
     input.email = input.email.toLowerCase();
@@ -38,18 +38,18 @@ export class SkeletonUserResolver extends resolverFactory({
   input: {
     create: SkeletonUserCreateInput,
     update: SkeletonUserUpdateInput,
-    conditions: SkeletonUserCondition
+    conditions: SkeletonUserCondition,
   },
-  prefix: "SkeletonModule_",
+  prefix: 'SkeletonModule_',
   queries: {
     // SkeletonModule_getSkeletonUser
     getResource: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
-      idName: "guid",
+      idName: 'guid',
       queryParams: {
         // name: 'getSkeletonUser',
-        description: "Get a specific user"
-      }
+        description: 'Get a specific user',
+      },
     },
     getResourceGrid: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
@@ -59,24 +59,24 @@ export class SkeletonUserResolver extends resolverFactory({
           filterType: FilterType.TEXT,
           options: {
             type: returnValue(String),
-            nullable: true
-          }
+            nullable: true,
+          },
         },
         lastName: {
           filterCondition: GeneralFilters.CONTAINS,
           filterType: FilterType.TEXT,
           options: {
             type: returnValue(String),
-            nullable: true
-          }
-        }
+            nullable: true,
+          },
+        },
       },
       extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
       queryParams: {
         // name: 'getSkeletonUserGrid',
-        description: "Get a list of users"
-      }
-    }
+        description: 'Get a list of users',
+      },
+    },
   },
   mutations: {
     createResource: {
@@ -84,39 +84,39 @@ export class SkeletonUserResolver extends resolverFactory({
       extraInputs: {
         lowerCaseEmail: {
           gqlOptions: {
-            description: "Force the email to be in lowercase",
+            description: 'Force the email to be in lowercase',
             type: returnValue(Boolean),
             defaultValue: true,
-            nullable: true
+            nullable: true,
           },
-          middleware: lowerCaseEmailMiddleware
-        }
+          middleware: lowerCaseEmailMiddleware,
+        },
       },
       queryParams: {
         // name: 'createSkeletonUser',
-        description: "Create a new user"
-      }
+        description: 'Create a new user',
+      },
     },
     updateResource: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
       queryParams: {
         // name: 'updateSkeletonUser',
-        description: "Update an existing user"
-      }
+        description: 'Update an existing user',
+      },
     },
     deleteResource: {
       decorators: [UseGuards(RoleAuth([RoleEnum.PUBLIC]))],
       queryParams: {
         // name: 'deleteSkeletonUser',
-        description: "Delete an existing user"
-      }
-    }
-  }
+        description: 'Delete an existing user',
+      },
+    },
+  },
 }) {
   constructor(
     protected service: skeletonUserServiceJs.SkeletonUserService,
     protected dataloader: GQLDataLoader,
-    protected moduleRef: ModuleRef
+    protected moduleRef: ModuleRef,
   ) {
     super(service, dataloader, moduleRef);
   }
@@ -124,13 +124,13 @@ export class SkeletonUserResolver extends resolverFactory({
   @UseGuards(RoleAuth([RoleEnum.PUBLIC]))
   @Mutation(returnValue(String), {
     description:
-      "Reset user password with a random one and send the new value back."
+      'Reset user password with a random one and send the new value back.',
   })
   public async SkeletonModule_generateRandomPassword(
     @InputArgs({
-      _name: "ID"
+      _name: 'ID',
     })
-    ID: string
+    ID: string,
   ): Promise<string> {
     return this.service.resetPassword(ID);
   }
@@ -141,16 +141,17 @@ export const skeletonUserProvidersFactory = (dbConnection: string) =>
     // The model used for TypeORM
     entityModel: SkeletonUser,
     resolver: {
-      provider: SkeletonUserResolver
+      provider: SkeletonUserResolver,
     },
 
     service: {
       dbConnection: dbConnection,
       entityModel: SkeletonUser,
       provider: {
-        provide: "SkeletonUserGenericService",
-        useClass: skeletonUserServiceJs.skeletonUserServiceFactory(dbConnection)
-      }
+        provide: 'SkeletonUserGenericService',
+        useClass:
+          skeletonUserServiceJs.skeletonUserServiceFactory(dbConnection),
+      },
     },
-    dataloader: { databaseKey: "guid" }
+    dataloader: { databaseKey: 'guid' },
   });

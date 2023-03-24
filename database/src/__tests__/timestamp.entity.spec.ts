@@ -18,4 +18,10 @@ describe('EntityWithTimestamps entity test', () => {
 
     expect(result).toBeDefined();
   });
+
+  it('should be defined without base class', () => {
+    const result = EntityWithTimestamps();
+
+    expect(result).toBeDefined();
+  });
 });

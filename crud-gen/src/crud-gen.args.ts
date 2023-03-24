@@ -1,38 +1,27 @@
 import { ArgsType, Field } from '@nestjs/graphql';
-import { FilterInput } from './crud-gen.interface.js';
 import {
   filterExpressionInputFactory,
-  ISortModelStrict,
-  JoinArgOptions,
   SortModel,
   sortModelFactory,
-} from './crud-gen.input.js';
+} from './api-graphql/crud-gen.input.js';
 import { FilterScalar } from './filter.scalar.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { RowDefaultValues } from './crud-gen.enum.js';
-
-export interface IAgQueryParams<T = any> {
-  [index: string]: any; // dynamic parameters
-  startRow?: number;
-  endRow?: number;
-  sorting?: ISortModelStrict<T>[];
-  filters?: FilterInput;
-  join?: { [index: string]: JoinArgOptions };
-}
+import { ICrudGenBaseParams } from './api-graphql/crud-gen-gql.interface.js';
 
 export const typeMap = new WeakMap();
-export function agQueryParamsFactory(
-  defaultValues?: IAgQueryParams,
+export function crudGenParamsFactory(
+  defaultValues?: ICrudGenBaseParams,
   entityModel?: ClassType,
-): { new (): IAgQueryParams } {
+): { new (): ICrudGenBaseParams } {
   const SortType = entityModel ? [sortModelFactory(entityModel)] : [SortModel];
   const FilterType = entityModel
     ? filterExpressionInputFactory(entityModel)
     : FilterScalar;
 
   @ArgsType()
-  class AgQueryParams implements IAgQueryParams {
+  class CrudGenParams implements ICrudGenBaseParams {
     startRow: number = defaultValues?.startRow ?? RowDefaultValues.START_ROW;
     endRow: number = defaultValues?.endRow ?? RowDefaultValues.END_ROW;
     @Field(returnValue(SortType), {
@@ -47,21 +36,21 @@ export function agQueryParamsFactory(
     filters?: typeof FilterType;
   }
 
-  typeMap.set(AgQueryParams, AgQueryParams);
-  return typeMap.get(AgQueryParams);
+  typeMap.set(CrudGenParams, CrudGenParams);
+  return typeMap.get(CrudGenParams);
 }
 
-export function agQueryParamsNoPaginationFactory(
-  defaultValues?: IAgQueryParams,
+export function crudGenParamsNoPaginationFactory(
+  defaultValues?: ICrudGenBaseParams,
   entityModel?: ClassType,
-): { new (): IAgQueryParams } {
+): { new (): ICrudGenBaseParams } {
   const SortType = entityModel ? [sortModelFactory(entityModel)] : [SortModel];
   const FilterType = entityModel
     ? filterExpressionInputFactory(entityModel)
     : FilterScalar;
 
   @ArgsType()
-  class AgQueryParams implements IAgQueryParams {
+  class CrudGenParams implements ICrudGenBaseParams {
     @Field(returnValue(SortType), {
       nullable: true,
       defaultValue: defaultValues?.sorting,
@@ -74,6 +63,6 @@ export function agQueryParamsNoPaginationFactory(
     filters?: typeof FilterType;
   }
 
-  typeMap.set(AgQueryParams, AgQueryParams);
-  return typeMap.get(AgQueryParams);
+  typeMap.set(CrudGenParams, CrudGenParams);
+  return typeMap.get(CrudGenParams);
 }

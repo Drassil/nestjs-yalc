@@ -1,16 +1,16 @@
 import { IFieldMapper } from '@nestjs-yalc/interfaces';
 import { Equal } from 'typeorm';
-import { IAgQueryParams } from '../crud-gen.args.js';
+import { ICrudGenParams } from '../crud-gen.args.js';
 import {
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from '../crud-gen.enum.js';
+} from '../crud-gen-gql.enum.js';
 import {
   DateFilterModel,
   FilterInput,
-  ICrudGenArgsOptions,
+  ICrudGenGqlArgsOptions,
   ICombinedSimpleModel,
   IExtraArg,
   IMultiColumnJoinOptions,
@@ -18,8 +18,8 @@ import {
   ISetFilterModel,
   ISimpleFilterModel,
   ITextFilterModel,
-} from '../crud-gen.interface.js';
-import { IWhereCondition } from '../crud-gen.type.js';
+} from '../crud-gen-gql.interface.js';
+import { IWhereCondition } from '../crud-gen-gql.type.js';
 import { FilterOption, FilterOptionType } from '../object.decorator.js';
 
 const fixedKey = 'passed';
@@ -202,7 +202,7 @@ export const fixedCombinedOrNumberFilter: ICombinedSimpleModel = {
 };
 
 // CrudGen Args Options
-export const fixedArgsOptions: ICrudGenArgsOptions = {
+export const fixedArgsOptions: ICrudGenGqlArgsOptions = {
   fieldMap: fixedIFieldMapper,
   options: {
     maxRow: 200,
@@ -220,7 +220,7 @@ export const fixedArgsOptions: ICrudGenArgsOptions = {
   defaultValue: {},
 };
 
-export const fixedDataWithDefault: ICrudGenArgsOptions = {
+export const fixedDataWithDefault: ICrudGenGqlArgsOptions = {
   fieldMap: fixedIFieldMapper,
   defaultValue: {
     sorting: [
@@ -295,7 +295,7 @@ export const fixedExcludefilterOption: FilterOption = {
   Ag QUERY PARAMS
 */
 
-export const fixedArgsNoFilters: IAgQueryParams = {
+export const fixedArgsNoFilters: ICrudGenParams = {
   startRow: 0,
   endRow: 0,
   sorting: [
@@ -314,7 +314,7 @@ export const fixedArgsNoFilters: IAgQueryParams = {
   filters: null,
 };
 
-export const fixedArgsQueryParams: IAgQueryParams = {
+export const fixedArgsQueryParams: ICrudGenParams = {
   ...fixedArgsNoFilters,
   filters: {
     expressions: [
@@ -336,23 +336,23 @@ export const fixedArgsQueryParams: IAgQueryParams = {
   join: {},
 };
 
-export const fixeNumberArgs: IAgQueryParams = {
+export const fixeNumberArgs: ICrudGenParams = {
   ...fixedArgsNoFilters,
   filters: { ...fixedFilterInputNumber },
 };
 
-export const fixeDatedArgs: IAgQueryParams = {
+export const fixeDatedArgs: ICrudGenParams = {
   ...fixedArgsNoFilters,
   filters: { ...fixedFilterInputDate },
 };
 
-export const fixedBadArgs: IAgQueryParams = {
+export const fixedBadArgs: ICrudGenParams = {
   ...fixedArgsQueryParams,
   filters: {
     expressions: [{ text: fixedSimpleBadFilter as ITextFilterModel }],
   },
 };
-export const fixedArgsNOTFilter: IAgQueryParams = {
+export const fixedArgsNOTFilter: ICrudGenParams = {
   ...fixedArgsQueryParams,
   filters: { expressions: [{ text: fixedFilterNotContains }] },
 };

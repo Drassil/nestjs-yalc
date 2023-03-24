@@ -4,9 +4,9 @@ jest.mock('rxjs/operators');
 import { CallHandler } from '@nestjs/common';
 import * as RxjsOperators from 'rxjs/operators';
 import {
-  CrudGenInterceptor,
-  crudGenInterceptorWorker,
-} from '../crud-gen.interceptor.js';
+  CrudGenGqlInterceptor,
+  crudGenGqlInterceptorWorker,
+} from '../crud-gen-gql.interceptor.js';
 import { createMock } from '@golevelup/ts-jest';
 import {
   mockedExecutionContext,
@@ -35,7 +35,7 @@ const infoObj = {
 };
 
 describe('Crud-gen Interceptor test', () => {
-  let crudGenInterceptor: CrudGenInterceptor;
+  let crudGenInterceptor: CrudGenGqlInterceptor;
   const callHandler = createMock<CallHandler>();
   const mockCreate = (mockedNestGraphql.GqlExecutionContext.create = jest.fn());
   const mockGetArgs = mockCreate.mockImplementation(() => ({
@@ -71,7 +71,7 @@ describe('Crud-gen Interceptor test', () => {
   };
 
   beforeEach(async () => {
-    crudGenInterceptor = new CrudGenInterceptor();
+    crudGenInterceptor = new CrudGenGqlInterceptor();
   });
 
   it('t1', async () => {
@@ -84,7 +84,7 @@ describe('Crud-gen Interceptor test', () => {
   });
 
   it('Check CrudGenInterceptorWorker with endRow', async () => {
-    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(
+    const TestedCrudGenInterceptorWorker = crudGenGqlInterceptorWorker(
       endRowTest.startRow,
       endRowTest.endRow,
     );
@@ -94,7 +94,7 @@ describe('Crud-gen Interceptor test', () => {
   });
 
   it('Check CrudGenInterceptorWorker with no endRow', async () => {
-    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(
+    const TestedCrudGenInterceptorWorker = crudGenGqlInterceptorWorker(
       noOffsetTest.startRow,
       noOffsetTest.endRow,
     );
@@ -104,7 +104,10 @@ describe('Crud-gen Interceptor test', () => {
   });
 
   it('Check CrudGenInterceptorWorker with no pagination', async () => {
-    const TestedCrudGenInterceptorWorker = crudGenInterceptorWorker(null, null);
+    const TestedCrudGenInterceptorWorker = crudGenGqlInterceptorWorker(
+      null,
+      null,
+    );
 
     expect(TestedCrudGenInterceptorWorker([1, 1])).toEqual(testReturnsNoParams);
     expect(mockGetArgs).toHaveBeenCalled();

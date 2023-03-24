@@ -1,7 +1,7 @@
 import {
   DataLoaderFactory,
   getDataloaderToken,
-} from '@nestjs-yalc/data-loader/dataloader.helper.js';
+} from '@nestjs-yalc/data-loader/index.js';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper.js';
 import {
   IFieldMapper,
@@ -16,7 +16,6 @@ import {
   ValueProvider,
 } from '@nestjs/common';
 import { ReturnTypeFuncValue } from '@nestjs/graphql';
-import { GraphQLResolveInfo } from 'graphql';
 import {
   Equal,
   getMetadataArgsStorage,
@@ -25,7 +24,10 @@ import {
 } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs.js';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs.js';
-import { createWhere, getFindOperator } from './crud-gen-args.decorator.js';
+import {
+  createWhere,
+  getFindOperator,
+} from './typeorm/crud-gen-args.helpers.js';
 import {
   isCombinedWhereModel,
   isFindOperator,
@@ -36,35 +38,38 @@ import {
   CrudGenNotPossibleError,
   CrudGenStringWhereError,
 } from './crud-gen.error.js';
-import { JoinArgOptions, JoinTypes } from './crud-gen.input.js';
+import {
+  JoinArgOptions,
+  JoinTypes,
+} from './api-graphql/crud-gen-gql.interface.js';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   FilterInput,
-} from './crud-gen.interface.js';
+} from './api-graphql/crud-gen-gql.interface.js';
 import {
-  CrudGenRepository,
-  CrudGenRepositoryFactory,
-} from './crud-gen.repository.js';
+  GenericTypeORMRepository,
+  CGExtendedRepositoryFactory,
+} from './typeorm/generic.repository.js';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
   IWhereFilters,
-} from './crud-gen.type.js';
+} from './api-graphql/crud-gen-gql.type.js';
 import {
   IGenericResolverOptions,
   resolverFactory,
-} from './generic-resolver.resolver.js';
+} from './api-graphql/generic.resolver.js';
 import {
   GenericService,
   GenericServiceFactory,
-} from './generic-service.service.js';
+} from './typeorm/generic.service.js';
 import {
   DstExtended,
   getModelFieldMetadataList,
-  getCrudGenObjectMetadata,
+  getModelObjectMetadata,
   IModelFieldMetadata,
   IModelFieldAndFilterMapper,
   isDstExtended,
@@ -173,7 +178,7 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   if (!where.filters) return sql;
 
   for (const key of Object.keys(where.filters)) {
-    const operation: IWhereConditionType = where.filters[key];
+    const operation: IWhereConditionType = where.filters[key] ?? {};
 
     //If we have an operator it means that the filter is combined, or it is a multicolumn
     if ((operation as any).operator !== undefined) {
@@ -239,25 +244,6 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   return sql;
 }
 
-export const isAskingForCount = (info: GraphQLResolveInfo): boolean => {
-  try {
-    return (
-      info.fieldNodes?.[0].selectionSet?.selections.some((item: any) => {
-        return (
-          item.name.value === 'pageData' &&
-          item.selectionSet &&
-          item.selectionSet.selections.some(
-            (subItem: any) => subItem.name.value === 'count',
-          )
-        );
-      }) ?? false
-    );
-  } catch (e) {
-    // quick way to avoid having dozens of conditions to check the info structure
-    return false;
-  }
-};
-
 export function getDestinationFieldName(dst: string | DstExtended): string {
   if (isDstExtended(dst)) {
     return dst.name;
@@ -285,7 +271,7 @@ export const objectToFieldMapper = (
 
   fieldMapper.extraInfo = {};
 
-  const objectMetadata = getCrudGenObjectMetadata(object as any);
+  const objectMetadata = getModelObjectMetadata(object as any);
 
   if (objectMetadata) {
     fieldMapper.filterOption = objectMetadata;
@@ -343,7 +329,7 @@ export function isIFieldAndFilterMapper(
 
 export interface IDependencyObject<Entity extends ObjectLiteral> {
   providers: Array<FactoryProvider | Provider>;
-  repository: ClassType<CrudGenRepository<Entity>>;
+  repository: ClassType<GenericTypeORMRepository<Entity>>;
 }
 
 export interface IProviderOverride<T = any> {
@@ -358,7 +344,7 @@ export interface IResolverOverride<T = any> {
   provider: ClassType<T>;
 }
 
-interface IGenericServiceOptions<Entity> {
+interface IGenericServiceOptions<Entity extends ObjectLiteral> {
   dbConnection: string;
   entityModel?: ClassType<Entity>;
   /**
@@ -382,7 +368,7 @@ export interface ICrudGenDependencyFactoryOptions<
     | false;
   service?: IGenericServiceOptions<Entity> | IProviderOverride;
   dataloader?: IDataLoaderOptions<Entity> | IProviderOverride;
-  repository?: ClassType<CrudGenRepository<Entity>>;
+  repository?: ClassType<GenericTypeORMRepository<Entity>>;
 }
 
 export function isProviderOverride(
@@ -466,7 +452,7 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
 
   return {
     providers,
-    repository: repository ?? CrudGenRepositoryFactory<Entity>(entityModel),
+    repository: repository ?? CGExtendedRepositoryFactory<Entity>(entityModel),
   };
 }
 
@@ -637,11 +623,13 @@ export function isFilterExpressionInput(
   return !!casted.expressions;
 }
 
-export function traverseFiltersAndApplyFunction(
-  where: IWhereCondition,
-  callback: { (value: IWhereFilters, key: string): void },
+export function traverseFiltersAndApplyFunction<
+  TEntity extends ObjectLiteral = any,
+>(
+  where: IWhereCondition<TEntity>,
+  callback: { (value: IWhereFilters<TEntity>, key: string): void },
 ): void {
-  const filters: IWhereFilters = where.filters;
+  const filters: IWhereFilters<TEntity> = where.filters;
 
   for (const filter in filters) {
     callback(filters, filter);

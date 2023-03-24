@@ -1,10 +1,10 @@
 jest.mock('@nestjs/graphql');
 jest.mock('../crud-gen.args', () => ({
-  agQueryParamsFactory: jest.fn(),
-  agQueryParamsNoPaginationFactory: jest.fn(),
+  crudGenParamsFactory: jest.fn(),
+  crudGenParamsNoPaginationFactory: jest.fn(),
 }));
 
-import * as crudGenArgsDecorator from '../crud-gen-args.decorator.js';
+import * as crudGenArgsDecorator from '../crud-gen-args-gql.decorator.js';
 import {
   Equal,
   LessThan,
@@ -16,12 +16,12 @@ import {
   In,
   BaseEntity,
 } from 'typeorm';
-import { IAgQueryParams } from '../crud-gen.args.js';
+import { ICrudGenParams } from '../crud-gen.args.js';
 import {
   ExtraArgsStrategy,
   FilterType,
   GeneralFilters,
-} from '../crud-gen.enum.js';
+} from '../crud-gen-gql.enum.js';
 import { GqlExecutionContext } from '@nestjs/graphql';
 import {
   mockedExecutionContext,
@@ -30,9 +30,9 @@ import {
 import {
   FilterInput,
   FilterModel,
-  ICrudGenArgsOptions,
+  ICrudGenGqlArgsOptions,
   ICombinedSimpleModel,
-} from '../crud-gen.interface.js';
+} from '../crud-gen-gql.interface.js';
 import * as graphql from '@nestjs/graphql';
 import * as CrudGenInput from '../crud-gen.input.js';
 import * as GqlCrudGenDecorator from '../gqlfields.decorator.js';
@@ -224,7 +224,7 @@ const infoObj = {
   ],
 };
 
-const fixedDataFilterToInclude: ICrudGenArgsOptions = {
+const fixedDataFilterToInclude: ICrudGenGqlArgsOptions = {
   fieldMap: {
     field: fixedIFieldMapper,
     filterOption: fixedIncludefilterOption,
@@ -338,7 +338,7 @@ describe('Crud-gen args decorator', () => {
       'objectToFieldMapper',
     );
 
-    const testData: [string, IAgQueryParams][] = [
+    const testData: [string, ICrudGenParams][] = [
       ['text filter', fixedArgsQueryParams],
       ['number filter', fixeNumberArgs],
       ['data filter', fixeDatedArgs],
@@ -366,7 +366,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should throw error with bad extraArgs property', () => {
-      const params: ICrudGenArgsOptions = {
+      const params: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -386,7 +386,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should work properly with extraArgs property', () => {
-      const params: ICrudGenArgsOptions = {
+      const params: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -407,7 +407,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should work properly with extraArgs property with middleware ', () => {
-      const params: ICrudGenArgsOptions = {
+      const params: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         extraArgsStrategy: ExtraArgsStrategy.AT_LEAST_ONE,
         extraArgs: {
@@ -428,7 +428,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should add extraArgs with VIRTUAL filter in extra field of findManyOptions', () => {
-      const params: ICrudGenArgsOptions = {
+      const params: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         extraArgs: {
           virtualArg: {
@@ -768,7 +768,7 @@ describe('Crud-gen args decorator', () => {
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
     //With params type
-    const argsOptions: ICrudGenArgsOptions = {
+    const argsOptions: ICrudGenGqlArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
@@ -790,7 +790,7 @@ describe('Crud-gen args decorator', () => {
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
-    const argsOptions: ICrudGenArgsOptions = {
+    const argsOptions: ICrudGenGqlArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
@@ -805,7 +805,7 @@ describe('Crud-gen args decorator', () => {
     const returnFunc = jest.fn().mockReturnValue('somestring');
     ArgsFunc.mockReturnValue(returnFunc);
 
-    const defaultArgsOptions: ICrudGenArgsOptions = {
+    const defaultArgsOptions: ICrudGenGqlArgsOptions = {
       ...fixedArgsOptions,
       extraArgs: {
         ['default']: {
@@ -844,7 +844,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should map to FindManyOptions', () => {
-      const argsOptions: ICrudGenArgsOptions = {
+      const argsOptions: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         fieldType: BaseEntity,
         entityType: BaseEntity,
@@ -859,12 +859,12 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should map to findManyOptions with bad arguments', () => {
-      const argsOptions: ICrudGenArgsOptions = {
+      const argsOptions: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
         entityType: BaseEntity,
       };
 
-      const queryParam: IAgQueryParams = {
+      const queryParam: ICrudGenParams = {
         ...fixedArgsQueryParams,
         join: null,
       };
@@ -880,7 +880,7 @@ describe('Crud-gen args decorator', () => {
     });
 
     it('Should return an empty findManyOptions with bad arguments', () => {
-      const argsOptions: ICrudGenArgsOptions = {
+      const argsOptions: ICrudGenGqlArgsOptions = {
         ...fixedArgsOptions,
       };
 
@@ -918,7 +918,7 @@ describe('Crud-gen args decorator', () => {
       expect(joinArgFactory).toHaveBeenCalled();
     };
 
-    const argsOptions: ICrudGenArgsOptions = {
+    const argsOptions: ICrudGenGqlArgsOptions = {
       ...fixedArgsOptions,
       entityType: BaseEntity,
     };
