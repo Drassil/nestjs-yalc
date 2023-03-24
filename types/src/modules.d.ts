@@ -1,4 +1,3 @@
-declare module 'aws-lambda-fastify';
 declare module 'mysql2-import';
 declare module 'decimal';
 declare module '@nestjs-yalc';
