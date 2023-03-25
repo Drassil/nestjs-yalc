@@ -35,6 +35,7 @@
     "jest/src/config",
     "logger",
     "types",
+    "starter-kit",
     "utils"
   ],
   "peerDependencies": {

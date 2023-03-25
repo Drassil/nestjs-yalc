@@ -1,0 +1,21 @@
+{
+  "collection": "@nestjs/schematics",
+  "monorepo": true,
+  "root": "apps/sk-app",
+  "compilerOptions": {
+    "webpack": true,
+    "webpackConfigPath": "webpack.config.cjs",
+    "tsConfigPath": "!!!!!!!!!!!please-specify-a-valid-project-name!!!!!!!!!!!"
+  },
+  "projects": {
+    "user-module": {
+      "type": "library",
+      "root": "libs/user-module",
+      "entryFile": "index",
+      "sourceRoot": "libs/user-module/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/user-module/tsconfig.lib.json"
+      }
+    }
+  }
+}

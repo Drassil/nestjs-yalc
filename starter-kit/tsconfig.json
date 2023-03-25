@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "strictBindCallApply": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "strictPropertyInitialization": false,
+    "useDefineForClassFields": false,
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "incremental": true,
+    "importHelpers": true,
+    "isolatedModules": true,
+    "preserveConstEnums": true,
+    "noEmit": true,
+    "paths": {
+      "@starter-kit-libs/user-module": ["libs/user-module/src"],
+      "@starter-kit-libs/user-module/*": ["libs/user-module/src/*"]
+    }
+  },
+  "include": ["apps/**/src/**/*.ts", "libs/**/src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "apps/**/*.spec.ts",
+    "libs/**/*.spec.ts",
+    "apps/**/*.test.ts",
+    "libs/**/*.test.ts"
+  ],
+  "ts-node": {
+    "transpileOnly": true,
+    "experimentalSpecifierResolution": "node",
+    "files": true,
+    "esm": true,
+    "swc": true
+  }
+}
