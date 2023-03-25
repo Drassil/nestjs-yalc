@@ -7,42 +7,30 @@ import {
   IntersectionType,
   registerEnumType,
 } from '@nestjs/graphql';
+import { entityFieldsEnumGqlFactory } from './crud-gen-gql.enum.js';
+import { crudGenParamsNoPaginationFactory } from '../crud-gen.args.js';
 import {
-  agQueryParamsNoPaginationFactory,
-  IAgQueryParams,
-} from './crud-gen.args.js';
-import {
-  entityFieldsEnumFactory,
   FilterType,
   GeneralFilters,
   Operators,
   SortDirection,
-} from './crud-gen.enum.js';
-import { getEntityRelations } from './crud-gen.helpers.js';
+} from '../crud-gen.enum.js';
+import { getEntityRelations } from '../crud-gen.helpers.js';
 import {
   DateFilterModel,
   FilterInput,
+  ICrudGenBaseParams,
   IFilterExpressionsProperty,
   INumberFilterModel,
   ISetFilterModel,
+  ISortModel,
+  ISortModelStrict,
   ITextFilterModel,
-} from './crud-gen.interface.js';
-
-export interface ISortModel<T = any> {
-  colId: keyof T | string;
-  sort?: SortDirection;
-}
-
-export interface ISortModelString<T = any> extends ISortModel<T> {
-  colId: string;
-}
-
-export interface ISortModelStrict<T> extends ISortModel<T> {
-  colId: keyof T;
-}
+  JoinTypes,
+} from './crud-gen-gql.interface.js';
 
 /**
- * @deprecated
+ * @deprecated use sortModelFactory instead
  */
 @InputType()
 export class SortModel<T = any> implements ISortModel<T> {
@@ -60,7 +48,7 @@ export function sortModelFactory<Entity>(entityModel: ClassType<Entity>) {
   const cached = sortModelCacheMap.get(entityModel);
   if (cached) return cached;
 
-  const fieldsEnum = entityFieldsEnumFactory(entityModel);
+  const fieldsEnum = entityFieldsEnumGqlFactory(entityModel);
   @InputType(`${entityModel.name}SortModel`)
   class SortModel implements ISortModelStrict<typeof fieldsEnum> {
     @Field(
@@ -94,59 +82,59 @@ export function filterExpressionInputFactory<Entity>(
   let cached;
   if ((cached = filterExpressionInputCache.get(entityModel))) return cached;
 
-  const FieldEnum = entityFieldsEnumFactory(entityModel);
+  const FieldEnum = entityFieldsEnumGqlFactory(entityModel);
 
   @InputType(`${entityModel.name}FilterTextInput`)
   class FilterText implements ITextFilterModel {
     @HideField()
-    filterType: FilterType.TEXT;
-    type: GeneralFilters;
+    filterType!: FilterType.TEXT;
+    type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
       () => FieldEnum,
     )
-    field: string;
-    filter: string;
+    field!: string;
+    filter!: string;
   }
 
   @InputType(`${entityModel.name}FilterNumberInput`)
   class FilterNumber implements INumberFilterModel {
     @HideField()
-    filterType: FilterType.NUMBER;
-    type: GeneralFilters;
+    filterType!: FilterType.NUMBER;
+    type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
       () => FieldEnum,
     )
-    field: string;
-    filter: number;
+    field!: string;
+    filter!: number;
     filterTo?: number;
   }
 
   @InputType(`${entityModel.name}FilterDateInput`)
   class FilterDate implements DateFilterModel {
     @HideField()
-    filterType: FilterType.DATE;
-    type: GeneralFilters;
+    filterType!: FilterType.DATE;
+    type!: GeneralFilters;
     @Field(
       /* istanbul ignore next */
       () => FieldEnum,
     )
-    field: string;
-    dateFrom: string;
+    field!: string;
+    dateFrom!: string;
     dateTo?: string;
   }
 
   @InputType(`${entityModel.name}FilterSetInput`)
   class FilterSet implements ISetFilterModel {
     @HideField()
-    filterType: FilterType.SET;
-    values: string[];
+    filterType!: FilterType.SET;
+    values!: string[];
     @Field(
       /* istanbul ignore next */
       () => FieldEnum,
     )
-    field: string;
+    field!: string;
   }
 
   /**
@@ -160,25 +148,25 @@ export function filterExpressionInputFactory<Entity>(
       () => FilterText,
       { nullable: true },
     )
-    [FilterType.TEXT]: FilterText;
+    [FilterType.TEXT]!: FilterText;
     @Field(
       /* istanbul ignore next */
       () => FilterNumber,
       { nullable: true },
     )
-    [FilterType.NUMBER]: FilterNumber;
+    [FilterType.NUMBER]!: FilterNumber;
     @Field(
       /* istanbul ignore next */
       () => FilterDate,
       { nullable: true },
     )
-    [FilterType.DATE]: FilterDate;
+    [FilterType.DATE]!: FilterDate;
     @Field(
       /* istanbul ignore next */
       () => FilterSet,
       { nullable: true },
     )
-    [FilterType.SET]: FilterSet;
+    [FilterType.SET]!: FilterSet;
   }
 
   @InputType(`${entityModel.name}FilterExpressionInput`)
@@ -206,20 +194,11 @@ export function filterExpressionInputFactory<Entity>(
   return FilterExpression;
 }
 
-export enum JoinTypes {
-  LEFT_JOIN,
-  INNER_JOIN,
-}
-
-export interface JoinArgOptions extends IAgQueryParams {
-  joinType?: JoinTypes;
-}
-
 // memoize pre-generated InputType
 const JoinOptionInputCache = new WeakMap();
 export function agJoinArgFactory<Entity>(
   entityModel: ClassType<Entity>,
-  defaultValues?: IAgQueryParams,
+  defaultValues?: ICrudGenBaseParams,
 ) {
   // return memoized result if any
   const cached = JoinOptionInputCache.get(entityModel);
@@ -254,7 +233,7 @@ export function agJoinArgFactory<Entity>(
       @InputType(`${entityModel.name}${r.relation.propertyName}JoinInputType`)
       class JoinFullInput extends IntersectionType(
         JoinInput,
-        agQueryParamsNoPaginationFactory(defaultValues, typeClass),
+        crudGenParamsNoPaginationFactory(defaultValues, typeClass),
       ) {}
 
       JoinOptionInput.prototype[r.relation.propertyName] = JoinFullInput;

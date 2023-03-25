@@ -1,7 +1,7 @@
 import {
   DataLoaderFactory,
   getDataloaderToken,
-} from '@nestjs-yalc/data-loader/dataloader.helper.js';
+} from '@nestjs-yalc/data-loader/index.js';
 import { QueryBuilderHelper } from '@nestjs-yalc/database/query-builder.helper.js';
 import {
   IFieldMapper,
@@ -16,7 +16,6 @@ import {
   ValueProvider,
 } from '@nestjs/common';
 import { ReturnTypeFuncValue } from '@nestjs/graphql';
-import { GraphQLResolveInfo } from 'graphql';
 import {
   Equal,
   getMetadataArgsStorage,
@@ -25,7 +24,10 @@ import {
 } from 'typeorm';
 import { JoinColumnMetadataArgs } from 'typeorm/metadata-args/JoinColumnMetadataArgs.js';
 import { RelationMetadataArgs } from 'typeorm/metadata-args/RelationMetadataArgs.js';
-import { createWhere, getFindOperator } from './crud-gen-args.decorator.js';
+import {
+  createWhere,
+  getFindOperator,
+} from './typeorm/crud-gen-args.helpers.js';
 import {
   isCombinedWhereModel,
   isFindOperator,
@@ -36,42 +38,45 @@ import {
   CrudGenNotPossibleError,
   CrudGenStringWhereError,
 } from './crud-gen.error.js';
-import { JoinArgOptions, JoinTypes } from './crud-gen.input.js';
+import {
+  JoinArgOptions,
+  JoinTypes,
+} from './api-graphql/crud-gen-gql.interface.js';
 import {
   IExtraArg,
   CrudGenFindManyOptions,
   FilterInput,
-} from './crud-gen.interface.js';
+} from './api-graphql/crud-gen-gql.interface.js';
 import {
-  CrudGenRepository,
-  CrudGenRepositoryFactory,
-} from './crud-gen.repository.js';
+  type GenericTypeORMRepository,
+  CGExtendedRepositoryFactory,
+} from './typeorm/generic.repository.js';
 import {
   findOperatorTypes,
   IFilterArg,
   IWhereCondition,
   IWhereConditionType,
   IWhereFilters,
-} from './crud-gen.type.js';
+} from './api-graphql/crud-gen-gql.type.js';
 import {
   IGenericResolverOptions,
   resolverFactory,
-} from './generic-resolver.resolver.js';
+} from './api-graphql/generic.resolver.js';
 import {
   GenericService,
   GenericServiceFactory,
-} from './generic-service.service.js';
+} from './typeorm/generic.service.js';
 import {
   DstExtended,
-  getCrudGenFieldMetadataList,
-  getCrudGenObjectMetadata,
-  ICrudGenFieldMetadata,
-  IFieldAndFilterMapper,
+  getModelFieldMetadataList,
+  getModelObjectMetadata,
+  IModelFieldMetadata,
+  IModelFieldAndFilterMapper,
   isDstExtended,
 } from './object.decorator.js';
 export const columnConversion = (
   key: string,
-  data: IFieldMapper | { [key: string]: ICrudGenFieldMetadata } | undefined,
+  data: IFieldMapper | { [key: string]: IModelFieldMetadata } | undefined,
 ): string => {
   if (data) {
     const dst = data[key]?.dst ?? key;
@@ -173,7 +178,7 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   if (!where.filters) return sql;
 
   for (const key of Object.keys(where.filters)) {
-    const operation: IWhereConditionType = where.filters[key];
+    const operation: IWhereConditionType = where.filters[key] ?? {};
 
     //If we have an operator it means that the filter is combined, or it is a multicolumn
     if ((operation as any).operator !== undefined) {
@@ -239,25 +244,6 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   return sql;
 }
 
-export const isAskingForCount = (info: GraphQLResolveInfo): boolean => {
-  try {
-    return (
-      info.fieldNodes?.[0].selectionSet?.selections.some((item: any) => {
-        return (
-          item.name.value === 'pageData' &&
-          item.selectionSet &&
-          item.selectionSet.selections.some(
-            (subItem: any) => subItem.name.value === 'count',
-          )
-        );
-      }) ?? false
-    );
-  } catch (e) {
-    // quick way to avoid having dozens of conditions to check the info structure
-    return false;
-  }
-};
-
 export function getDestinationFieldName(dst: string | DstExtended): string {
   if (isDstExtended(dst)) {
     return dst.name;
@@ -270,10 +256,10 @@ const objectToFieldMapperCache = new WeakMap();
 export const objectToFieldMapper = (
   object:
     | IFieldMapper
-    | IFieldAndFilterMapper
+    | IModelFieldAndFilterMapper
     | ReturnTypeFuncValue
     | ClassType,
-): IFieldAndFilterMapper => {
+): IModelFieldAndFilterMapper => {
   if (typeof object !== 'symbol') {
     const cached = objectToFieldMapperCache.get(object);
     if (cached) {
@@ -281,16 +267,16 @@ export const objectToFieldMapper = (
     }
   }
 
-  let fieldMapper: IFieldAndFilterMapper = { field: {} };
+  let fieldMapper: IModelFieldAndFilterMapper = { field: {} };
 
   fieldMapper.extraInfo = {};
 
-  const objectMetadata = getCrudGenObjectMetadata(object as any);
+  const objectMetadata = getModelObjectMetadata(object as any);
 
   if (objectMetadata) {
     fieldMapper.filterOption = objectMetadata;
 
-    const fieldMetadataList = getCrudGenFieldMetadataList(object as any);
+    const fieldMetadataList = getModelFieldMetadataList(object as any);
 
     if (fieldMetadataList) {
       for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -316,7 +302,7 @@ export const objectToFieldMapper = (
   } else if (isFieldMapper(object)) {
     fieldMapper.field = object;
   } else if (isIFieldAndFilterMapper(object as any)) {
-    fieldMapper = object as IFieldAndFilterMapper;
+    fieldMapper = object as IModelFieldAndFilterMapper;
   } /**
   @todo rework or delete, it throws an error with enum as gqlType
   
@@ -336,14 +322,14 @@ export const objectToFieldMapper = (
 };
 
 export function isIFieldAndFilterMapper(
-  val: IFieldMapper | IFieldAndFilterMapper,
-): val is IFieldAndFilterMapper {
+  val: IFieldMapper | IModelFieldAndFilterMapper,
+): val is IModelFieldAndFilterMapper {
   return val?.field !== undefined;
 }
 
 export interface IDependencyObject<Entity extends ObjectLiteral> {
   providers: Array<FactoryProvider | Provider>;
-  repository: ClassType<CrudGenRepository<Entity>>;
+  repository: ClassType<GenericTypeORMRepository<Entity>>;
 }
 
 export interface IProviderOverride<T = any> {
@@ -358,7 +344,7 @@ export interface IResolverOverride<T = any> {
   provider: ClassType<T>;
 }
 
-interface IGenericServiceOptions<Entity> {
+interface IGenericServiceOptions<Entity extends ObjectLiteral> {
   dbConnection: string;
   entityModel?: ClassType<Entity>;
   /**
@@ -382,7 +368,7 @@ export interface ICrudGenDependencyFactoryOptions<
     | false;
   service?: IGenericServiceOptions<Entity> | IProviderOverride;
   dataloader?: IDataLoaderOptions<Entity> | IProviderOverride;
-  repository?: ClassType<CrudGenRepository<Entity>>;
+  repository?: ClassType<GenericTypeORMRepository<Entity>>;
 }
 
 export function isProviderOverride(
@@ -466,7 +452,7 @@ export function CrudGenDependencyFactory<Entity extends Record<string, any>>({
 
   return {
     providers,
-    repository: repository ?? CrudGenRepositoryFactory<Entity>(entityModel),
+    repository: repository ?? CGExtendedRepositoryFactory<Entity>(entityModel),
   };
 }
 
@@ -503,7 +489,7 @@ export function filterTypeToNativeType(type: FilterType) {
 export interface IRelationInfo {
   relation: RelationMetadataArgs;
   join: JoinColumnMetadataArgs | undefined;
-  agField?: ICrudGenFieldMetadata;
+  agField?: IModelFieldMetadata;
 }
 
 export function getEntityRelations<Entity, DTO = Entity>(
@@ -522,7 +508,7 @@ export function getEntityRelations<Entity, DTO = Entity>(
       (entityModel.prototype instanceof v.target || entityModel === v.target),
   );
 
-  const crudGenMetadata = getCrudGenFieldMetadataList(dto ?? entityModel);
+  const crudGenMetadata = getModelFieldMetadataList(dto ?? entityModel);
 
   return relations.map((r: RelationMetadataArgs) => ({
     relation: r,
@@ -543,7 +529,7 @@ export function getTypeProperties<Entity>(entityModel: ClassType<Entity>) {
   );
 
   // to get crud-gen fields
-  const fieldMetadataList = getCrudGenFieldMetadataList(entityModel);
+  const fieldMetadataList = getModelFieldMetadataList(entityModel);
 
   if (fieldMetadataList) {
     for (const propertyName of Object.keys(fieldMetadataList)) {
@@ -583,7 +569,7 @@ export function applyJoinArguments(
   findManyOptions: CrudGenFindManyOptions,
   alias: string,
   join: { [index: string]: JoinArgOptions },
-  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
+  fieldMapper: { [key: string]: IModelFieldMetadata },
 ): void {
   const _joinObject: {
     alias: string;
@@ -608,7 +594,7 @@ export function applyJoinArguments(
     }
 
     const type = fieldMapper[table].gqlType?.();
-    const _fieldMapper: IFieldAndFilterMapper = type
+    const _fieldMapper: IModelFieldAndFilterMapper = type
       ? objectToFieldMapper(type)
       : { field: {} };
 
@@ -637,11 +623,13 @@ export function isFilterExpressionInput(
   return !!casted.expressions;
 }
 
-export function traverseFiltersAndApplyFunction(
-  where: IWhereCondition,
-  callback: { (value: IWhereFilters, key: string): void },
+export function traverseFiltersAndApplyFunction<
+  TEntity extends ObjectLiteral = any,
+>(
+  where: IWhereCondition<TEntity>,
+  callback: { (value: IWhereFilters<TEntity>, key: string): void },
 ): void {
-  const filters: IWhereFilters = where.filters;
+  const filters: IWhereFilters<TEntity> = where.filters;
 
   for (const filter in filters) {
     callback(filters, filter);
@@ -702,7 +690,7 @@ export function formatRawSelection(
 export function applySelectOnFind<T = any>(
   findOptions: CrudGenFindManyOptions,
   field: keyof T,
-  fieldMapper: { [key: string]: ICrudGenFieldMetadata },
+  fieldMapper: { [key: string]: IModelFieldMetadata },
   /**
    * If it's a nested field, you need to specify a path
    */

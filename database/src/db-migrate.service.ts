@@ -31,9 +31,14 @@ export class DbMigrateService {
   public async migrate(options?: MigrationOptions) {
     this.loggerService.debug?.(`Migrating db...`);
 
-    if (options?.selMigrations) {
+    const selMigrations =
+      options?.selMigrations && Object.keys(options.selMigrations).length !== 0
+        ? options.selMigrations
+        : undefined;
+
+    if (selMigrations) {
       this.loggerService.debug?.(
-        `Selected migrations ${JSON.stringify(options.selMigrations)}`,
+        `Selected migrations ${JSON.stringify(selMigrations)}`,
       );
     }
 
@@ -59,7 +64,7 @@ export class DbMigrateService {
         continue;
       }
 
-      if (options?.selMigrations) {
+      if (selMigrations) {
         this.loggerService.debug?.(
           `Executing selected migrations on ${dbName}`,
         );
@@ -67,9 +72,7 @@ export class DbMigrateService {
         const pendingMigrations =
           await migrationExecutor.getPendingMigrations();
 
-        const selectedMigrations = dbName
-          ? options.selMigrations[dbName]
-          : true; // execute all migrations when it's a connection without db specified
+        const selectedMigrations = dbName ? selMigrations[dbName] : true; // execute all migrations when it's a connection without db specified
 
         for (const migration of pendingMigrations) {
           if (

@@ -64,7 +64,7 @@ First create the entity `user-phone.entity.ts`
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -184,11 +184,11 @@ Example (`skeleton-user.entity.ts`):
 ```typescript
 @Entity('user')
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @CrudGenField({ gqlType: returnValue(UUIDScalar), isRequired: true })
+  @ModelField({ gqlType: returnValue(UUIDScalar), isRequired: true })
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
   guid: string;
 
@@ -204,7 +204,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar')
   password: string;
 
-  @CrudGenField({
+  @ModelField({
     dst: `CONCAT(firstName,' ', lastName)`,
     mode: 'derived',
     isSymbolic: true,
@@ -214,7 +214,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
     denyFilter: true,
   })
   // virtual column, not selectable
-  // handled by the @CrudGenField
+  // handled by the @ModelField
   @Column({
     select: false,
     insert: false,
@@ -223,7 +223,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   })
   fullName: string;
 
-  @CrudGenField<UserPhone>({
+  @ModelField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -243,7 +243,7 @@ while in the `UserPhone` entity (`user-phone.entity.ts`):
 @Entity('user-phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   // if not specified elsewhere
   // ID field name will be used by default from the single
@@ -258,7 +258,7 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
   @Column('varchar', { length: 36 })
   userId: string;
 
-  @CrudGenField<UserPhone>({
+  @ModelField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -272,10 +272,10 @@ export class UserPhone extends EntityWithTimestamps(BaseEntity) {
 }
 ```
 
-**NOTE 1:** most of the time you can avoid to use the `@CrudGenField` decorator since the CrudGen system is able to automatically detect it by the TypeORM decorators, however, with the `@CrudGenField` you can specify more options to include some edge cases. You could even only use CrudGenField instead
+**NOTE 1:** most of the time you can avoid to use the `@ModelField` decorator since the CrudGen system is able to automatically detect it by the TypeORM decorators, however, with the `@ModelField` you can specify more options to include some edge cases. You could even only use ModelField instead
 if you only need the dataloader and not the join feature.
 
-**NOTE 2:** It's a good practice to define the `@CrudGenField` within a DTO instead of an entity. It's always better to separate this 2 concepts. In the example above we used the entities for simplicity
+**NOTE 2:** It's a good practice to define the `@ModelField` within a DTO instead of an entity. It's always better to separate this 2 concepts. In the example above we used the entities for simplicity
 
 #### Define DTO with field visibility, validation, mapping, and value manipulation
 
@@ -287,15 +287,15 @@ what should not be changed from the entity and redefine some properties instead 
 
 We can create a `skeleton-user.type.ts` with the following code and move all the GraphQL related decorators within this file.
 
-Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@CrudGenObject` one.
+Also we have to change the `@ObjectType` decorator on our entity to this: `@ObjectType({ isAbstract: true })` and remove the `@ModelObject` one.
 
 Example:
 
 ```typescript
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserType extends SkeletonUser {
-  @CrudGenField<UserPhone>({
+  @ModelField<UserPhone>({
     relation: {
       type: () => UserPhone,
       relationType: 'one-to-many',
@@ -310,7 +310,7 @@ export class SkeletonUserType extends SkeletonUser {
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @CrudGenField({
+  @ModelField({
     gqlType: returnValue(UUIDScalar),
     gqlOptions: {
       name: 'ID',
@@ -320,7 +320,7 @@ export class SkeletonUserType extends SkeletonUser {
   })
   guid: string;
 
-  @CrudGenField({
+  @ModelField({
     gqlOptions: {
       description: "It's the combination of firstName and lastName",
     },
@@ -333,7 +333,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone'] as const,
@@ -341,14 +341,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone'] as const,
@@ -358,14 +358,14 @@ export class SkeletonUserUpdateInput extends OmitType(
 
 In the example above we've achieved the following:
 
-1. We've moved most of the `@CrudGenField` into the DTO, since they are decorators related to GraphQL. Only the configurations related to TypeORM remained in the entity.
+1. We've moved most of the `@ModelField` into the DTO, since they are decorators related to GraphQL. Only the configurations related to TypeORM remained in the entity.
 2. We're hiding the information about the user `password` because we do not want to expose such information to the final user.
 3. We're exposing the `guid` database field as `ID` in GraphQL and added the description for the graphql playground. Our system will automatically map it.
 4. We're creating some input types that will be used to define the parameters needed for our mutations, notice that we use PartialType/OmitType from the
    nestjs/graphql library to remove properties from the extended type that we do not need
 
 There are many other features available NestJS-Yalc/crud-gen, including JSON field handling, middlewares, default values and many other. Please, refer
-to the documentation of the `@CrudGenField` and `@CrudGenObject` decorator to know more.
+to the documentation of the `@ModelField` and `@ModelObject` decorator to know more.
 
 As last step, we have to define our DTO and the entity within the `CrudGenDependencyFactory`, hence the `skeleton-user.resolver.ts` will look like this:
 

@@ -2,7 +2,7 @@ import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { GraphQLResolveInfo } from 'graphql';
 import { BaseEntity, Equal, SelectQueryBuilder } from 'typeorm';
-import { FilterType, GeneralFilters, Operators } from '../crud-gen.enum.js';
+import { FilterType, GeneralFilters, Operators } from '../crud-gen-gql.enum.js';
 import {
   CrudGenConditionNotSupportedError,
   CrudGenNotPossibleError,
@@ -32,15 +32,15 @@ import {
   getDestinationFieldName,
 } from '../crud-gen.helpers.js';
 import { JoinArgOptions, JoinTypes } from '../crud-gen.input.js';
-import { IWhereCondition } from '../crud-gen.type.js';
+import { IWhereCondition } from '../crud-gen-gql.type.js';
 import * as ObjectDecorator from '../object.decorator.js';
 import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
 import {
   FilterOption,
   FilterOptionType,
-  ICrudGenFieldMetadata,
-  IFieldAndFilterMapper,
+  IModelFieldMetadata,
+  IModelFieldAndFilterMapper,
 } from '../object.decorator.js';
 import {
   TestEntity,
@@ -437,11 +437,11 @@ describe('Crud-gen helpers', () => {
         .spyOn(ObjectDecorator, 'getCrudGenObjectMetadata')
         .mockReturnValueOnce(fixedObjectMetadata);
 
-      const spiedgetCrudGenFieldMetadataList = jest.spyOn(
+      const spiedgetModelFieldMetadataList = jest.spyOn(
         ObjectDecorator,
-        'getCrudGenFieldMetadataList',
+        'getModelFieldMetadataList',
       );
-      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(fixedFieldMetaData);
+      spiedgetModelFieldMetadataList.mockReturnValueOnce(fixedFieldMetaData);
 
       const fieldMapper = objectToFieldMapper(BaseEntity);
       expect(fieldMapper).toBeDefined();
@@ -455,9 +455,9 @@ describe('Crud-gen helpers', () => {
         .spyOn(ObjectDecorator, 'getCrudGenObjectMetadata')
         .mockReturnValue(fixedObjectMetadata);
 
-      const spiedgetCrudGenFieldMetadataList = jest.spyOn(
+      const spiedgetModelFieldMetadataList = jest.spyOn(
         ObjectDecorator,
-        'getCrudGenFieldMetadataList',
+        'getModelFieldMetadataList',
       );
 
       // Dst equals to src if undefined
@@ -468,18 +468,18 @@ describe('Crud-gen helpers', () => {
         },
       };
 
-      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
+      spiedgetModelFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
       let fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
 
       // src setted to undefined
       customFieldMetadata.propertyName.src = undefined;
-      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
+      spiedgetModelFieldMetadataList.mockReturnValueOnce(customFieldMetadata);
       fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
 
       // undefined fileldMetadata
-      spiedgetCrudGenFieldMetadataList.mockReturnValueOnce(undefined);
+      spiedgetModelFieldMetadataList.mockReturnValueOnce(undefined);
       fieldMapper = objectToFieldMapper(new BaseEntity());
       expect(fieldMapper).toBeDefined();
     });
@@ -492,7 +492,7 @@ describe('Crud-gen helpers', () => {
     it('Should convert a FieldAndFilterMapper to a field mapepr', () => {
       const fieldMapper = objectToFieldMapper({
         field: {},
-      } as IFieldAndFilterMapper);
+      } as IModelFieldAndFilterMapper);
       expect(fieldMapper).toBeDefined();
     });
 
@@ -507,32 +507,33 @@ describe('Crud-gen helpers', () => {
 
   describe('CrudGenDependencyFactory', () => {
     // Object with override on provider
-    const fixedCrudGenDependencyFactoryOptions: ICrudGenDependencyFactoryOptions<TestEntity> = {
-      entityModel: TestEntity,
-      dataloader: {
-        databaseKey: 'id',
-        provider: {
-          provide: GQLDataLoader,
-          useClass: GQLDataLoader,
-        },
+    const fixedCrudGenDependencyFactoryOptions: ICrudGenDependencyFactoryOptions<TestEntity> =
+      {
         entityModel: TestEntity,
-      },
-      service: {
-        dbConnection: 'id',
-        provider: {
-          provide: () => GenericService,
-          useClass: GenericService,
+        dataloader: {
+          databaseKey: 'id',
+          provider: {
+            provide: GQLDataLoader,
+            useClass: GQLDataLoader,
+          },
+          entityModel: TestEntity,
         },
-        entityModel: TestEntity,
-      },
-      resolver: {
-        provider: {
-          provide: Resolver,
-          useClass: TestEntity,
+        service: {
+          dbConnection: 'id',
+          provider: {
+            provide: () => GenericService,
+            useClass: GenericService,
+          },
+          entityModel: TestEntity,
         },
-      },
-      repository: {} as any,
-    };
+        resolver: {
+          provider: {
+            provide: Resolver,
+            useClass: TestEntity,
+          },
+        },
+        repository: {} as any,
+      };
 
     it('Should create a dependencyObject properly', () => {
       const dependecyObject = CrudGenDependencyFactory<TestEntity>(
@@ -555,9 +556,8 @@ describe('Crud-gen helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
-        customOptions,
-      );
+      const dependecyObject =
+        CrudGenDependencyFactory<TestEntity>(customOptions);
 
       expect(dependecyObject).toBeDefined();
     });
@@ -570,9 +570,8 @@ describe('Crud-gen helpers', () => {
         repository: undefined,
       };
 
-      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
-        customOptions,
-      );
+      const dependecyObject =
+        CrudGenDependencyFactory<TestEntity>(customOptions);
 
       expect(dependecyObject).toBeDefined();
     });
@@ -590,9 +589,8 @@ describe('Crud-gen helpers', () => {
           databaseKey: 'id',
         },
       };
-      const dependecyObject = CrudGenDependencyFactory<TestEntity>(
-        customOptions,
-      );
+      const dependecyObject =
+        CrudGenDependencyFactory<TestEntity>(customOptions);
 
       expect(dependecyObject).toBeDefined();
     });
@@ -684,12 +682,12 @@ describe('Crud-gen helpers', () => {
   });
 
   it('Should get the column properties from an crud-gen field with mode derived', () => {
-    const spiedgetCrudGenFieldMetadataList = jest.spyOn(
+    const spiedgetModelFieldMetadataList = jest.spyOn(
       ObjectDecorator,
-      'getCrudGenFieldMetadataList',
+      'getModelFieldMetadataList',
     );
 
-    const fieldMetadataList: { [key: string]: ICrudGenFieldMetadata } = {
+    const fieldMetadataList: { [key: string]: IModelFieldMetadata } = {
       propertyName: {
         mode: 'derived',
       },
@@ -697,7 +695,7 @@ describe('Crud-gen helpers', () => {
         mode: 'regular',
       },
     };
-    spiedgetCrudGenFieldMetadataList.mockReturnValue(fieldMetadataList);
+    spiedgetModelFieldMetadataList.mockReturnValue(fieldMetadataList);
     const columns = getTypeProperties(TestEntity);
 
     const result = columns.find((e) => e.propertyName === 'propertyName');

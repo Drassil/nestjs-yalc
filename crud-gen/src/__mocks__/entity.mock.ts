@@ -7,7 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { CrudGenField, CrudGenObject } from '../object.decorator.js';
+import { ModelField, ModelObject } from '../object.decorator.js';
 
 @Entity()
 export class TestEntity extends BaseEntity {
@@ -15,9 +15,9 @@ export class TestEntity extends BaseEntity {
   id: number;
 }
 
-@CrudGenObject()
+@ModelObject()
 export class TestEntityDto extends TestEntity {
-  @CrudGenField({ gqlOptions: { name: 'entityId' } })
+  @ModelField({ gqlOptions: { name: 'entityId' } })
   id: number;
 }
 

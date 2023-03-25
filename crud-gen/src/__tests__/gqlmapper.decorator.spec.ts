@@ -6,11 +6,11 @@ import {
   mockedNestGraphql,
 } from '@nestjs-yalc/jest/common-mocks.helper.js';
 import * as graphql from '@nestjs/graphql';
-import { CrudGenField, CrudGenObject } from '../object.decorator.js';
+import { , CrudGenObject } from '../object.decorator.js';
 
 @CrudGenObject()
 class DummyType {
-  @CrudGenField({ gqlOptions: { name: 'betterName' } })
+  @({ gqlOptions: { name: 'betterName' } })
   dummyProp: string;
 }
 

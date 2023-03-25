@@ -55,6 +55,9 @@ describe('QueryBuilderHelper', () => {
     const mockedConnection = createMock<Connection>({
       driver: {
         isReplicated: false,
+        options: {
+          type: 'mysql',
+        },
       },
       createQueryRunner: jest.fn().mockReturnValue(mockedQueryRunner),
     });
@@ -379,7 +382,11 @@ describe('QueryBuilderHelper', () => {
       release: jest.fn(),
     });
     const mockedConnection = createMock<Connection>({
-      driver: new PostgresDriver(),
+      driver: {
+        options: {
+          type: 'postgres',
+        },
+      },
       createQueryRunner: jest.fn().mockReturnValue(mockedQueryRunner),
     });
 

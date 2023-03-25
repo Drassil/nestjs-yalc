@@ -1,24 +1,24 @@
 import { BaseEntity } from 'typeorm';
 import { createMock } from '@golevelup/ts-jest';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
-import { CrudGenField, CrudGenObject } from '../object.decorator.js';
+import { CGExtendedRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
+import { ModelField, ModelObject } from '../object.decorator.js';
 import { JsonTransformer } from '../transformers.helpers.js';
 
-@CrudGenObject({})
+@ModelObject({})
 export class ReadEntity {
-  @CrudGenField({
+  @ModelField({
     dst: {
       name: 'jsonProperty',
-      transformer: JsonTransformer('data', 'sub.jsonProperty'),
+      transformerDst: JsonTransformer('data', 'sub.jsonProperty'),
     },
   })
   jsonProperty: string;
 
-  @CrudGenField({})
+  @ModelField({})
   noTransform: string;
 
   // should never happen
-  @CrudGenField({ dst: undefined })
+  @ModelField({ dst: undefined })
   noDest: string;
 }
 
@@ -28,6 +28,5 @@ export class WriteEntity {
 
 export class MockedEntity extends BaseEntity {}
 
-export const baseEntityRepository = createMock<
-  CrudGenRepository<MockedEntity>
->();
+export const baseEntityRepository =
+  createMock<CGExtendedRepository<MockedEntity>>();

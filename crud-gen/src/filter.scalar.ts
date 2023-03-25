@@ -11,7 +11,7 @@ import {
   FilterInput,
   IFilterInputOld,
   IMultiColumnJoinOptions,
-} from './crud-gen.interface.js';
+} from './api-graphql/crud-gen-gql.interface.js';
 
 @Scalar('FilterInput')
 export class FilterScalar implements CustomScalar<string, FilterInput> {
@@ -20,12 +20,12 @@ export class FilterScalar implements CustomScalar<string, FilterInput> {
   resultMemoize = new Map();
   resultMemoizeInverse = new WeakMap();
 
-  parseValue(value: string): FilterInput {
+  parseValue(value: string | unknown): FilterInput {
     // value from the client
     const cached = this.resultMemoize.get(value);
     if (cached) return cached;
 
-    const parsedValue = JSON.parse(value);
+    const parsedValue = JSON.parse(typeof value === 'string' ? value : '{}');
 
     const normalizeInput = (
       input: IFilterInputOld | IMultiColumnJoinOptions,
@@ -74,13 +74,13 @@ export class FilterScalar implements CustomScalar<string, FilterInput> {
     return filter;
   }
 
-  serialize(value: FilterInput | string): string {
-    return typeof value === 'string'
+  serialize(value: FilterInput | string | unknown): string {
+    return typeof value !== 'object' || value === null
       ? value
       : this.resultMemoizeInverse.get(value);
   }
 
-  parseLiteral(ast: ValueNode): FilterInput | null {
+  parseLiteral(ast: ValueNode): FilterInput {
     if (ast.kind === Kind.STRING) {
       return this.parseValue(ast.value);
     }

@@ -3,7 +3,7 @@ import {
   IOptions,
   IProjectInfo,
   jestConfGenerator,
-} from '@nestjs-yalc/jest-config';
+} from './jest/src/config';
 
 console.log('=================== LOADING JEST OPTIONS ================');
 

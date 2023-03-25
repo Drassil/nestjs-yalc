@@ -8,3 +8,4 @@ export * from './missing-arguments.error.js';
 // export * from './crud-gen.error.js';
 // export * from './crud-gen.helpers.js';
 // export * from './crud-gen.input.js';
+export * from './typeorm/generic.service.js';

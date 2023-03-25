@@ -6,15 +6,13 @@ import {
   QueryRunner,
   SelectQueryBuilder,
 } from 'typeorm';
-import { PostgresDriver } from 'typeorm/driver/postgres/PostgresDriver.js';
-import { CockroachDriver } from 'typeorm/driver/cockroachdb/CockroachDriver.js';
 import { SortDirection } from '@nestjs-yalc/crud-gen/crud-gen.enum.js';
 import {
   IFieldMapper,
   isFieldMapper,
 } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { isJsonSQLRaw } from './json.helpers.js';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
+import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.interface.js';
 // import {
 //   IJsonVirtualFieldOptions,
 //   NYALC_JSON_VIRTUAL_FIELD_META_KEY,
@@ -188,8 +186,9 @@ export class QueryBuilderHelper {
         }
         const { driver } = queryBuilder.connection;
         if (
-          driver instanceof PostgresDriver ||
-          driver instanceof CockroachDriver
+          driver.options &&
+          (driver.options.type === 'postgres' || // postgres
+            driver.options.type === 'cockroachdb') // cockroachdb
         ) {
           return `${aliasPath} ILIKE ${parameters[0]}`;
         }

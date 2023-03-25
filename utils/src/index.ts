@@ -10,6 +10,8 @@ export * from './error.helper.js';
 export * from './interval.helper.js';
 export * from './nest.decorator.js';
 export * from './object.helper.js';
+export * from './object-mapper.helper.js';
+export * from './object-mapper.interceptor.js';
 // export * from './promise.helper.js';
 export * from './returnValue.js';
 export * from './validator-helper.js';

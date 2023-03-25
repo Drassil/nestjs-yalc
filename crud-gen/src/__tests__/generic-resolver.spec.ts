@@ -26,10 +26,10 @@ import {
 import * as CrudGenObjectDecorator from '../object.decorator.js';
 import * as CrudGenHelpers from '../crud-gen.helpers.js';
 
-import { ICrudGenFieldMetadata } from '../object.decorator.js';
+import { IModelFieldMetadata } from '../object.decorator.js';
 import { BaseEntity } from 'typeorm';
-import { CrudGenFindManyOptions } from '../crud-gen.interface.js';
-import { FilterType } from '../crud-gen.enum.js';
+import { CrudGenFindManyOptions } from '../crud-gen-gql.interface.js';
+import { FilterType } from '../crud-gen-gql.enum.js';
 import { GqlExecutionContext, Query, Resolver } from '@nestjs/graphql';
 import { IRelationInfo } from '../crud-gen.helpers.js';
 
@@ -50,7 +50,7 @@ const queriesName = {
   delete: `${prefix}delete${entityName}`,
 };
 
-const fixedMetadataList: { [key: string]: ICrudGenFieldMetadata } = {
+const fixedMetadataList: { [key: string]: IModelFieldMetadata } = {
   [propertyRelationName]: {
     //dst: propertyRelationName,
     //src: propertyRelationName,
@@ -214,43 +214,42 @@ let missingExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
   },
 };
 
-let undefinedExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> = {
-  ...baseResolverOption,
-  queries: {
-    ...baseResolverOption.queries,
-    getResource: {
-      ...baseResolverOption.queries.getResourceGrid,
-      idName: {
-        hidden: true,
+let undefinedExtraResolverOptions: IGenericResolverOptions<TestEntityRelation> =
+  {
+    ...baseResolverOption,
+    queries: {
+      ...baseResolverOption.queries,
+      getResource: {
+        ...baseResolverOption.queries.getResourceGrid,
+        idName: {
+          hidden: true,
+        },
       },
     },
-  },
-  mutations: {
-    ...baseResolverOption.mutations,
-    createResource: {
-      ...baseResolverOption.mutations.createResource,
-      extraInputs: {
-        guid: {},
+    mutations: {
+      ...baseResolverOption.mutations,
+      createResource: {
+        ...baseResolverOption.mutations.createResource,
+        extraInputs: {
+          guid: {},
+        },
       },
     },
-  },
-};
+  };
 
 const mockedResponse = {};
 
 describe('Generic Resolver', () => {
   const mockedGenericService = createMock<GenericService<TestEntityRelation>>();
-  const mockedTestEntityRelationDL = createMock<
-    GQLDataLoader<TestEntityRelation>
-  >();
-  const mockedTestEntityRelation2DL = createMock<
-    GQLDataLoader<TestEntityRelation2>
-  >();
+  const mockedTestEntityRelationDL =
+    createMock<GQLDataLoader<TestEntityRelation>>();
+  const mockedTestEntityRelation2DL =
+    createMock<GQLDataLoader<TestEntityRelation2>>();
   const mockedModuleRef = createMock<ModuleRef>();
 
   const spiedCrudGenMetaDataList = jest.spyOn(
     CrudGenObjectDecorator,
-    'getCrudGenFieldMetadataList',
+    'getModelFieldMetadataList',
   );
 
   const generateResolver = (mockedMetadataList, resolverOption) => {
@@ -299,7 +298,7 @@ describe('Generic Resolver', () => {
       new TestEntityRelation(),
     );
 
-    mockedGenericService.getEntityListCrudGen.mockResolvedValue([
+    mockedGenericService.getEntityListExtended.mockResolvedValue([
       [new TestEntityRelation()],
       1,
     ]);
@@ -381,7 +380,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-many relationship', () => {
-    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
+    let customMetadatList: { [key: string]: IModelFieldMetadata };
     let mockedResolverInfoList: jest.SpyInstance;
     const oneToManyResolverInfo: IRelationInfo = {
       ...customResolverInfo,
@@ -455,7 +454,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader one-to-one relationship', () => {
-    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
+    let customMetadatList: { [key: string]: IModelFieldMetadata };
     const oneToOneResolverInfo: IRelationInfo = {
       ...customResolverInfo,
       relation: {
@@ -550,7 +549,7 @@ describe('Generic Resolver', () => {
   });
 
   describe('Check dataloader many-to-many relationship', () => {
-    let customMetadatList: { [key: string]: ICrudGenFieldMetadata };
+    let customMetadatList: { [key: string]: IModelFieldMetadata };
     const manyToManyResolverInfo: IRelationInfo = {
       ...customResolverInfo,
       relation: {
@@ -652,10 +651,11 @@ describe('Generic Resolver', () => {
   });
 
   it('Should not create mutation if it is a read-only resolver', () => {
-    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> = {
-      ...baseResolverOption,
-      readonly: true,
-    };
+    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> =
+      {
+        ...baseResolverOption,
+        readonly: true,
+      };
     const resolver = generateResolver({}, customBaseResolverOption);
     expect(resolver[queriesName.create]).not.toBeDefined();
     expect(resolver[queriesName.delete]).not.toBeDefined();
@@ -663,24 +663,25 @@ describe('Generic Resolver', () => {
   });
 
   it('Should create a resolver with custom queries', () => {
-    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> = {
-      ...baseResolverOption,
-      customQueries: {
-        customQuery: {
-          isSingleResource: true,
-        },
-        customQueryGrid: {
-          extraArgs: {
-            ['date']: {
-              filterType: FilterType.DATE,
-            } as any,
+    const customBaseResolverOption: IGenericResolverOptions<TestEntityRelation> =
+      {
+        ...baseResolverOption,
+        customQueries: {
+          customQuery: {
+            isSingleResource: true,
+          },
+          customQueryGrid: {
+            extraArgs: {
+              ['date']: {
+                filterType: FilterType.DATE,
+              } as any,
+            },
+          },
+          customQueryGridNoArgs: {
+            extraArgs: undefined,
           },
         },
-        customQueryGridNoArgs: {
-          extraArgs: undefined,
-        },
-      },
-    };
+      };
     const resolver = generateResolver({}, customBaseResolverOption);
     expect(resolver['customQuery']).toBeDefined();
     expect(resolver['customQueryGrid']).toBeDefined();
@@ -693,9 +694,8 @@ describe('Generic Resolver', () => {
       'getOwnPropertyDescriptor',
     );
     spiedCrudGenMetaDataList.mockReturnValue({});
-    const ResolverClass = resolverFactory<TestEntityRelation>(
-      baseResolverOption,
-    );
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
 
     spiedGetPropertyDescriptor.mockReturnValue(undefined);
     const testFunction = {
@@ -806,9 +806,8 @@ describe('Generic Resolver', () => {
     };
 
     spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass = resolverFactory<TestEntityRelation>(
-      baseResolverOption,
-    );
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
 
     defineFieldResolver([resolverInfo], ResolverClass);
   });
@@ -827,9 +826,8 @@ describe('Generic Resolver', () => {
     };
 
     spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass = resolverFactory<TestEntityRelation>(
-      baseResolverOption,
-    );
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
 
     defineFieldResolver([resolverInfo], ResolverClass);
   });
@@ -846,9 +844,8 @@ describe('Generic Resolver', () => {
     };
 
     spiedCrudGenMetaDataList.mockReturnValue(fixedMetadataList);
-    const ResolverClass = resolverFactory<TestEntityRelation>(
-      baseResolverOption,
-    );
+    const ResolverClass =
+      resolverFactory<TestEntityRelation>(baseResolverOption);
 
     expect(() =>
       defineFieldResolver([resolverInfo], ResolverClass),

@@ -6,8 +6,8 @@ import {
   PartialType,
 } from '@nestjs/graphql';
 import {
-  CrudGenField,
-  CrudGenObject,
+  ModelField,
+  ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { SkeletonUser } from './sk-user.entity.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
@@ -15,9 +15,9 @@ import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
 import { SkeletonPhoneType } from './sk-phone.dto.js';
 
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserType extends SkeletonUser {
-  @CrudGenField<SkeletonPhoneType>({
+  @ModelField<SkeletonPhoneType>({
     relation: {
       type: () => SkeletonPhoneType,
       relationType: 'one-to-many',
@@ -32,7 +32,7 @@ export class SkeletonUserType extends SkeletonUser {
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
-  @CrudGenField({
+  @ModelField({
     gqlType: returnValue(UUIDScalar),
     gqlOptions: {
       name: 'ID',
@@ -42,7 +42,7 @@ export class SkeletonUserType extends SkeletonUser {
   })
   guid: string;
 
-  @CrudGenField({
+  @ModelField({
     gqlOptions: {
       description: "It's the combination of firstName and lastName",
     },
@@ -55,7 +55,7 @@ export class SkeletonUserType extends SkeletonUser {
  * Here all the input type for Graphql
  */
 @InputType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonUserCreateInput extends OmitType(
   SkeletonUserType,
   ['SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
@@ -63,14 +63,14 @@ export class SkeletonUserCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: SkeletonUserType })
 export class SkeletonUserUpdateInput extends OmitType(
   SkeletonUserType,
   ['guid', 'SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,

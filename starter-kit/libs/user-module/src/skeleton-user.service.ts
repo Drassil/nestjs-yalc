@@ -1,8 +1,8 @@
-import { GenericService } from '@nestjs-yalc/crud-gen/generic-service.service.js';
+import { GenericService } from '@nestjs-yalc/crud-gen/typeorm/generic.service.js';
 import { SkeletonUser } from './sk-user.entity.js';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
+import { GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
@@ -22,7 +22,7 @@ export const skeletonUserServiceFactory = (
   {
     constructor(
       @InjectRepository(SkeletonUser, dbConnection)
-      protected repository: CrudGenRepository<SkeletonUser>,
+      protected repository: GenericTypeORMRepository<SkeletonUser>,
     ) {
       super(repository);
     }

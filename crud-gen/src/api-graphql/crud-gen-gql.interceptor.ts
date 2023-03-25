@@ -8,7 +8,10 @@ import { map } from 'rxjs/operators';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
-export function crudGenInterceptorWorker<T>(startRow: number, endRow: number) {
+export function crudGenGqlInterceptorWorker<T>(
+  startRow: number,
+  endRow: number,
+) {
   return ([page, count]: [T, number]) => {
     return {
       nodes: page,
@@ -17,11 +20,14 @@ export function crudGenInterceptorWorker<T>(startRow: number, endRow: number) {
   };
 }
 @Injectable()
-export class CrudGenInterceptor<T = IFieldMapper>
-  implements NestInterceptor<T> {
+export class CrudGenGqlInterceptor<T = IFieldMapper>
+  implements NestInterceptor<T>
+{
   intercept(context: ExecutionContext, next: CallHandler) {
     const gqlCtx = GqlExecutionContext.create(context);
     const { startRow, endRow } = gqlCtx.getArgs();
-    return next.handle().pipe(map(crudGenInterceptorWorker(startRow, endRow)));
+    return next
+      .handle()
+      .pipe(map(crudGenGqlInterceptorWorker(startRow, endRow)));
   }
 }

@@ -1,37 +1,41 @@
-// @ts-nocheck - TODO: FIX THIS
-
 import {
   ConditionsTooBroadError,
   NoResultsFoundError,
-} from './conditions.error.js';
+} from '../conditions.error.js';
 import {
   CreateEntityError,
   DeleteEntityError,
   EntityError,
   UpdateEntityError,
-} from './entity.error.js';
+} from '../entity.error.js';
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper.js';
 import { FactoryProvider, Injectable } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type';
+import { EntityClassOrSchema } from '@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type.js';
 import {
   DeepPartial,
   getConnection,
   ObjectLiteral,
   QueryFailedError,
 } from 'typeorm';
-import { FindConditions } from 'typeorm';
-import { FindManyOptions } from 'typeorm';
-import { CrudGenRepository } from '@nestjs-yalc/crud-gen/crud-gen.repository.js';
-import { CrudGenFindManyOptions } from '@nestjs-yalc/crud-gen/crud-gen.interface.js';
+import { FindManyOptions, FindOptionsWhere as FindConditions } from 'typeorm';
+import { type GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';
+import {
+  CrudGenFindManyOptions,
+  ICrudGenSimpleParams,
+} from '@nestjs-yalc/crud-gen/api-graphql/crud-gen-gql.interface.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
-import { getProviderToken } from './crud-gen.helpers.js';
+import { getProviderToken } from '../crud-gen.helpers.js';
 import { ReplicationMode } from '@nestjs-yalc/database/query-builder.helper.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
 import {
-  getCrudGenFieldMetadataList,
+  getModelFieldMetadataList,
   isDstExtended,
-} from './object.decorator.js';
+} from '../object.decorator.js';
+import {
+  mapPaginationParamsToTypeORM,
+  mapSortingParamsToTypeORM,
+} from './crud-gen-args.helpers.js';
 
 /**
  *
@@ -42,7 +46,7 @@ import {
  * @param entity TypeORM Entity
  * @param connectionName The Database connection name
  */
-export function GenericServiceFactory<Entity>(
+export function GenericServiceFactory<Entity extends ObjectLiteral>(
   entity: EntityClassOrSchema,
   connectionName: string,
   providedClass?: ClassType<GenericService<Entity>>,
@@ -58,8 +62,8 @@ export function GenericServiceFactory<Entity>(
         typeof entity === 'function' ? entity.name : entity.toString(),
       ),
     useFactory: (
-      repository: CrudGenRepository<any>,
-      repositoryWrite: CrudGenRepository<any>,
+      repository: GenericTypeORMRepository<any>,
+      repositoryWrite: GenericTypeORMRepository<any>,
     ) => {
       return new serviceClass(repository, repositoryWrite);
     },
@@ -97,10 +101,13 @@ export function validateSupportedError(
  * @todo must be refactorized with better types
  */
 @Injectable()
-export class GenericService<EntityRead, EntityWrite = EntityRead> {
+export class GenericService<
+  EntityRead extends ObjectLiteral,
+  EntityWrite extends ObjectLiteral = EntityRead,
+> {
   protected entityRead: EntityClassOrSchema;
   protected entityWrite: EntityClassOrSchema;
-  protected repositoryWrite: CrudGenRepository<EntityWrite>;
+  protected repositoryWrite: GenericTypeORMRepository<EntityWrite>;
 
   /**
    *
@@ -109,12 +116,12 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * need to write on another source
    */
   constructor(
-    protected repository: CrudGenRepository<EntityRead>,
-    repositoryWrite?: CrudGenRepository<EntityWrite>,
+    protected repository: GenericTypeORMRepository<EntityRead>,
+    repositoryWrite?: GenericTypeORMRepository<EntityWrite>,
   ) {
     this.repositoryWrite =
       repositoryWrite ??
-      ((<unknown>this.repository) as CrudGenRepository<EntityWrite>);
+      ((<unknown>this.repository) as GenericTypeORMRepository<EntityWrite>);
 
     // Extracts the target Entity from the CrudGenRepository
     this.entityRead = this.repository.target as EntityClassOrSchema;
@@ -131,13 +138,13 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
     this.setRepositoryRead(
       connection.getRepository(
         this.entityRead,
-      ) as CrudGenRepository<EntityRead>,
+      ) as GenericTypeORMRepository<EntityRead>,
     );
 
     this.setRepositoryWrite(
       connection.getRepository(
         this.entityWrite,
-      ) as CrudGenRepository<EntityWrite>,
+      ) as GenericTypeORMRepository<EntityWrite>,
     );
   }
 
@@ -146,17 +153,21 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param repository
    */
   protected setRepository(
-    repository: CrudGenRepository<EntityRead | EntityWrite>,
+    repository: GenericTypeORMRepository<EntityRead | EntityWrite>,
   ): void {
-    this.setRepositoryRead(repository as CrudGenRepository<EntityRead>);
-    this.setRepositoryWrite(repository as CrudGenRepository<EntityWrite>);
+    this.setRepositoryRead(repository as GenericTypeORMRepository<EntityRead>);
+    this.setRepositoryWrite(
+      repository as GenericTypeORMRepository<EntityWrite>,
+    );
   }
 
   /**
    * Changes the Service repository for read operations
    * @param repository
    */
-  protected setRepositoryRead(repository: CrudGenRepository<EntityRead>): void {
+  protected setRepositoryRead(
+    repository: GenericTypeORMRepository<EntityRead>,
+  ): void {
     this.repository = repository;
   }
 
@@ -165,7 +176,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param repository
    */
   protected setRepositoryWrite(
-    repository: CrudGenRepository<EntityWrite>,
+    repository: GenericTypeORMRepository<EntityWrite>,
   ): void {
     this.repositoryWrite = repository;
   }
@@ -173,49 +184,58 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
   /**
    * Returns the Service repository (read)
    */
-  getRepository(): CrudGenRepository<EntityRead> {
+  getRepository(): GenericTypeORMRepository<EntityRead> {
     return this.repository;
   }
 
   /**
    * Returns the Service repository (write)
    */
-  getRepositoryWrite(): CrudGenRepository<EntityWrite> {
+  getRepositoryWrite(): GenericTypeORMRepository<EntityWrite> {
     return this.repositoryWrite;
   }
 
   /**
    * Returns a List of entities based in the provided options.
-   * @param findOptions Filter options
+   * @param findOptions Filter options - partially implemented
    * @param withCount whether or not the number results should be returned
    * @param relations Related entities to load as part of the results
    * @param databaseName The database name, to open a new database connection
    */
   async getEntityList(
-    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
+    findOptions: ICrudGenSimpleParams,
     withCount?: false,
-    relations?: string[],
     databaseName?: string,
   ): Promise<EntityRead[]>;
   async getEntityList(
-    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
+    findOptions: ICrudGenSimpleParams,
     withCount: true,
-    relations?: string[],
     databaseName?: string,
   ): Promise<[EntityRead[], number]>;
   async getEntityList(
-    findOptions: FindManyOptions<EntityRead> | ObjectLiteral,
+    findOptions: ICrudGenSimpleParams,
     withCount = false,
-    relations?: string[],
     databaseName?: string,
   ): Promise<[EntityRead[], number] | EntityRead[]> {
-    // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
-    if (relations) findOptions.relations = relations;
+    const { sorting, startRow, endRow, select, ...rest } = findOptions;
+
+    const { skip, take } = mapPaginationParamsToTypeORM(startRow, endRow);
+
+    /**
+     * @todo mapping the find options to the TypeORM FindManyOptions
+     */
+
+    const mappedFindOptions: FindManyOptions<EntityRead> = {
+      ...rest,
+      order: sorting ? mapSortingParamsToTypeORM(sorting) : undefined,
+      skip,
+      take,
+    };
 
     return withCount
-      ? this.repository.findAndCount(findOptions)
-      : this.repository.find(findOptions);
+      ? this.repository.findAndCount(mappedFindOptions)
+      : this.repository.find(mappedFindOptions);
   }
 
   /**
@@ -271,24 +291,30 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
     },
   ): Promise<EntityRead>;
   async getEntity(
-    where:
-      | FindConditions<EntityRead>[]
-      | FindConditions<EntityRead>
-      | ObjectLiteral
-      | string,
+    where: FindConditions<EntityRead>[] | FindConditions<EntityRead>,
     fields?: (keyof EntityRead)[],
     relations?: string[],
     databaseName?: string,
     options?: {
       failOnNull?: boolean;
     },
-  ): Promise<EntityRead | undefined> {
+  ): Promise<EntityRead | null | undefined> {
     // Allows to switch to a different database connection
     if (databaseName) this.switchDatabaseConnection(databaseName);
 
     return options?.failOnNull !== true
-      ? this.repository.findOne({ where, select: fields, relations })
-      : this.repository.findOneOrFail({ where, select: fields, relations });
+      ? this.repository.findOne({
+          where,
+          select: fields,
+          relations,
+          comment: 'Generic service getEntity',
+        })
+      : this.repository.findOneOrFail({
+          where,
+          select: fields,
+          relations,
+          comment: 'Generic service getEntity failOnNull: true',
+        });
   }
 
   /**
@@ -336,7 +362,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     return !returnEntity
       ? true
-      : this.repository.getOneCrudGen(
+      : this.repository.getOneExtended(
           { ...findOptions, where: { filters } },
           true,
           ReplicationMode.MASTER,
@@ -397,7 +423,7 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     return !returnEntity
       ? true
-      : this.repository.getOneCrudGen(
+      : this.repository.getOneExtended(
           { ...findOptions, where: { filters } },
           true,
           ReplicationMode.MASTER,
@@ -452,19 +478,19 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
    * @param relations Related entities to load as part of the results
    * @param databaseName The database name, to open a new database connection
    */
-  async getEntityListCrudGen(
+  async getEntityListExtended(
     findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount?: false,
     relations?: string[],
     databaseName?: string,
   ): Promise<EntityRead[]>;
-  async getEntityListCrudGen(
+  async getEntityListExtended(
     findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount: true,
     relations?: string[],
     databaseName?: string,
   ): Promise<[EntityRead[], number]>;
-  async getEntityListCrudGen(
+  async getEntityListExtended(
     findOptions: CrudGenFindManyOptions<EntityRead>,
     withCount = false,
     relations?: string[],
@@ -475,8 +501,8 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
     if (relations) findOptions.relations = relations;
 
     return withCount
-      ? this.repository.getManyAndCountCrudGen(findOptions)
-      : this.repository.getManyCrudGen(findOptions);
+      ? this.repository.getManyAndCountExtended(findOptions)
+      : this.repository.getManyExtended(findOptions);
   }
 
   protected mapEntityR2W(
@@ -498,22 +524,21 @@ export class GenericService<EntityRead, EntityWrite = EntityRead> {
 
     const newEntityWrite = new entity();
 
-    const fieldMetadataList = getCrudGenFieldMetadataList(this.entityRead);
+    const fieldMetadataList = getModelFieldMetadataList(this.entityRead);
 
     for (const propertyName of Object.keys(entityRead)) {
       const fieldMetadata = fieldMetadataList?.[propertyName];
 
       if (!fieldMetadata?.dst || !isDstExtended(fieldMetadata.dst)) {
-        newEntityWrite[propertyName] =
-          entityRead[propertyName as keyof EntityRead];
+        newEntityWrite[propertyName] = entityRead[propertyName as any];
         continue;
       }
 
       const dst = fieldMetadata.dst;
 
-      dst.transformer(
+      newEntityWrite[propertyName] = dst.transformerDst?.(
         newEntityWrite,
-        entityRead[propertyName as keyof EntityRead],
+        entityRead[propertyName as any],
       );
     }
 

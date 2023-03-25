@@ -1,7 +1,7 @@
 import { InputType, ObjectType, OmitType, PartialType } from '@nestjs/graphql';
 import {
-  CrudGenField,
-  CrudGenObject,
+  ModelField,
+  ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
 import { SkeletonPhone } from './sk-phone.entity.js';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
@@ -9,9 +9,9 @@ import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { SkeletonUserType } from './sk-user.dto.js';
 
 @ObjectType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonPhoneType extends SkeletonPhone {
-  @CrudGenField({
+  @ModelField({
     gqlType: /* istanbul ignore next */ () => SkeletonUserType,
     // relation: {
     //   relationType: 'one-to-many',
@@ -19,7 +19,7 @@ export class SkeletonPhoneType extends SkeletonPhone {
   })
   SkeletonUser?: SkeletonUserType;
 
-  @CrudGenField({ gqlType: returnValue(UUIDScalar) })
+  @ModelField({ gqlType: returnValue(UUIDScalar) })
   userId: string;
 }
 
@@ -27,7 +27,7 @@ export class SkeletonPhoneType extends SkeletonPhone {
  * Here all the input type for Graphql
  */
 @InputType()
-@CrudGenObject()
+@ModelObject()
 export class SkeletonPhoneCreateInput extends OmitType(
   SkeletonPhoneType,
   ['SkeletonUser'] as const,
@@ -35,14 +35,14 @@ export class SkeletonPhoneCreateInput extends OmitType(
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonPhoneType })
+@ModelObject({ copyFrom: SkeletonPhoneType })
 export class SkeletonPhoneCondition extends PartialType(
   SkeletonPhoneCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@CrudGenObject({ copyFrom: SkeletonPhoneType })
+@ModelObject({ copyFrom: SkeletonPhoneType })
 export class SkeletonPhoneUpdateInput extends OmitType(
   SkeletonPhoneType,
   ['userId', 'SkeletonUser'] as const,
