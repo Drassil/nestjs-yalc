@@ -13,14 +13,21 @@ const appProjectsSettings: { [key: string]: IAppProjSetting } = {};
 
 const projectList: { [key: string]: IProjectInfo } = {};
 
-const paths: string[] = packageJson.workspaces
+const paths: string[] = packageJson.workspaces;
 paths.map((path: string) => {
-    const _packageJson = require(`${path}/package.json`);
-    projectList[_packageJson.name] = {
-      path: path,
-      sourcePath: `${path}/src`,
-      type: 'library',
-    };
+  const _packageJson = require(`./${path}/package.json`);
+
+  if (_packageJson.custom?.jest === false) return;
+
+  const type = _packageJson.custom?.nest?.type ?? 'library';
+
+  if (!['library', 'application'].includes(type)) return;
+
+  projectList[_packageJson.name] = {
+    path: path,
+    sourcePath: `${path}/src`,
+    type,
+  };
 });
 
 const options: IOptions = {

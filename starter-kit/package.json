@@ -1,5 +1,10 @@
 {
-  "name": "skeleton-app",
+  "name": "@nestjs-yalc/skeleton-app",
+  "custom": {
+    "nest": {
+      "type": "project"
+    }
+  },
   "version": "0.0.1",
   "description": "",
   "author": "",

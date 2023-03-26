@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
   "exports": {
     ".": "./src/index.ts",
     "./*.js": "./src/*.ts",

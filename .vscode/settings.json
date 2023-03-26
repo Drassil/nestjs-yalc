@@ -31,7 +31,5 @@
     {
       "mode": "auto"
     }
-  ],
-  "eslint.format.enable": true,
-  "eslint.debug": true
+  ]
 }

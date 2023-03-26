@@ -3,10 +3,20 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
+  "custom": {
+    "nest": {
+      "type": "library"
+    }
+  },
   "exports": {
+    ".": "./src/index.ts",
     "./*.js": "./src/*.ts",
-    "./*": "./src/*",
-    ".": "./src/index.ts"
+    "./*": "./src/*"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
