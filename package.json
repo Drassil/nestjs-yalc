@@ -38,6 +38,7 @@
     "jest/src/config",
     "logger",
     "types",
+    "toolkit-config",
     "starter-kit",
     "utils"
   ],
