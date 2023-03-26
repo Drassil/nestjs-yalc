@@ -10,10 +10,10 @@ import {
   SkeletonUserCreateInput,
   SkeletonUserUpdateInput,
   SkeletonUserCondition,
-} from './sk-user.dto.js';
-import { SkeletonUser } from './sk-user.entity.js';
+} from './user.dto.js';
+import { SkeletonUser } from './user.entity.js';
 import { RoleAuth, RoleEnum } from './role.guard.js';
-import * as skeletonUserServiceJs from './sk-user.service.js';
+import * as skeletonUserServiceJs from './user.service.js';
 import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
 import {
   ExtraArgsStrategy,

@@ -1,5 +1,5 @@
 import { IsInt, IsString, Min } from 'class-validator';
-import { ClassType } from 'nestjs-yalc/globals.d.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import {
   entityFieldsEnumFactory,
   RowDefaultValues,

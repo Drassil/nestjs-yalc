@@ -1,5 +1,5 @@
 import { GenericService } from '@nestjs-yalc/crud-gen/typeorm/generic.service.js';
-import { SkeletonUser } from './sk-user.entity.js';
+import { SkeletonUser } from './user.entity.js';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';

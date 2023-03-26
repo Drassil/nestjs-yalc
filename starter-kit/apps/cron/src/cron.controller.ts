@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { SkeletonCronService } from './sk-cron.service';
+import { SkeletonCronService } from './cron.service.js';
 
 @Controller()
 export class SkeletonCronController {

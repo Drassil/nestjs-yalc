@@ -3,10 +3,10 @@ import {
   ModelField,
   ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
-import { SkeletonPhone } from './sk-phone.entity.js';
+import { SkeletonPhone } from './user-phone.entity.js';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
-import { SkeletonUserType } from './sk-user.dto.js';
+import { SkeletonUserType } from './user.dto.js';
 
 @ObjectType()
 @ModelObject()
@@ -17,10 +17,10 @@ export class SkeletonPhoneType extends SkeletonPhone {
     //   relationType: 'one-to-many',
     // },
   })
-  SkeletonUser?: SkeletonUserType;
+  declare SkeletonUser?: SkeletonUserType;
 
   @ModelField({ gqlType: returnValue(UUIDScalar) })
-  userId: string;
+  declare userId: string;
 }
 
 /**

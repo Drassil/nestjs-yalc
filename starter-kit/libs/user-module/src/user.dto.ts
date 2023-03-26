@@ -9,10 +9,10 @@ import {
   ModelField,
   ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
-import { SkeletonUser } from './sk-user.entity.js';
+import { SkeletonUser } from './user.entity.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
-import { SkeletonPhoneType } from './sk-phone.dto.js';
+import { SkeletonPhoneType } from './user-phone.dto.js';
 
 @ObjectType()
 @ModelObject()
@@ -25,10 +25,10 @@ export class SkeletonUserType extends SkeletonUser {
       targetKey: { dst: 'userId', alias: 'userId' },
     },
   })
-  SkeletonPhone?: SkeletonPhoneType[];
+  declare SkeletonPhone?: SkeletonPhoneType[];
 
   @HideField()
-  password: string;
+  declare password: string;
 
   // guid should be always required in SQL queries to make sure that the relation
   // is always resolved, and it should be exposed as a UUID Scalar to GraphQL
@@ -40,7 +40,7 @@ export class SkeletonUserType extends SkeletonUser {
     },
     isRequired: true,
   })
-  guid: string;
+  declare guid: string;
 
   @ModelField({
     gqlOptions: {
@@ -48,7 +48,7 @@ export class SkeletonUserType extends SkeletonUser {
     },
     denyFilter: true,
   })
-  fullName: string;
+  declare fullName: string;
 }
 
 /**

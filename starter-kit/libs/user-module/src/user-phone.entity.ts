@@ -9,9 +9,9 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { SkeletonUser } from './sk-user.entity.js';
+import { SkeletonUser } from './user.entity.js';
 
-@Entity('skeleton-phone')
+@Entity('phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType({ isAbstract: true })
 export class SkeletonPhone extends EntityWithTimestamps(BaseEntity) {
@@ -19,13 +19,13 @@ export class SkeletonPhone extends EntityWithTimestamps(BaseEntity) {
   // ID field name will be used by default from the single
   // resource get query as argument to use to select the resource
   @PrimaryGeneratedColumn('increment')
-  ID: number;
+  ID!: number;
 
   @Column('varchar', { length: 20 })
-  phoneNumber: string;
+  phoneNumber!: string;
 
   @Column('varchar', { length: 36 })
-  userId: string;
+  userId!: string;
 
   @OneToOne(
     /* istanbul ignore next */

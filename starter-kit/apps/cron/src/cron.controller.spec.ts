@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SkeletonCronController } from './sk-cron.controller';
-import { SkeletonCronService } from './sk-cron.service';
+import { SkeletonCronController } from './cron.controller';
+import { SkeletonCronService } from './cron.service';
 
 describe('SkeletonCronController', () => {
   let skeletonCronController: SkeletonCronController;

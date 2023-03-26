@@ -9,25 +9,25 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { SkeletonPhone } from './sk-phone.entity.js';
+import { SkeletonPhone } from './user-phone.entity.js';
 
-@Entity('skeleton-user')
+@Entity('user')
 @ObjectType({ isAbstract: true })
 export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
-  guid: string;
+  guid!: string;
 
   @Column('varchar')
-  firstName: string;
+  firstName!: string;
 
   @Column('varchar')
-  lastName: string;
+  lastName!: string;
 
   @Column('varchar', { unique: true })
-  email: string;
+  email!: string;
 
   @Column('varchar')
-  password: string;
+  password!: string;
 
   // This configuration can't be moved in DTO
   // because it instructs TypeORM on how to select
@@ -45,7 +45,7 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
     update: false,
     type: 'varchar',
   })
-  fullName: string;
+  fullName!: string;
 
   @OneToMany(
     /* istanbul ignore next */

@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { skeletonUserProvidersFactory } from './sk-user.resolver.js';
-import { skeletonPhoneProvidersFactory } from './sk-phone.resolver.js';
+import { skeletonUserProvidersFactory } from './user.resolver.js';
+import { skeletonPhoneProvidersFactory } from './user-phone.resolver.js';
 
 @Module({})
 export class SkeletonModule {

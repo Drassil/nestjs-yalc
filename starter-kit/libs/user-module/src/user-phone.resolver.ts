@@ -4,8 +4,8 @@ import {
   SkeletonPhoneCreateInput,
   SkeletonPhoneUpdateInput,
   SkeletonPhoneCondition,
-} from './sk-phone.dto.js';
-import { SkeletonPhone } from './sk-phone.entity.js';
+} from './user-phone.dto.js';
+import { SkeletonPhone } from './user-phone.entity.js';
 
 export const skeletonPhoneProvidersFactory = (dbConnection: string) =>
   CrudGenDependencyFactory<SkeletonPhone>({
