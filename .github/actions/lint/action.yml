@@ -17,7 +17,7 @@ runs:
       id: setup
       with:
         node_version: ${{ env.NODE_VERSION }}
-        install_command:  npm ci --dry-run --no-audit && npm install --no-audit
+        install_command: npm ci --prefer-offline --no-audit
         package_json_dir: ${{ github.workspace }}/${{ inputs.working-directory }}
       uses: drassil/gh-actions-collection/node-setup@master
 
