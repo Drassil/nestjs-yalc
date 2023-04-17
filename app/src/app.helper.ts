@@ -1,7 +1,7 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, INestApplicationContext } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
 import lodash from 'lodash';
+import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 const { curry } = lodash;
 
 export const executeStandaloneFunctionForApp = async (
@@ -25,7 +25,9 @@ export const executeStandaloneFunctionForApp = async (
  */
 export const curriedExecuteStandaloneFunction = async (module: DynamicModule) =>
   curry(executeStandaloneFunctionForApp)(
-    await NestFactory.createApplicationContext(module),
+    (
+      await new StandaloneAppBootstrap(module.module.name, module).initApp()
+    ).getApp(),
   );
 
 /**
