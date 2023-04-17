@@ -36,7 +36,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
     globalsOptions?: unknown;
     fastifyInstance?: FastifyInstance;
   }) {
-    let app;
+    let app: INestApplicationContext;
     try {
       app = await NestFactory.createApplicationContext(this.module);
     } catch (err) {
