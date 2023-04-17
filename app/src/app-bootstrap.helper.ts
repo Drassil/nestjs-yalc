@@ -1,16 +1,10 @@
+import { SystemExceptionFilter } from '@nestjs-yalc/errors/filters/index.js';
 import {
-  // DatabaseExceptionFilter,
-  // HttpExceptionFilter,
-  // ValidationExceptionFilter,
-  SystemExceptionFilter,
-} from '@nestjs-yalc/errors/filters/index.js';
-import {
+  BadRequestException,
   DynamicModule,
   ExceptionFilter,
-  LoggerService,
   ValidationPipe,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import {
@@ -18,13 +12,12 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import fastifyCookie from '@fastify/cookie';
-import type { IServiceConf } from './conf.type.js';
-import { APP_LOGGER_SERVICE } from './def.const.js';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { fastify, FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
+import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
 
 export interface IGlobalOptions {
   /**
@@ -36,16 +29,13 @@ export interface IGlobalOptions {
   enableSwagger?: boolean;
 }
 
-export class AppBootstrap {
-  private app?: NestFastifyApplication;
+export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   private fastifyInstance?: FastifyInstance;
-  protected loggerService?: LoggerService;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(
-    private appAlias: string,
-    private readonly module: DynamicModule,
-  ) {}
+  constructor(appAlias: string, readonly module: DynamicModule) {
+    super(appAlias, module);
+  }
 
   async startServer(options?: {
     globalsOptions?: IGlobalOptions;
@@ -118,43 +108,34 @@ export class AppBootstrap {
     return this.fastifyInstance;
   }
 
-  setApp(app: NestFastifyApplication) {
-    this.app = app;
-
-    return this;
-  }
-
-  getConf() {
-    const configService = this.getApp().get<ConfigService>(ConfigService);
-    return configService.get<IServiceConf>(this.appAlias);
-  }
-
-  getApp() {
-    if (!this.app) {
-      throw new Error('This app is not initialized yet');
-    }
-
-    return this.app;
-  }
-
-  getModule() {
-    return this.module;
-  }
-
   setSwaggerEnabled(enabled: boolean) {
     this.isSwaggerEnabled = enabled;
   }
 
   async applyBootstrapGlobals(options?: IGlobalOptions) {
+    await super.applyBootstrapGlobals(options);
+
     this.getApp().useGlobalPipes(
-      new ValidationPipe({ validateCustomDecorators: true }),
+      new ValidationPipe({
+        validateCustomDecorators: true,
+        exceptionFactory: (errors) => {
+          const errorMessages: { [key: string]: string } = {};
+          errors.forEach((error) => {
+            errorMessages[error.property] = Object.values(
+              error.constraints ?? {},
+            )
+              .join('. ')
+              .trim();
+          });
+          return new BadRequestException(errorMessages);
+        },
+      }),
     );
-    this.loggerService = this.getApp().get(APP_LOGGER_SERVICE);
 
     this.getApp().setGlobalPrefix(
       options?.apiPrefix ?? (this.getConf()?.apiPrefix || ''),
     );
-    this.getApp().useLogger(this.loggerService);
+
     await this.getApp().register(fastifyCookie as any, {});
 
     /**
