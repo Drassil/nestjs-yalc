@@ -1,6 +1,5 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, INestApplicationContext } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
 import lodash from 'lodash';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 const { curry } = lodash;
