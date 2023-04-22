@@ -8,11 +8,6 @@
       "type": "library"
     }
   },
-  "custom": {
-    "nest": {
-      "type": "library"
-    }
-  },
   "exports": {
     ".": "./src/index.ts",
     "./*.js": "./src/*.ts",
