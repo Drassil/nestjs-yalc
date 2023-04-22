@@ -1,6 +1,7 @@
 /**
  * This is a workaround to fix the issue with mocking ESM modules in jest
  * Issue: https://github.com/facebook/jest/issues/13258
+ * also @see https://stackoverflow.com/questions/75519950/how-can-i-avoid-a-weird-workaround-when-using-jest-and-esm-together
  *
  * Original code:
  * @see https://gist.github.com/booya2nd/dcaa1775fd4c06cd79610e3feea6362c#file-mock-esmodule-js

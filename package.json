@@ -66,6 +66,7 @@
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.0",
+    "cli-color": "^2.0.3",
     "commander": "^10.0.0",
     "csurf": "^1.11.0",
     "dataloader": "^2.2.1",

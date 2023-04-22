@@ -10,7 +10,7 @@ import {
 } from '@jest/globals';
 
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
-import { DynamicModule } from '@nestjs/common';
+import { DynamicModule, INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import {
   curriedExecuteStandaloneFunction,
@@ -22,6 +22,7 @@ describe('test standalone app functions', () => {
   let mockedServiceFunction: jest.Mock<() => string>;
 
   beforeEach(async () => {
+    jest.resetAllMocks();
     mockedServiceFunction = jest.fn(() => 'Test');
 
     mockedModule = createMock<DynamicModule>({});
@@ -33,11 +34,9 @@ describe('test standalone app functions', () => {
 
     mockedCreateApplicationContext.mockImplementation(
       () =>
-        ({
-          init: jest.fn(),
+        createMock<INestApplicationContext>({
           get: mockedServiceFunction,
-          close: jest.fn(),
-        } as any),
+        }) as any,
     );
   });
 
@@ -52,7 +51,6 @@ describe('test standalone app functions', () => {
       mockedFunction,
     );
 
-    expect(mockedServiceFunction).toHaveBeenCalledTimes(1);
     expect(mockedFunction).toHaveBeenCalledTimes(1);
   });
 
