@@ -64,6 +64,13 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
       globalsOptions: options?.globalsOptions,
     });
 
+    return this.initSetup(options);
+  }
+
+  async initSetup(options?: {
+    globalsOptions?: IGlobalOptions;
+    fastifyInstance?: FastifyInstance;
+  }) {
     await this.applyBootstrapGlobals(options?.globalsOptions);
 
     await this.getApp().init();
@@ -99,8 +106,6 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
       throw new Error('Process aborted');
     }
 
-    useContainer(app.select(this.module), { fallbackOnErrors: true });
-
     return this.setApp(app);
   }
 
@@ -115,8 +120,11 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   async applyBootstrapGlobals(options?: IGlobalOptions) {
     await super.applyBootstrapGlobals(options);
 
+    useContainer(this.getApp().select(this.module), { fallbackOnErrors: true });
+
     this.getApp().useGlobalPipes(
       new ValidationPipe({
+        transform: true,
         validateCustomDecorators: true,
         exceptionFactory: (errors) => {
           const errorMessages: { [key: string]: string } = {};
