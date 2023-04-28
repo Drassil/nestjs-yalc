@@ -178,7 +178,11 @@ const defaultConf = (
       ],
     },
     moduleNameMapper: {
-      '^(\\.{1,2}/.*)\\.js$': '$1', // for ESM support
+      // this fixes the issue with wrong line numbers in stack traces,
+      /** @see https://github.com/kulshekhar/ts-jest/issues/727 */
+      'source-map-support/register': 'identity-obj-proxy',
+      // for ESM support
+      '^(\\.{1,2}/.*)\\.js$': '$1',
       // ...pathsToModuleNameMapper(compilerOptions.paths, {
       //   prefix: dirname,
       // }),
