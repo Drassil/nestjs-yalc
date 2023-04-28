@@ -4,6 +4,7 @@ import {
   DynamicModule,
   ExceptionFilter,
   ValidationPipe,
+  ValidationPipeOptions
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
@@ -27,6 +28,7 @@ export interface IGlobalOptions {
   filters?: ExceptionFilter[];
   abortOnError?: boolean;
   enableSwagger?: boolean;
+  validationPipeOptions?: ValidationPipeOptions;
 }
 
 export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
@@ -137,6 +139,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
           });
           return new BadRequestException(errorMessages);
         },
+        ...(options?.validationPipeOptions ?? {}),
       }),
     );
 
