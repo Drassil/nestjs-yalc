@@ -1,4 +1,4 @@
-import { IsInt, IsString, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { ClassType } from 'nestjs-yalc/globals.d.js';
 import {
   entityFieldsEnumFactory,
@@ -16,10 +16,12 @@ import { IPageDataCrudGen } from '../crud-gen.interface.js';
 export class CGQueryDto<T = any> implements ICrudGenBaseParams<T> {
   @IsInt()
   @Min(1)
+  @IsOptional()
   startRow?: number;
 
   @IsInt()
   @Min(1)
+  @IsOptional()
   endRow?: number;
 }
 
@@ -108,7 +110,13 @@ export class PageData implements IPageDataCrudGen {
 }
 
 export class CGRestQueryArgs<T = any> implements ICrudGenSimpleParams<T> {
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
   startRow?: number = RowDefaultValues.START_ROW;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
   endRow?: number = RowDefaultValues.END_ROW;
   /**
    * @todo implements other properties (where, select, sort, etc.)
