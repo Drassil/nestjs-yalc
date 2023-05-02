@@ -4,7 +4,7 @@ import {
   DynamicModule,
   ExceptionFilter,
   ValidationPipe,
-  ValidationPipeOptions
+  ValidationPipeOptions,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
@@ -127,15 +127,12 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
     this.getApp().useGlobalPipes(
       new ValidationPipe({
         transform: true,
+        transformOptions: { enableImplicitConversion: true },
         validateCustomDecorators: true,
         exceptionFactory: (errors) => {
-          const errorMessages: { [key: string]: string } = {};
+          const errorMessages: { [key: string]: any } = {};
           errors.forEach((error) => {
-            errorMessages[error.property] = Object.values(
-              error.constraints ?? {},
-            )
-              .join('. ')
-              .trim();
+            errorMessages[error.property] = error;
           });
           return new BadRequestException(errorMessages);
         },

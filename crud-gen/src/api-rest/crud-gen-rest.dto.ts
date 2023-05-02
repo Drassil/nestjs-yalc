@@ -1,4 +1,4 @@
-import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { ClassType } from 'nestjs-yalc/globals.d.js';
 import {
   entityFieldsEnumFactory,
@@ -111,11 +111,11 @@ export class PageData implements IPageDataCrudGen {
 
 export class CGRestQueryArgs<T = any> implements ICrudGenSimpleParams<T> {
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(0)
   startRow?: number = RowDefaultValues.START_ROW;
   @IsOptional()
-  @IsNumber()
+  @IsInt()
   @Min(0)
   endRow?: number = RowDefaultValues.END_ROW;
   /**
