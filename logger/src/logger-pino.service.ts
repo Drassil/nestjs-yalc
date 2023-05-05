@@ -16,33 +16,28 @@ export class PinoLogger extends LoggerAbstractService {
     super(context, logLevels, {
       log: (message, options) =>
         logger.info(
-          { context: options?.context ?? context },
+          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
           `${message}`,
-          maskDataInObject(options?.data, options?.masks),
         ),
       error: (message, trace, options) =>
         logger.error(
-          { context: options?.context ?? context },
+          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
           `${message} ${trace}`,
-          maskDataInObject(options?.data, options?.masks),
         ),
       debug: (message, options) =>
         logger.debug(
-          { context: options?.context ?? context },
+          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
           `${message}`,
-          maskDataInObject(options?.data, options?.masks),
         ),
       warn: (message, options) =>
         logger.warn(
-          { context: options?.context ?? context },
+          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
           `${message}`,
-          maskDataInObject(options?.data, options?.masks),
         ),
       verbose: (message, options) =>
         logger.trace(
-          { context: options?.context ?? context },
+          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
           `${message}`,
-          maskDataInObject(options?.data, options?.masks),
         ),
     });
 
