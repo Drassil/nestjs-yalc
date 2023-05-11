@@ -1,6 +1,6 @@
 remote_theme: Drassil/git-wiki-theme@master
 # used to update the remote theme when needed
-doc_version: 1.0.1
+doc_version: 1.0.2
 # (string) Title of your wiki
 title: 'NestJS-YALC'
 disable_edit: false
