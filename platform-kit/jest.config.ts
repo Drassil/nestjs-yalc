@@ -3,24 +3,13 @@ import {
   IOptions,
   IProjectInfo,
   jestConfGenerator,
+  nestjsCliJsonToProjectList,
 } from '@nestjs-yalc/jest-config';
+import nestCliJson from './nest-cli.json';
 
 console.log('=================== LOADING JEST OPTIONS ================');
 
-import nestCliJson from './nest-cli.json';
-
 const appProjectsSettings: { [key: string]: IAppProjSetting } = {};
-
-const projectList: { [key: string]: IProjectInfo } = {};
-
-Object.keys(nestCliJson.projects).map((k: any) => {
-  const p = nestCliJson.projects[k];
-  projectList[k] = {
-    path: p.root,
-    sourcePath: p.sourceRoot,
-    type: p.type,
-  };
-});
 
 const options: IOptions = {
   defaultConfOptions: {
@@ -39,11 +28,9 @@ const options: IOptions = {
 
 const conf = jestConfGenerator(
   __dirname,
-  projectList,
+  nestjsCliJsonToProjectList(nestCliJson),
   appProjectsSettings,
   options,
 );
-
-conf.injectGlobals = false;
 
 export default conf;

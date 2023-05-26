@@ -39,7 +39,7 @@
     "logger",
     "types",
     "toolkit-config",
-    "starter-kit",
+    "platform-kit",
     "utils"
   ],
   "peerDependencies": {
