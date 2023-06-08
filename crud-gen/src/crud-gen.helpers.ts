@@ -163,7 +163,7 @@ export const forceFilterWorker = (
 };
 
 export function whereObjectToSqlString<Entity extends ObjectLiteral>(
-  queryBuilder: SelectQueryBuilder<Entity> | undefined,
+  queryBuilder: SelectQueryBuilder<Entity>,
   where: IWhereCondition,
   alias?: string,
   fieldMap?: {
@@ -176,6 +176,17 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
   const operator = (where.operator ?? Operators.AND).toUpperCase(); // first level is always AND
 
   if (!where.filters) return sql;
+
+  const connection = queryBuilder.connection;
+
+  const escapeFn = connection.driver.escape;
+  const fixParam = (param: string) => {
+    const metadata = queryBuilder.expressionMap.mainAlias!.metadata;
+    const databaseColumn = metadata.columns.find(
+      (column) => column.propertyName === param,
+    );
+    return escapeFn(databaseColumn?.databaseName ?? param);
+  };
 
   for (const key of Object.keys(where.filters)) {
     const operation: IWhereConditionType = where.filters[key] ?? {};
@@ -192,12 +203,20 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
         sql += `(${QueryBuilderHelper.computeFindOperatorExpression(
           queryBuilder,
           operation.filter_1,
-          QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
+          QueryBuilderHelper.addAlias(
+            fixParam(key.toString()),
+            alias && escapeFn(alias),
+            fieldMap,
+          ),
           operation.filter_1.value,
         )} ${operation.operator.toUpperCase()} ${QueryBuilderHelper.computeFindOperatorExpression(
           queryBuilder,
           operation.filter_2,
-          QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
+          QueryBuilderHelper.addAlias(
+            fixParam(key.toString()),
+            alias && escapeFn(alias),
+            fieldMap,
+          ),
           operation.filter_2.value,
         )}) ${operator} `;
       } else {
@@ -211,15 +230,19 @@ export function whereObjectToSqlString<Entity extends ObjectLiteral>(
       sql += `${QueryBuilderHelper.computeFindOperatorExpression(
         queryBuilder,
         operation,
-        QueryBuilderHelper.addAlias(key.toString(), alias, fieldMap),
+        QueryBuilderHelper.addAlias(
+          fixParam(key.toString()),
+          alias && escapeFn(alias),
+          fieldMap,
+        ),
         operation.value,
       )} ${operator} `;
     } else if (typeof operation === 'string') {
       sql += `${QueryBuilderHelper.addAlias(
-        key.toString(),
-        alias,
+        fixParam(key.toString()),
+        alias && escapeFn(alias),
         fieldMap,
-      )} ${operation} ${operator}`;
+      )} ${operation} ${operator} `;
     } else {
       throw new CrudGenConditionNotSupportedError(JSON.stringify(operation));
     }
@@ -663,9 +686,19 @@ export function formatRawSelection(
   selection: string,
   fieldName: string,
   /* istanbul ignore next */
-  prefix = '',
-  onlyAlias = false,
+  options: {
+    prefix?: string;
+    onlyAlias?: boolean;
+    escapeCharacter?: string;
+  } = {},
 ): string {
+  const { prefix, onlyAlias, escapeCharacter } = {
+    prefix: '',
+    onlyAlias: false,
+    escapeCharacter: '',
+    ...options,
+  };
+
   let aliasPrefix = '';
   let _prefix = '';
   if (prefix) {
@@ -677,7 +710,7 @@ export function formatRawSelection(
 
   if (onlyAlias) return alias;
 
-  selection = `${_prefix}${selection} AS \`${alias}\``;
+  selection = `${_prefix}${selection} AS ${escapeCharacter}${alias}${escapeCharacter}`;
 
   return selection;
 }

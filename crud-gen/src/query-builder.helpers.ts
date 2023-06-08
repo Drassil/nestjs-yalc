@@ -33,8 +33,10 @@ SelectQueryBuilder.prototype.getMany = async function () {
         const itemKey = formatRawSelection(
           getDestinationFieldName(field.dst),
           propertyKey,
-          this.alias,
-          true,
+          {
+            prefix: this.connection.driver.escape(this.alias),
+            onlyAlias: true,
+          },
         );
 
         entity[propertyKey] = item[itemKey];
@@ -64,8 +66,10 @@ SelectQueryBuilder.prototype.getOne = async function () {
       const itemKey = formatRawSelection(
         getDestinationFieldName(field.dst),
         propertyKey,
-        this.alias,
-        true,
+        {
+          prefix: this.connection.driver.escape(this.alias),
+          onlyAlias: true,
+        },
       );
       entities[0][propertyKey] = raw[0][itemKey];
     }
