@@ -79,8 +79,12 @@ export function buildCrudGenRestSimpleMapperInterceptor<
   dto: new (data: TInputObject) => TOutputObject,
   withPagination: boolean = false,
 ) {
-  return buildSimpleMapperInterceptor<TInputObject, TOutputObject>(
-    dto,
-    withPagination ? (data) => data[0] : (data) => data, // with pagination, data is [data, count]
-  );
+  return buildSimpleMapperInterceptor<TInputObject, TOutputObject>(dto, {
+    transformer: (data) => {
+      return withPagination ? data[0] : data; // with pagination, data is [data, count]
+    },
+    callback: (inputData, data) => {
+      return withPagination ? [data, inputData[1]] : data; // [data, count] or data
+    },
+  });
 }
