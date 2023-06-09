@@ -12,6 +12,7 @@ import {
   ISortModelStrict,
 } from '../api-graphql/crud-gen-gql.interface.js';
 import { IPageDataCrudGen } from '../crud-gen.interface.js';
+import { Exclude, Expose } from 'class-transformer';
 
 export class CGQueryDto<T = any> implements ICrudGenBaseParams<T> {
   @IsInt()
@@ -101,12 +102,30 @@ export function crudGenRestParamsNoPaginationFactory(
   return typeMap.get(CrudGenParams);
 }
 
+@Exclude()
 export class PageData implements IPageDataCrudGen {
+  @Expose()
   public count!: number;
 
+  @Expose()
   public startRow!: number;
 
+  @Expose()
   public endRow!: number;
+}
+
+@Exclude()
+export class PaginatedResultDto<T> {
+  @Expose()
+  list: T[];
+
+  @Expose()
+  pageData: PageData;
+
+  constructor(list: T[], pageData: PageData) {
+    this.list = list;
+    this.pageData = pageData;
+  }
 }
 
 export class CGRestQueryArgs<T = any> implements ICrudGenSimpleParams<T> {

@@ -6,10 +6,16 @@ import {
 } from '@nestjs/common';
 import { map } from 'rxjs/operators';
 import { IFieldMapper } from '@nestjs-yalc/interfaces/maps.interface.js';
-import { CGQueryDto } from './crud-gen-rest.dto.js';
+import {
+  CGQueryDto,
+  PageData,
+  PaginatedResultDto,
+} from './crud-gen-rest.dto.js';
 import { objectMapperInterceptor } from '@nestjs-yalc/utils/object-mapper.interceptor.js';
 import { ObjectMapperType } from '@nestjs-yalc/utils/object-mapper.helper.js';
 import { buildSimpleMapperInterceptor } from '@nestjs-yalc/utils/simple-mapper.interceptor.js';
+import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { Observable } from 'rxjs';
 
 export function crudGenRestPaginationInterceptorWorker<T>(
   startRow?: number,
@@ -32,7 +38,7 @@ export function crudGenRestPaginationInterceptorWorker<T>(
  *     count: number,
  *     startRow: number,
  *     endRow: number,
- * }
+ *    }
  */
 @Injectable()
 export class CrudGenRestPaginationInterceptor<T = IFieldMapper>
@@ -87,4 +93,71 @@ export function buildCrudGenRestSimpleMapperInterceptor<
       return withPagination ? [data, inputData[1]] : data; // [data, count] or data
     },
   });
+}
+
+export function buildPaginatedResultDto<T>(
+  dto: new (...args: any[]) => T,
+): new (data: T[], pageData: PageData) => PaginatedResultDto<T> {
+  class NewPaginatedResultDto extends PaginatedResultDto<T> {
+    constructor(data: T[], pageData: PageData) {
+      super(
+        data.map((item) => new dto(item)),
+        pageData,
+      );
+    }
+  }
+  return NewPaginatedResultDto;
+}
+
+/**
+ * Can be used in combination with the ClassSerializerInterceptor
+ */
+export function buildPaginatedDTOInterceptor<T>(
+  dto: new (...args: any[]) => T,
+): ClassType<NestInterceptor> {
+  @Injectable()
+  class PaginateDTOInterceptor implements NestInterceptor {
+    intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+      const http = context.switchToHttp();
+      const request = http.getRequest();
+
+      const params: CGQueryDto = request.query ?? {};
+
+      const { startRow, endRow } = params;
+
+      return next.handle().pipe(
+        map(([data, count]) => {
+          const PaginatedDto = buildPaginatedResultDto(dto);
+          const res = new PaginatedDto(data, {
+            count,
+            startRow: startRow ?? 0,
+            endRow: endRow ?? count,
+          });
+          return res;
+        }),
+      );
+    }
+  }
+
+  return PaginateDTOInterceptor;
+}
+
+/**
+ * Can be used in combination with the ClassSerializerInterceptor
+ */
+export function buildDTOInterceptor<T>(
+  dto: new (...args: any[]) => T,
+): ClassType<NestInterceptor> {
+  @Injectable()
+  class DtoInterceptor implements NestInterceptor {
+    intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
+      return next.handle().pipe(
+        map((data) => {
+          return new dto(data);
+        }),
+      );
+    }
+  }
+
+  return DtoInterceptor;
 }
