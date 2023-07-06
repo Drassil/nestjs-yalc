@@ -1,6 +1,6 @@
 # DefaultError Class
 
-This file provides a TypeScript module with an enhanced Error class that extends the built-in Error functionality with features like a system message that is not returned back to the user,
+This library provides an enhanced Error class that extends the built-in Error functionality with features like a system message that is not returned back to the user,
 logging of the error at the moment it's thrown, event triggering for application reactivity during error occurrences,
 and defining a data object that can be logged with the message and masked.
 This mixin approach retains the original error class, allowing compatibility with NestJS exception filters and differentiation of errors by type.
@@ -27,7 +27,8 @@ The module exports two interfaces:
 
 - `newDefaultError`: A convenience function that creates a new `DefaultError` class instance extending the provided base class. It takes three parameters: a base class, options, and additional arguments.
 - `DefaultErrorMixin`: A function that returns a class extending from the provided base class (or the `Error` class if no base class is provided), with the `IAbstractDefaultError` interface. This class can accept options and parameters in its constructor, handles logging, and emits an event on error occurrence.
-  Types
+
+## Types
 - `DefaultErrorMixin`: A type alias for the `Mixin` of the `DefaultErrorMixin` function.
 
 ## Classes
