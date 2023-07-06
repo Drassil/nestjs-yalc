@@ -19,6 +19,8 @@ Nest-yalc stands for Nestjs - Yet Another Library Collection
 
 - [How to use the Api-Strategy library](./api-strategy.md)
 
+- [How to use the DefaultError library](./errors-default-error.md)
+
 ## NPM package.json and Workspace
 
 To handle scripts and dependencies between all the libraries of this collection we use a root `package.json`.

@@ -1,15 +1,6 @@
-import {
-  expect,
-  jest,
-  describe,
-  it,
-  beforeEach,
-  beforeAll,
-  afterAll,
-  afterEach,
-} from '@jest/globals';
+import { expect, jest, describe, it, beforeEach } from '@jest/globals';
 
-import { createMock } from '@golevelup/ts-jest';
+import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { CreateEntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
 import { MissingArgumentsError } from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
 import {
@@ -26,10 +17,13 @@ jest.mock('@nestjs/graphql');
 
 describe('Http exceptions filter', () => {
   let filter: HttpExceptionFilter;
-  const loggerServiceMock = createMock<LoggerService>();
-  const mockArgumentsHost = createMock<ArgumentsHost>();
+  let loggerServiceMock: DeepMocked<LoggerService>;
+  let mockArgumentsHost: DeepMocked<ArgumentsHost>;
 
-  beforeAll(() => {
+  beforeEach(() => {
+    jest.resetAllMocks();
+    loggerServiceMock = createMock<LoggerService>();
+    mockArgumentsHost = createMock<ArgumentsHost>();
     filter = new HttpExceptionFilter(loggerServiceMock);
   });
 
@@ -89,6 +83,7 @@ describe('Http exceptions filter', () => {
       ExceptionContextEnum.HTTP,
     );
   });
+
   it('should catch and log GqlError error', () => {
     const exception: GqlError = new GqlError('message', 'systemMessage');
     filter.catch(exception, mockArgumentsHost);
