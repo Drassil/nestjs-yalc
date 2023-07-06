@@ -64,6 +64,8 @@ export function switchTap<T, O extends ObservableInput<any>>(
       switchMap((value, index) =>
         combineLatest([of(value), project(value, index)]),
       ),
-      map(([intialValue]) => intialValue),
+      map(([intialValue, projectedValue]) =>
+        projectedValue !== undefined ? projectedValue : intialValue,
+      ),
     );
 }

@@ -20,7 +20,23 @@ describe('test rxjs helper', () => {
       }),
     );
 
-    await expect(rxjs.lastValueFrom(subject)).resolves.toBeDefined();
+    await expect(rxjs.lastValueFrom(subject)).resolves.toEqual(1);
+  });
+
+  it('should execute switchTap without return any values', async () => {
+    const subject = rxjs
+      .of(1)
+      .pipe(rxjsHelper.switchTap(async (value: any, index: number) => {}));
+
+    await expect(rxjs.lastValueFrom(subject)).resolves.toEqual(1);
+  });
+
+  it('should execute switchTap returning a null value', async () => {
+    const subject = rxjs
+      .of(1)
+      .pipe(rxjsHelper.switchTap(async (value: any, index: number) => null));
+
+    await expect(rxjs.lastValueFrom(subject)).resolves.toEqual(null);
   });
 
   it('should execute wrapIntoObservable', () => {
