@@ -48,16 +48,17 @@ const options: IDefaultErrorOptions = {
 };
 ```
 
-### 1. DefaultError class
+### Scenario #1 DefaultError class - When you just need to throw a simple Error, but with steroid
 
 Using DefaultError class, this will throw an error based on the native Error class
-but with the additional features of the DefaultError class
+but with the additional features of the DefaultError class. You can also consider to extend this
+class to create your custom one, if you want your class to use the `Error` class as a base (child of Error).
 
 ```typescript
 throw new DefaultError('Something went wrong', options);
 ```
 
-### 2. newDefaultError function
+### Scenario #2. newDefaultError function - When you want to throw a different error type but wrapped by the DefaultError functionalities
 
 This allows us to choose the base class for the error, in this case UnauthorizedException
 
@@ -65,7 +66,7 @@ This allows us to choose the base class for the error, in this case Unauthorized
 throw newDefaultError(UnauthorizedException, options, 'Login failed');
 ```
 
-### 3. DefaultErrorMixin function
+### Scenario #3. DefaultErrorMixin function - When you want full control over your implementation
 
 This allows us to create a custom error class that is a mixin of the DefaultError class
 and extends the UnauthorizedException class. You can use this class to implement your own logic
