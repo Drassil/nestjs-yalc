@@ -2,7 +2,7 @@ import fastRedact from 'fast-redact';
 import lodash from 'lodash';
 const { isEmpty } = lodash;
 
-export function maskDataInObject(data?: any, paths?: string[]) {
+export function maskDataInObject(data?: any, paths?: string[], trace?: any) {
   if (!paths || !data || isEmpty(paths) || isEmpty(data)) {
     return data;
   }
@@ -11,5 +11,5 @@ export function maskDataInObject(data?: any, paths?: string[]) {
     paths,
   });
 
-  return JSON.parse(redact(data));
+  return JSON.parse(redact({ ...data, trace }));
 }

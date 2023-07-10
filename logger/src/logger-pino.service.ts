@@ -16,28 +16,43 @@ export class PinoLogger extends LoggerAbstractService {
     super(context, logLevels, {
       log: (message, options) =>
         logger.info(
-          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
-          `${message}`,
+          {
+            context: options?.context ?? context,
+            data: maskDataInObject(options?.data, options?.masks),
+          },
+          `${message} ${options?.trace}`,
         ),
       error: (message, trace, options) =>
         logger.error(
-          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
+          {
+            context: options?.context ?? context,
+            data: maskDataInObject(options?.data, options?.masks),
+          },
           `${message} ${trace}`,
         ),
       debug: (message, options) =>
         logger.debug(
-          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
-          `${message}`,
+          {
+            context: options?.context ?? context,
+            data: maskDataInObject(options?.data, options?.masks),
+          },
+          `${message} ${options?.trace}`,
         ),
       warn: (message, options) =>
         logger.warn(
-          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
-          `${message}`,
+          {
+            context: options?.context ?? context,
+            data: maskDataInObject(options?.data, options?.masks),
+          },
+          `${message} ${options?.trace}`,
         ),
       verbose: (message, options) =>
         logger.trace(
-          { context: options?.context ?? context, data: maskDataInObject(options?.data, options?.masks) },
-          `${message}`,
+          {
+            context: options?.context ?? context,
+            data: maskDataInObject(options?.data, options?.masks),
+          },
+          `${message} ${options?.trace}`,
         ),
     });
 

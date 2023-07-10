@@ -10,7 +10,7 @@ export class ConsoleLogger extends LoggerAbstractService {
         console.log(
           `[${options?.context ?? context}]`,
           message,
-          maskDataInObject(options?.data, options?.masks),
+          maskDataInObject(options?.data, options?.masks, options?.trace),
           ...rest,
         ),
       error: (message, trace, options, ...rest) =>
@@ -25,21 +25,21 @@ export class ConsoleLogger extends LoggerAbstractService {
         console.debug(
           `[${options?.context ?? context}]`,
           message,
-          maskDataInObject(options?.data, options?.masks),
+          maskDataInObject(options?.data, options?.masks, options?.trace),
           ...rest,
         ),
       warn: (message, options, ...rest) =>
         console.warn(
           `[${options?.context ?? context}]`,
           message,
-          maskDataInObject(options?.data, options?.masks),
+          maskDataInObject(options?.data, options?.masks, options?.trace),
           ...rest,
         ),
       verbose: (message, options, ...rest) =>
         console.info(
           `[${options?.context ?? context}]`,
           message,
-          maskDataInObject(options?.data, options?.masks),
+          maskDataInObject(options?.data, options?.masks, options?.trace),
           ...rest,
         ),
     });

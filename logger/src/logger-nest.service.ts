@@ -6,7 +6,11 @@ export class ImprovedNestLogger extends ConsoleLogger {
   log(message: any): void;
   log(message: any, ...optionalParams: any[]): void;
   log(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
-    const masked = maskDataInObject(options?.data, options?.masks);
+    const masked = maskDataInObject(
+      options?.data,
+      options?.masks,
+      options?.trace,
+    );
     super.log(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
       options?.context ?? this.context,
@@ -38,7 +42,11 @@ export class ImprovedNestLogger extends ConsoleLogger {
     options?: LogMethodOptions,
     ...rest: unknown[]
   ): void {
-    const masked = maskDataInObject(options?.data, options?.masks);
+    const masked = maskDataInObject(
+      options?.data,
+      options?.masks,
+      options?.trace,
+    );
     super.debug(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
       options?.context ?? this.context,
@@ -53,7 +61,11 @@ export class ImprovedNestLogger extends ConsoleLogger {
     options?: LogMethodOptions,
     ...rest: unknown[]
   ): void {
-    const masked = maskDataInObject(options?.data, options?.masks);
+    const masked = maskDataInObject(
+      options?.data,
+      options?.masks,
+      options?.trace,
+    );
     super.verbose(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
       options?.context ?? this.context,
@@ -64,7 +76,11 @@ export class ImprovedNestLogger extends ConsoleLogger {
   warn(message: any): void;
   warn(message: any, ...optionalParams: any[]): void;
   warn(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
-    const masked = maskDataInObject(options?.data, options?.masks);
+    const masked = maskDataInObject(
+      options?.data,
+      options?.masks,
+      options?.trace,
+    );
     super.warn(
       message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
       options?.context ?? this.context,

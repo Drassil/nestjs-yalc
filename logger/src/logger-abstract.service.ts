@@ -5,6 +5,7 @@ export interface LogMethodOptions {
   data?: any;
   masks?: string[];
   context?: string;
+  trace?: string;
 }
 
 export type LogMethod = (message: any, options?: LogMethodOptions) => void;
