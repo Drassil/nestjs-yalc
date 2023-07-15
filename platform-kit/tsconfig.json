@@ -1,6 +1,9 @@
 {
   "extends": "@nestjs-yalc/toolkit-config/src/tsconfig.json",
-  "include": ["apps/**/src/**/*.ts", "libs/**/src/**/*.ts"],
+  "include": [
+    "apps/**/src/**/*.ts",
+    "libs/**/src/**/*.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",
@@ -9,5 +12,9 @@
     "libs/**/*.spec.ts",
     "apps/**/*.test.ts",
     "libs/**/*.test.ts"
-  ]
+  ],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {}
+  }
 }
