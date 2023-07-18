@@ -29,6 +29,7 @@
     "data-loader",
     "database",
     "errors",
+    "event-manager",
     "field-middleware",
     "graphql",
     "interfaces",

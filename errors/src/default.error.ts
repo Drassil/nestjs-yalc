@@ -73,8 +73,9 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
         };
       }
 
-      if (options?.data)
-        this.data = maskDataInObject(options.data, options?.masks);
+      this.data = options?.masks
+        ? maskDataInObject(options.data, options?.masks)
+        : options?.data;
 
       if (options?.systemMessage) this.systemMessage = options?.systemMessage;
 
