@@ -29,6 +29,14 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
     protected options?: IEventServiceOptions<TFormatter>,
   ) {}
 
+  get logger(): ImprovedLoggerService {
+    return this.loggerService;
+  }
+
+  get emitter(): EventEmitter2 {
+    return this.eventEmitter;
+  }
+
   /**
    * Alias for log
    */
@@ -36,18 +44,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async exception(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: IEventWithoutEventNameOptions<TFormatter>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
   public async exception(
     message: string,
-    options: IEventOptions<TFormatter>,
+    options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
   public async exception(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
@@ -61,18 +69,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async log(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: IEventWithoutEventNameOptions<TFormatter>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
   public async log(
     message: string,
-    options: IEventOptions<TFormatter>,
+    options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
   public async log(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
@@ -83,18 +91,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async error(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
   ): Promise<any>;
 
   public async error(
     message: string,
-    options: Omit<IEventOptions<TFormatter>, 'error'>,
+    options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): Promise<any>;
 
   public async error(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | Omit<IEventOptions<TFormatter>, 'error'>,
@@ -105,18 +113,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async warn(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: IEventWithoutEventNameOptions<TFormatter>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
   public async warn(
     message: string,
-    options: IEventOptions<TFormatter>,
+    options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
   public async warn(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
@@ -127,18 +135,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async debug(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: IEventWithoutEventNameOptions<TFormatter>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
   public async debug(
     message: string,
-    options: IEventOptions<TFormatter>,
+    options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
   public async debug(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
@@ -149,18 +157,18 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
 
   public async verbose(
     message: string,
-    eventName: Parameters<TFormatter> | string,
-    options: IEventWithoutEventNameOptions<TFormatter>,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
   public async verbose(
     message: string,
-    options: IEventOptions<TFormatter>,
+    options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
   public async verbose(
     message: string,
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
@@ -173,7 +181,7 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
   }
 
   protected buildOptions(
-    eventNameOrOptions:
+    eventNameOrOptions?:
       | string
       | Parameters<TFormatter>
       | IEventOptions<TFormatter>,
@@ -193,16 +201,15 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
     }
 
     let event: IEventOptions<TFormatter>['event'];
-    if (typeof _options.event === 'string') {
+    if (typeof _options?.event === 'string') {
       event = { name: _options.event };
-    } else if (_options.event !== undefined) {
+    } else if (_options?.event !== undefined) {
       event =
         _options.event === false
           ? false
           : {
-              ..._options.event,
-              nameFormatter:
-                _options.event?.nameFormatter ?? this.options?.formatter,
+              ..._options?.event,
+              formatter: _options?.event?.formatter ?? this.options?.formatter,
             };
     }
 
@@ -210,10 +217,10 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
       ..._options,
       event,
       logger:
-        _options.logger === false
+        _options?.logger === false
           ? false
           : {
-              ..._options.logger,
+              ..._options?.logger,
               instance: this.loggerService,
             },
     };

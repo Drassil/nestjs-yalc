@@ -25,7 +25,7 @@ interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
   emitter?: EventEmitter2;
-  nameFormatter?: TFormatter;
+  formatter?: TFormatter;
 }
 
 export interface IEventOptions<
@@ -156,7 +156,7 @@ async function event<
     } else {
       eventEmitter = event?.emitter ?? getEventEmitter();
       name = event?.name;
-      formatter = event?.nameFormatter;
+      formatter = event?.formatter;
     }
 
     result = await emitEvent<TFormatter>(eventEmitter, name, dataPayload, {
