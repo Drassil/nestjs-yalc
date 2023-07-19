@@ -11,7 +11,7 @@ export interface IEventEmitterOptions<TFormatter extends EventNameFormatter> {
 
 export async function emitEvent<TFormatter extends EventNameFormatter>(
   eventEmitter: EventEmitter2,
-  name: Parameters<TFormatter>,
+  name: Parameters<TFormatter> | string,
   payload: any,
   options?: IEventEmitterOptions<TFormatter>,
 ) {
@@ -19,7 +19,8 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
     ? maskDataInObject(payload, options.mask)
     : payload;
 
-  const _name = options?.formatter?.(...name) ?? name.join();
+  const _name =
+    options?.formatter?.(...name) ?? (Array.isArray(name) ? name.join() : name);
 
   return await (options?.await ? eventEmitter.emitAsync : eventEmitter.emit)(
     _name,
@@ -27,11 +28,11 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
   );
 }
 
-export function emitFormattedEvent<TFormatter extends EventNameFormatter>(
+export function emitFormattedEvent(
   eventEmitter: EventEmitter2,
   name: string,
   payload: any,
-  options?: IEventEmitterOptions<TFormatter>,
+  options?: IEventEmitterOptions<SimpleFormatter>,
 ) {
   return emitEvent(eventEmitter, [name], payload, {
     ...options,
@@ -43,16 +44,16 @@ export type VersionedDomainActionFormatter = (
   version: string,
   context: string,
   action: string,
-  when: string,
+  when?: string,
 ) => string;
 
 export const versionedDomainActionFormatter: VersionedDomainActionFormatter = (
   version: string,
   context: string,
   action: string,
-  when: string,
+  when?: string,
 ) => {
-  return `${version}.${context}.${action}.${when}`;
+  return `${version}.${context}.${action}.${when ?? 'onProcess'}`;
 };
 
 export type SimpleFormatter = (action: string) => string;

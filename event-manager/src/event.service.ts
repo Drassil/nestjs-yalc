@@ -6,6 +6,8 @@ import {
   eventVerbose,
   eventWarn,
   IEventOptions,
+  IEventWithoutEventNameOptions,
+  eventException,
 } from './event.js';
 import type { ImprovedLoggerService } from '../../logger/src/logger-abstract.service.js';
 import { APP_LOGGER_SERVICE } from '../../app/src/def.const.js';
@@ -27,56 +29,191 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
     protected options?: IEventServiceOptions<TFormatter>,
   ) {}
 
-  public async emit(options: IEventOptions<TFormatter>) {
-    return this.log(options);
-  }
+  /**
+   * Alias for log
+   */
+  emit = this.log;
 
-  public async log(options: IEventOptions<TFormatter>) {
-    return eventLog(this.buildOptions({ ...this.options, ...options }));
-  }
+  public async exception(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
 
-  public async error(options: IEventOptions<TFormatter>) {
-    return eventError(this.buildOptions({ ...this.options, ...options }));
-  }
-
-  public async warn(options: IEventOptions<TFormatter>) {
-    return eventWarn(this.buildOptions({ ...this.options, ...options }));
-  }
-
-  public async debug(options: IEventOptions<TFormatter>) {
-    return eventDebug(this.buildOptions({ ...this.options, ...options }));
-  }
-
-  public async verbose(options: IEventOptions<TFormatter>) {
-    return eventVerbose(this.buildOptions({ ...this.options, ...options }));
-  }
-
-  private buildOptions(
+  public async exception(
+    message: string,
     options: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async exception(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventException(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  public async log(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async log(
+    message: string,
+    options: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async log(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventLog(message, this.buildOptions(eventNameOrOptions, options));
+  }
+
+  public async error(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
+  ): Promise<any>;
+
+  public async error(
+    message: string,
+    options: Omit<IEventOptions<TFormatter>, 'error'>,
+  ): Promise<any>;
+
+  public async error(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | Omit<IEventOptions<TFormatter>, 'error'>,
+    options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
+  ): Promise<any> {
+    return eventError(message, this.buildOptions(eventNameOrOptions, options));
+  }
+
+  public async warn(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async warn(
+    message: string,
+    options: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async warn(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventWarn(message, this.buildOptions(eventNameOrOptions, options));
+  }
+
+  public async debug(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async debug(
+    message: string,
+    options: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async debug(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventDebug(message, this.buildOptions(eventNameOrOptions, options));
+  }
+
+  public async verbose(
+    message: string,
+    eventName: Parameters<TFormatter> | string,
+    options: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async verbose(
+    message: string,
+    options: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async verbose(
+    message: string,
+    eventNameOrOptions:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventVerbose(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  protected buildOptions(
+    eventNameOrOptions:
+      | string
+      | Parameters<TFormatter>
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
   ): IEventOptions<TFormatter> {
+    let _options;
+    if (
+      typeof eventNameOrOptions === 'string' ||
+      Array.isArray(eventNameOrOptions)
+    ) {
+      _options = {
+        ...options,
+        event: { ...(options?.event ?? {}), name: eventNameOrOptions },
+      };
+    } else {
+      _options = eventNameOrOptions;
+    }
+
     let event: IEventOptions<TFormatter>['event'];
-    if (typeof options.event === 'string') {
-      // TODO: fix this type
-      event = { name: options.event as any };
-    } else if (options.event !== undefined) {
+    if (typeof _options.event === 'string') {
+      event = { name: _options.event };
+    } else if (_options.event !== undefined) {
       event =
-        options.event === false
+        _options.event === false
           ? false
           : {
-              ...options.event,
+              ..._options.event,
               nameFormatter:
-                options.event?.nameFormatter ?? this.options?.formatter,
+                _options.event?.nameFormatter ?? this.options?.formatter,
             };
     }
 
     return {
-      ...options,
+      ..._options,
       event,
       logger:
-        options.logger === false
+        _options.logger === false
           ? false
           : {
-              ...options.logger,
+              ..._options.logger,
               instance: this.loggerService,
             },
     };
