@@ -57,6 +57,12 @@ export const versionedDomainActionFormatter: VersionedDomainActionFormatter = (
   return `${version}.${context}.${action}.${when ?? 'onProcess'}`;
 };
 
+export type SimpleDotFormatter = (...args: string[]) => string;
+
+export const simpleDotFormatter: SimpleDotFormatter = (...args: string[]) => {
+  return args.join('.');
+};
+
 export type SimpleFormatter = (action: string) => string;
 
 export const simpleFormatter: SimpleFormatter = (action: string) => {
