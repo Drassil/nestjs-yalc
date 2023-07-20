@@ -13,6 +13,7 @@ import type { ImprovedLoggerService } from '../../logger/src/logger-abstract.ser
 import { APP_LOGGER_SERVICE } from '../../app/src/def.const.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';
+import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 
 export interface IEventServiceOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -42,25 +43,25 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
    */
   emit = this.log;
 
-  public async exception(
+  public exception(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any>;
+  ): Error | DefaultError | undefined;
 
-  public async exception(
+  public exception(
     message: string,
     options?: IEventOptions<TFormatter>,
-  ): Promise<any>;
+  ): Error | DefaultError | undefined;
 
-  public async exception(
+  public exception(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any> {
+  ): Error | DefaultError | undefined {
     return eventException(
       message,
       this.buildOptions(eventNameOrOptions, options),
@@ -209,6 +210,7 @@ export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
           ? false
           : {
               ..._options?.event,
+              emitter: _options?.event?.emitter ?? this.eventEmitter,
               formatter: _options?.event?.formatter ?? this.options?.formatter,
             };
     }

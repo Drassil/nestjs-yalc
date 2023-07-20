@@ -119,18 +119,19 @@ export class EventModule {
       });
     }
 
+    console.log(isEmitterInstance, options?.eventEmitter);
     if (!isEmitterInstance) {
       imports.push(
         EventEmitterModule.forRoot(options?.eventEmitter as ConstructorOptions),
       );
     } else {
-      providers.push({
-        provide: emitterProviderName,
-        useFactory: (providedOptions: IProviderOptions) => {
-          return providedOptions.emitter ?? options?.eventEmitter;
-        },
-        inject: [OPTION_PROVIDER],
-      });
+      // providers.push({
+      //   provide: emitterProviderName,
+      //   useFactory: (providedOptions: IProviderOptions) => {
+      //     return providedOptions.emitter ?? options?.eventEmitter;
+      //   },
+      //   inject: [OPTION_PROVIDER],
+      // });
     }
 
     if (optionProvider) {

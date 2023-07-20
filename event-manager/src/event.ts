@@ -26,6 +26,7 @@ interface IEventEmitterOptions<
 > {
   emitter?: EventEmitter2;
   formatter?: TFormatter;
+  await?: boolean;
 }
 
 export interface IEventOptions<
@@ -54,7 +55,7 @@ export interface IEventOptions<
 export interface IEventWithoutEventNameOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > extends Omit<IEventOptions<TFormatter>, 'event'> {
-  event: IEventEmitterOptions<TFormatter> | false;
+  event?: IEventEmitterOptions<TFormatter> | false;
 }
 
 function isEventOptionWithName<
@@ -90,28 +91,31 @@ type ReturnType<T> = T extends { error: false }
   ? boolean | any[] | undefined
   : Error | DefaultError | undefined;
 
-async function event<
+function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TOption extends IEventWithoutEventNameOptions<TFormatter> = IEventWithoutEventNameOptions<TFormatter>,
 >(
   message: string,
   eventName: string,
   options: TOption,
-): Promise<ReturnType<TOption>>;
+): Promise<ReturnType<TOption>> | ReturnType<TOption>;
 
-async function event<
+function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TOption extends IEventOptions<TFormatter> = IEventOptions<TFormatter>,
->(message: string, options: TOption): Promise<ReturnType<TOption>>;
+>(
+  message: string,
+  options: TOption,
+): Promise<ReturnType<TOption>> | ReturnType<TOption>;
 
-async function event<
+function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TOption extends IEventWithoutEventNameOptions<TFormatter> = IEventWithoutEventNameOptions<TFormatter>,
 >(
   message: string,
   eventNameOrOptions: string | IEventOptions<TFormatter>,
   options?: TOption,
-): Promise<ReturnType<TOption>> {
+): Promise<ReturnType<TOption>> | ReturnType<TOption> {
   const _options = buildOptions(eventNameOrOptions, options);
 
   const { data, error, event, logger } = _options;
@@ -159,9 +163,10 @@ async function event<
       formatter = event?.formatter;
     }
 
-    result = await emitEvent<TFormatter>(eventEmitter, name, dataPayload, {
+    result = emitEvent<TFormatter>(eventEmitter, name, dataPayload, {
       formatter,
       mask: data?.mask,
+      await: event?.await,
     });
   }
 
@@ -190,7 +195,7 @@ async function event<
     ) as ReturnType<TOption>;
   }
 
-  return result as ReturnType<TOption>;
+  return result as Promise<ReturnType<TOption>>;
 }
 
 export async function eventLog<
@@ -251,25 +256,28 @@ export async function eventError<
   return res;
 }
 
-export async function eventException<
+export function eventException<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
   eventName: string,
   options: IEventWithoutEventNameOptions<TFormatter>,
-): Promise<any>;
+): Error | DefaultError | undefined;
 
-export async function eventException<
+export function eventException<
   TFormatter extends EventNameFormatter = EventNameFormatter,
->(message: string, options: IEventOptions<TFormatter>): Promise<any>;
+>(
+  message: string,
+  options: IEventOptions<TFormatter>,
+): Error | DefaultError | undefined;
 
-export async function eventException<
+export function eventException<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
   eventNameOrOptions: string | IEventOptions<TFormatter>,
   options?: IEventWithoutEventNameOptions<TFormatter>,
-): Promise<any> {
+): Error | DefaultError | undefined {
   const _options = buildOptions(eventNameOrOptions, options);
   const res = event(message, {
     ..._options,
@@ -282,7 +290,7 @@ export async function eventException<
     },
   });
 
-  return res;
+  return res as Error | DefaultError | undefined;
 }
 
 export async function eventWarn<

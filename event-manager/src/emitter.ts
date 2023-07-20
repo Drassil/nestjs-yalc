@@ -22,11 +22,11 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
   const _name =
     options?.formatter?.(...name) ?? (Array.isArray(name) ? name.join() : name);
 
-  console.log('emitEvent', _name, data);
-  return await (options?.await ? eventEmitter.emitAsync : eventEmitter.emit)(
-    _name,
-    data,
-  );
+  if (options?.await) {
+    return await eventEmitter.emitAsync(_name, data);
+  } else {
+    return eventEmitter.emit(_name, data);
+  }
 }
 
 export function emitFormattedEvent(
