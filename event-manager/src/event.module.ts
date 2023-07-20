@@ -5,7 +5,7 @@ import {
   Module,
   Provider,
 } from '@nestjs/common';
-import { Event, IEventServiceOptions } from './event.service.js';
+import { EventService, IEventServiceOptions } from './event.service.js';
 import {
   ImprovedLoggerService,
   LoggerAbstractService,
@@ -45,7 +45,7 @@ export interface IEventModuleOptions<
     logger: ImprovedLoggerService,
     emitter: EventEmitter2,
     options?: IEventModuleOptions<TFormatter>,
-  ) => Event;
+  ) => EventService;
   eventServiceToken?: string;
 }
 
@@ -74,7 +74,7 @@ export class EventModule {
         ? options.eventEmitter
         : EventEmitter2;
 
-    const eventProviderName = options?.eventServiceToken ?? Event;
+    const eventProviderName = options?.eventServiceToken ?? EventService;
 
     const isEmitterInstance =
       typeof options?.eventEmitter !== 'string' &&
@@ -89,7 +89,7 @@ export class EventModule {
         useFactory: (logger: ImprovedLoggerService, emitter: EventEmitter2) => {
           return (
             options?.eventService?.(logger, emitter, options) ??
-            new Event(logger, emitter, options)
+            new EventService(logger, emitter, options)
           );
         },
         inject: [loggerProviderName, emitterProviderName],
@@ -119,7 +119,6 @@ export class EventModule {
       });
     }
 
-    console.log(isEmitterInstance, options?.eventEmitter);
     if (!isEmitterInstance) {
       imports.push(
         EventEmitterModule.forRoot(options?.eventEmitter as ConstructorOptions),

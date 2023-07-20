@@ -32,11 +32,9 @@ interface IEventEmitterOptions<
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
-  data?: {
-    payload: any;
-    mask?: string[];
-    trace?: string;
-  };
+  data?: any;
+  mask?: string[];
+  trace?: string;
   event?:
     | (IEventEmitterOptions<TFormatter> & {
         name: Parameters<TFormatter> | string;
@@ -118,10 +116,10 @@ function event<
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
   const _options = buildOptions(eventNameOrOptions, options);
 
-  const { data, error, event, logger } = _options;
+  const { data, error, event, logger, mask, trace } = _options;
 
-  let dataPayload = data?.payload;
-  if (data?.mask) dataPayload = maskDataInObject(data.payload, data.mask);
+  let dataPayload = data;
+  if (mask) dataPayload = maskDataInObject(data, mask);
 
   /**
    *
@@ -135,7 +133,7 @@ function event<
     const loggerLevel = logger?.level ?? 'log';
 
     if (loggerLevel === 'error') {
-      loggerInstance.error(message, data?.trace, { masks: data?.mask });
+      loggerInstance.error(message, trace, { masks: mask });
     } else {
       loggerInstance[loggerLevel]?.(message, {
         data: dataPayload,
@@ -165,7 +163,7 @@ function event<
 
     result = emitEvent<TFormatter>(eventEmitter, name, dataPayload, {
       formatter,
-      mask: data?.mask,
+      mask,
       await: event?.await,
     });
   }

@@ -22,7 +22,9 @@ export interface IEventServiceOptions<
 }
 
 @Injectable()
-export class Event<TFormatter extends EventNameFormatter = EventNameFormatter> {
+export class EventService<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+> {
   constructor(
     @Inject(APP_LOGGER_SERVICE)
     protected readonly loggerService: ImprovedLoggerService,
