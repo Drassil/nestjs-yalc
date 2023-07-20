@@ -19,9 +19,13 @@ export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
 
 function isLoggerOptions(
-  loggerProvider?: ImprovedLoggerService | { context: string },
+  loggerProvider?: ImprovedLoggerService | { context: string } | string,
 ): loggerProvider is { context: string } {
-  return loggerProvider !== undefined && 'context' in loggerProvider;
+  return (
+    loggerProvider !== undefined &&
+    typeof loggerProvider === 'object' &&
+    'context' in loggerProvider
+  );
 }
 
 function isConstructorOptions(
@@ -79,8 +83,6 @@ export class EventModule {
     const isEmitterInstance =
       typeof options?.eventEmitter !== 'string' &&
       !isConstructorOptions(options?.eventEmitter);
-    const isLoggerInstance =
-      options?.loggerProvider instanceof LoggerAbstractService;
 
     let imports: any[] = [];
     let providers: Provider[] = [
@@ -96,28 +98,21 @@ export class EventModule {
       },
     ];
 
-    if (!isLoggerInstance) {
-      providers.push({
-        provide: loggerProviderName,
-        useFactory: (providedOptions: IProviderOptions) => {
-          const _options = providedOptions.logger ?? options?.loggerProvider;
+    providers.push({
+      provide: loggerProviderName,
+      useFactory: (providedOptions?: IProviderOptions) => {
+        const _options = providedOptions?.logger ?? options?.loggerProvider;
 
-          return isLoggerOptions(_options)
-            ? AppLoggerFactory(
-                _options.context,
-                _options.loggerLevels,
-                _options.loggerType,
-              )
-            : options?.loggerProvider;
-        },
-        inject: [OPTION_PROVIDER],
-      });
-    } else {
-      providers.push({
-        provide: loggerProviderName,
-        useValue: options?.loggerProvider,
-      });
-    }
+        return isLoggerOptions(_options)
+          ? AppLoggerFactory(
+              _options.context,
+              _options.loggerLevels,
+              _options.loggerType,
+            )
+          : options?.loggerProvider;
+      },
+      inject: [{ token: OPTION_PROVIDER, optional: true }],
+    });
 
     if (!isEmitterInstance) {
       imports.push(

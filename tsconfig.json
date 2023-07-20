@@ -46,6 +46,8 @@
       "@nestjs-yalc/data-loader/*": ["data-loader/src/*"],
       "@nestjs-yalc/errors": ["errors/src"],
       "@nestjs-yalc/errors/*": ["errors/src/*"],
+      "@nestjs-yalc/event-manager": ["event-manager/src"],
+      "@nestjs-yalc/event-manager/*": ["event-manager/src/*"],
       "@nestjs-yalc/field-middleware": ["field-middleware/src"],
       "@nestjs-yalc/field-middleware/*": ["field-middleware/src/*"],
       "@nestjs-yalc/graphql": ["graphql/src"],
