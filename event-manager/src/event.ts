@@ -161,11 +161,16 @@ function event<
       formatter = event?.formatter;
     }
 
-    result = emitEvent<TFormatter>(eventEmitter, name, dataPayload, {
-      formatter,
-      mask,
-      await: event?.await,
-    });
+    result = emitEvent<TFormatter>(
+      eventEmitter,
+      name,
+      { message, data: dataPayload },
+      {
+        formatter,
+        mask,
+        await: event?.await,
+      },
+    );
   }
 
   /**
