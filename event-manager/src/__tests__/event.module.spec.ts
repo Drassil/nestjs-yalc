@@ -3,12 +3,7 @@ import { Test } from '@nestjs/testing';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { ImprovedNestLogger } from '@nestjs-yalc/logger/logger-nest.service.js';
-import {
-  EventModule,
-  EVENT_LOGGER,
-  EVENT_EMITTER,
-  OPTION_PROVIDER,
-} from '../event.module.js';
+import { EventModule, EVENT_LOGGER, OPTION_PROVIDER } from '../event.module.js';
 import { EventService } from '../event.service.js';
 
 describe('EventModule', () => {

@@ -6,10 +6,7 @@ import {
   Provider,
 } from '@nestjs/common';
 import { EventService, IEventServiceOptions } from './event.service.js';
-import {
-  ImprovedLoggerService,
-  LoggerAbstractService,
-} from '@nestjs-yalc/logger/logger-abstract.service.js';
+import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { ConstructorOptions } from 'eventemitter2';
