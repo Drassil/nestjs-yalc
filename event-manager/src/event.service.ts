@@ -1,13 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  eventLog,
-  eventDebug,
-  eventError,
-  eventVerbose,
-  eventWarn,
+  eventLogAsync,
+  eventDebugAsync,
+  eventErrorAsync,
+  eventVerboseAsync,
+  eventWarnAsync,
   IEventOptions,
   IEventWithoutEventNameOptions,
   eventException,
+  eventDebug,
+  eventError,
+  eventLog,
+  eventVerbose,
+  eventWarn,
 } from './event.js';
 import type { ImprovedLoggerService } from '../../logger/src/logger-abstract.service.js';
 import { APP_LOGGER_SERVICE } from '../../app/src/def.const.js';
@@ -70,18 +75,18 @@ export class EventService<
     );
   }
 
-  public async log(
+  public async logAsync(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any>;
 
-  public async log(
+  public async logAsync(
     message: string,
     options?: IEventOptions<TFormatter>,
   ): Promise<any>;
 
-  public async log(
+  public async logAsync(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
@@ -89,21 +94,24 @@ export class EventService<
       | IEventOptions<TFormatter>,
     options?: IEventWithoutEventNameOptions<TFormatter>,
   ): Promise<any> {
-    return eventLog(message, this.buildOptions(eventNameOrOptions, options));
+    return eventLogAsync(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
   }
 
-  public async error(
+  public async errorAsync(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
   ): Promise<any>;
 
-  public async error(
+  public async errorAsync(
     message: string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): Promise<any>;
 
-  public async error(
+  public async errorAsync(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
@@ -111,72 +119,182 @@ export class EventService<
       | Omit<IEventOptions<TFormatter>, 'error'>,
     options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
   ): Promise<any> {
+    return eventErrorAsync(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  public async warnAsync(
+    message: string,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async warnAsync(
+    message: string,
+    options?: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async warnAsync(
+    message: string,
+    eventNameOrOptions?:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventWarnAsync(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  public async debugAsync(
+    message: string,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async debugAsync(
+    message: string,
+    options?: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async debugAsync(
+    message: string,
+    eventNameOrOptions?:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventDebugAsync(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  public async verboseAsync(
+    message: string,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async verboseAsync(
+    message: string,
+    options?: IEventOptions<TFormatter>,
+  ): Promise<any>;
+
+  public async verboseAsync(
+    message: string,
+    eventNameOrOptions?:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): Promise<any> {
+    return eventVerboseAsync(
+      message,
+      this.buildOptions(eventNameOrOptions, options),
+    );
+  }
+
+  public log(
+    message: string,
+    eventName?: Parameters<TFormatter> | string,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): any;
+
+  public log(message: string, options?: IEventOptions<TFormatter>): any;
+
+  public log(
+    message: string,
+    eventNameOrOptions?:
+      | Parameters<TFormatter>
+      | string
+      | IEventOptions<TFormatter>,
+    options?: IEventWithoutEventNameOptions<TFormatter>,
+  ): any {
+    return eventLog(message, this.buildOptions(eventNameOrOptions, options));
+  }
+
+  public error(
+    message: string,
+    eventName?: Parameters<TFormatter> | string,
+    options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
+  ): any;
+
+  public error(
+    message: string,
+    options?: Omit<IEventOptions<TFormatter>, 'error'>,
+  ): any;
+
+  public error(
+    message: string,
+    eventNameOrOptions?:
+      | Parameters<TFormatter>
+      | string
+      | Omit<IEventOptions<TFormatter>, 'error'>,
+    options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
+  ): any {
     return eventError(message, this.buildOptions(eventNameOrOptions, options));
   }
 
-  public async warn(
+  public warn(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any>;
+  ): any;
 
-  public async warn(
-    message: string,
-    options?: IEventOptions<TFormatter>,
-  ): Promise<any>;
+  public warn(message: string, options?: IEventOptions<TFormatter>): any;
 
-  public async warn(
+  public warn(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any> {
+  ): any {
     return eventWarn(message, this.buildOptions(eventNameOrOptions, options));
   }
 
-  public async debug(
+  public debug(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any>;
+  ): any;
 
-  public async debug(
-    message: string,
-    options?: IEventOptions<TFormatter>,
-  ): Promise<any>;
+  public debug(message: string, options?: IEventOptions<TFormatter>): any;
 
-  public async debug(
+  public debug(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any> {
+  ): any {
     return eventDebug(message, this.buildOptions(eventNameOrOptions, options));
   }
 
-  public async verbose(
+  public verbose(
     message: string,
     eventName?: Parameters<TFormatter> | string,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any>;
+  ): any;
 
-  public async verbose(
-    message: string,
-    options?: IEventOptions<TFormatter>,
-  ): Promise<any>;
+  public verbose(message: string, options?: IEventOptions<TFormatter>): any;
 
-  public async verbose(
+  public verbose(
     message: string,
     eventNameOrOptions?:
       | Parameters<TFormatter>
       | string
       | IEventOptions<TFormatter>,
     options?: IEventWithoutEventNameOptions<TFormatter>,
-  ): Promise<any> {
+  ): any {
     return eventVerbose(
       message,
       this.buildOptions(eventNameOrOptions, options),

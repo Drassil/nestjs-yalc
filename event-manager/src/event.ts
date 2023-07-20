@@ -85,6 +85,14 @@ function buildOptions<
   return _options;
 }
 
+function applySyncOption(options?: IEventOptions) {
+  const event = options?.event;
+  if (event !== false && event !== undefined) {
+    event.await = false;
+  }
+  return options;
+}
+
 type ReturnType<T> = T extends { error: false }
   ? boolean | any[] | undefined
   : Error | DefaultError | undefined;
@@ -201,7 +209,7 @@ function event<
   return result as Promise<ReturnType<TOption>>;
 }
 
-export async function eventLog<
+export async function eventLogAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -209,11 +217,11 @@ export async function eventLog<
   options: IEventWithoutEventNameOptions<TFormatter>,
 ): Promise<any>;
 
-export async function eventLog<
+export async function eventLogAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(message: string, options: IEventOptions<TFormatter>): Promise<any>;
 
-export async function eventLog<
+export async function eventLogAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -227,7 +235,33 @@ export async function eventLog<
   });
 }
 
-export async function eventError<
+export function eventLog<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventName: string,
+  options: IEventWithoutEventNameOptions<TFormatter>,
+): any;
+
+export function eventLog<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(message: string, options: IEventOptions<TFormatter>): any;
+
+export function eventLog<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventNameOrOptions: string | IEventOptions<TFormatter>,
+  options?: IEventWithoutEventNameOptions<TFormatter>,
+): any {
+  const _options = applySyncOption(buildOptions(eventNameOrOptions, options));
+  return event(message, {
+    ..._options,
+    logger: { ...(_options?.logger || {}), level: LogLevelEnum.LOG },
+  });
+}
+
+export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -235,14 +269,14 @@ export async function eventError<
   options: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
 ): Promise<any[] | boolean | undefined>;
 
-export async function eventError<
+export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
   options: Omit<IEventOptions<TFormatter>, 'error'>,
 ): Promise<any[] | boolean | undefined>;
 
-export async function eventError<
+export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -257,6 +291,32 @@ export async function eventError<
   });
 
   return res;
+}
+
+export function eventError<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventName: string,
+  options: IEventWithoutEventNameOptions<TFormatter>,
+): any;
+
+export function eventError<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(message: string, options: IEventOptions<TFormatter>): any;
+
+export function eventError<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventNameOrOptions: string | IEventOptions<TFormatter>,
+  options?: IEventWithoutEventNameOptions<TFormatter>,
+): any {
+  const _options = applySyncOption(buildOptions(eventNameOrOptions, options));
+  return event(message, {
+    ..._options,
+    logger: { ...(_options?.logger || {}), level: LogLevelEnum.ERROR },
+  });
 }
 
 export function eventException<
@@ -296,7 +356,7 @@ export function eventException<
   return res as Error | DefaultError | undefined;
 }
 
-export async function eventWarn<
+export async function eventWarnAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -304,11 +364,11 @@ export async function eventWarn<
   options: IEventWithoutEventNameOptions<TFormatter>,
 ): Promise<any>;
 
-export async function eventWarn<
+export async function eventWarnAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(message: string, options: IEventOptions<TFormatter>): Promise<any>;
 
-export async function eventWarn<
+export async function eventWarnAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -322,7 +382,33 @@ export async function eventWarn<
   });
 }
 
-export async function eventDebug<
+export function eventWarn<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventName: string,
+  options: IEventWithoutEventNameOptions<TFormatter>,
+): any;
+
+export function eventWarn<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(message: string, options: IEventOptions<TFormatter>): any;
+
+export function eventWarn<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventNameOrOptions: string | IEventOptions<TFormatter>,
+  options?: IEventWithoutEventNameOptions<TFormatter>,
+): any {
+  const _options = applySyncOption(buildOptions(eventNameOrOptions, options));
+  return event(message, {
+    ..._options,
+    logger: { ...(_options?.logger || {}), level: LogLevelEnum.WARN },
+  });
+}
+
+export async function eventDebugAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -330,11 +416,11 @@ export async function eventDebug<
   options: IEventWithoutEventNameOptions<TFormatter>,
 ): Promise<any>;
 
-export async function eventDebug<
+export async function eventDebugAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(message: string, options: IEventOptions<TFormatter>): Promise<any>;
 
-export async function eventDebug<
+export async function eventDebugAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -348,7 +434,33 @@ export async function eventDebug<
   });
 }
 
-export async function eventVerbose<
+export function eventDebug<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventName: string,
+  options: IEventWithoutEventNameOptions<TFormatter>,
+): any;
+
+export function eventDebug<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(message: string, options: IEventOptions<TFormatter>): any;
+
+export function eventDebug<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventNameOrOptions: string | IEventOptions<TFormatter>,
+  options?: IEventWithoutEventNameOptions<TFormatter>,
+): any {
+  const _options = applySyncOption(buildOptions(eventNameOrOptions, options));
+  return event(message, {
+    ..._options,
+    logger: { ...(_options?.logger || {}), level: LogLevelEnum.DEBUG },
+  });
+}
+
+export async function eventVerboseAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -356,11 +468,11 @@ export async function eventVerbose<
   options: IEventWithoutEventNameOptions<TFormatter>,
 ): Promise<any>;
 
-export async function eventVerbose<
+export async function eventVerboseAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(message: string, options: IEventOptions<TFormatter>): Promise<any>;
 
-export async function eventVerbose<
+export async function eventVerboseAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
@@ -371,5 +483,31 @@ export async function eventVerbose<
   return event(message, {
     ..._options,
     logger: { ...(_options.logger || {}), level: LogLevelEnum.VERBOSE },
+  });
+}
+
+export function eventVerbose<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventName: string,
+  options: IEventWithoutEventNameOptions<TFormatter>,
+): any;
+
+export function eventVerbose<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(message: string, options: IEventOptions<TFormatter>): any;
+
+export function eventVerbose<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+>(
+  message: string,
+  eventNameOrOptions: string | IEventOptions<TFormatter>,
+  options?: IEventWithoutEventNameOptions<TFormatter>,
+): any {
+  const _options = applySyncOption(buildOptions(eventNameOrOptions, options));
+  return event(message, {
+    ..._options,
+    logger: { ...(_options?.logger || {}), level: LogLevelEnum.VERBOSE },
   });
 }
