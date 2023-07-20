@@ -7,9 +7,14 @@ import {
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
+import { AppContextRequestService } from '@nestjs-yalc/app/app-context-request.service.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
-  constructor(private adapterHost: HttpAdapterHost, private baseUrl = '') {
+  constructor(
+    private adapterHost: HttpAdapterHost,
+    private baseUrl = '',
+    private appContextReq?: AppContextRequestService,
+  ) {
     super();
   }
 
@@ -22,18 +27,20 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
-
+    const headers = {
+      ...this.appContextReq?.getHeaders(),
+      ...options?.headers,
+    };
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to InjectOptions;
      */
-
     const _options:
       | {
           [k: string | number | symbol]: never;
         }
       | InjectOptions = {
-      headers: options?.headers,
+      headers,
       method: options?.method,
       /**@todo investigate where to set thi */
       // signal: options?.signal,
@@ -83,14 +90,24 @@ export const NestLocalCallStrategyProvider = (
   options: NestLocalCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (httpAdapter: HttpAdapterHost) => {
+  useFactory: (
+    httpAdapter: HttpAdapterHost,
+    appContextReq?: AppContextRequestService,
+  ) => {
     const _options = {
       baseUrl: '',
       NestLocalStrategy: NestLocalCallStrategy,
       ...options,
     };
 
-    return new _options.NestLocalStrategy(httpAdapter, _options.baseUrl);
+    return new _options.NestLocalStrategy(
+      httpAdapter,
+      _options.baseUrl,
+      appContextReq,
+    );
   },
-  inject: [HttpAdapterHost],
+  inject: [
+    HttpAdapterHost,
+    { token: AppContextRequestService, optional: true },
+  ],
 });
