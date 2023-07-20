@@ -19,8 +19,6 @@ import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { APP_EVENT_SERVICE } from './def.const.js';
-import { Event } from '@nestjs-yalc/event-manager/event.service.js';
 
 export interface IGlobalOptions {
   /**
@@ -184,13 +182,6 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
     const domain = this.getConf()?.domain || 'localhost';
     await this.getApp().listen(port, host, async (_err, address) => {
-      const eventService = this.getApp().get<Event>(APP_EVENT_SERVICE);
-      throw eventService.exception(
-        'Loading credential db config',
-        'TypeOrmModule.forRootAsync',
-        { data: { payload: 'test' } },
-      );
-
       // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/
