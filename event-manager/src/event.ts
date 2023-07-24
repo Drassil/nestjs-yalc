@@ -86,11 +86,11 @@ function buildOptions<
 }
 
 function applyAwaitOption(options?: IEventOptions) {
-  const event = options?.event;
+  let event = options?.event;
   if (event !== false && event !== undefined) {
-    event.await = true;
+    event = { ...event, await: event.await ?? true };
   }
-  return options;
+  return { ...options, event };
 }
 
 type ReturnType<T> = T extends { error: false }
@@ -267,14 +267,14 @@ export async function eventErrorAsync<
   message: string,
   eventName?: string,
   options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
-): Promise<any[] | boolean | undefined>;
+): Promise<any>;
 
 export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   message: string,
   options?: Omit<IEventOptions<TFormatter>, 'error'>,
-): Promise<any[] | boolean | undefined>;
+): Promise<any>;
 
 export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -282,7 +282,7 @@ export async function eventErrorAsync<
   message: string,
   eventNameOrOptions?: string | Omit<IEventOptions<TFormatter>, 'error'>,
   options?: Omit<IEventWithoutEventNameOptions<TFormatter>, 'error'>,
-): Promise<any[] | boolean | undefined> {
+): Promise<any> {
   const _options = applyAwaitOption(buildOptions(eventNameOrOptions, options));
   const res = event(message, {
     ..._options,

@@ -18,6 +18,7 @@ import {
   eventDebug,
   eventVerboseAsync,
   eventVerbose,
+  IEventOptions,
 } from '../event.js'; // replace with your actual module path
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ImprovedNestLogger } from '@nestjs-yalc/logger/logger-nest.service.js';
@@ -26,10 +27,10 @@ import { createMock } from '@golevelup/ts-jest';
 describe('Event Service', () => {
   let eventEmitter;
   let logger;
-  let options;
+  let options: IEventOptions;
 
   beforeEach(() => {
-    eventEmitter = createMock<EventEmitter2>();
+    eventEmitter = createMock<EventEmitter2>(new EventEmitter2());
     logger = createMock<ImprovedNestLogger>();
     options = {
       data: { key: 'value' },
@@ -37,8 +38,7 @@ describe('Event Service', () => {
       trace: 'trace',
       event: {
         emitter: eventEmitter,
-        formatter: jest.fn(),
-        await: true,
+        formatter: jest.fn() as any,
         name: eventName,
       },
       logger: {
@@ -162,12 +162,17 @@ describe('Event Service', () => {
     );
   });
 
-  it('should handle event without name', () => {
-    const _options = {
+  it('should handle event without name', async () => {
+    const _options: IEventOptions = {
       ...options,
-      event: { emitter: eventEmitter, formatter: jest.fn(), await: true },
+      event: {
+        name: 'test',
+        emitter: eventEmitter,
+        formatter: jest.fn() as any,
+        await: true,
+      },
     };
-    eventLog(message, _options);
+    await eventLog(message, _options);
     expect(logger.log).toHaveBeenCalledWith(message, expect.anything());
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
       expect.anything(),
