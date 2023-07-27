@@ -52,7 +52,7 @@ export class DbMigrateService {
       const queryRunner = v.conn.createQueryRunner();
 
       const migrationExecutor = new MigrationExecutor(v.conn, queryRunner);
-      migrationExecutor.transaction = 'all';
+      migrationExecutor.transaction = 'each';
 
       const migrations = await migrationExecutor.getAllMigrations();
 
