@@ -7,14 +7,9 @@ import {
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
-import { AppContextRequestService } from '@nestjs-yalc/app/app-context-request.service.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
-  constructor(
-    private adapterHost: HttpAdapterHost,
-    private baseUrl = '',
-    private appContextReq?: AppContextRequestService,
-  ) {
+  constructor(private adapterHost: HttpAdapterHost, private baseUrl = '') {
     super();
   }
 
@@ -28,7 +23,6 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
     const headers = {
-      ...this.appContextReq?.getHeaders(),
       ...options?.headers,
     };
     /**
@@ -90,24 +84,14 @@ export const NestLocalCallStrategyProvider = (
   options: NestLocalCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (
-    httpAdapter: HttpAdapterHost,
-    appContextReq?: AppContextRequestService,
-  ) => {
+  useFactory: (httpAdapter: HttpAdapterHost) => {
     const _options = {
       baseUrl: '',
       NestLocalStrategy: NestLocalCallStrategy,
       ...options,
     };
 
-    return new _options.NestLocalStrategy(
-      httpAdapter,
-      _options.baseUrl,
-      appContextReq,
-    );
+    return new _options.NestLocalStrategy(httpAdapter, _options.baseUrl);
   },
-  inject: [
-    HttpAdapterHost,
-    { token: AppContextRequestService, optional: true },
-  ],
+  inject: [HttpAdapterHost],
 });

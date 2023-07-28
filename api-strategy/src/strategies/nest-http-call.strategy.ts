@@ -6,13 +6,11 @@ import {
   HttpOptions,
 } from './http-abstract-call.strategy.js';
 import { AxiosRequestConfig } from 'axios';
-import { AppContextRequestService } from '@nestjs-yalc/app/app-context-request.service.js';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
     private baseUrl = '',
-    private appContextReq?: AppContextRequestService,
   ) {
     super();
   }
@@ -22,7 +20,6 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const headers = {
-      ...this.appContextReq?.getHeaders(),
       ...options?.headers,
     };
     /**
@@ -73,21 +70,14 @@ export const NestHttpCallStrategyProvider = (
   options: NestHttpCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (
-    httpAdapter: HttpService,
-    appContextReq?: AppContextRequestService,
-  ) => {
+  useFactory: (httpAdapter: HttpService) => {
     const _options = {
       baseUrl: '',
       NestHttpStrategy: NestHttpCallStrategy,
       ...options,
     };
 
-    return new _options.NestHttpStrategy(
-      httpAdapter,
-      _options.baseUrl,
-      appContextReq,
-    );
+    return new _options.NestHttpStrategy(httpAdapter, _options.baseUrl);
   },
-  inject: [HttpService, { token: AppContextRequestService, optional: true }],
+  inject: [HttpService],
 });
