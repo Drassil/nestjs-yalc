@@ -13,12 +13,26 @@ interface IDeepMerge {
 /**
  * @description Method to check if an item is an object. Date and Function are considered
  * an object, so if you need to exclude those, please update the method accordingly.
- * @param item - The item that needs to be checked
+ * @param val - The item that needs to be checked
  * @return {Boolean} Whether or not @item is an object
  */
-export const isObject: IIsObject = (item: any): boolean => {
-  return item === Object(item) && !Array.isArray(item);
+export const isObject: IIsObject = (val: any): val is Record<string, any> => {
+  return val === Object(val) && !Array.isArray(val);
 };
+
+/**
+ * @description Method to strictly check if an item is an object. Date and Function are not considered
+ * @param val - The item that needs to be checked
+ * @returns
+ */
+export function isObjectStrict(val: any): val is Record<string, any> {
+  return (
+    isObject(val) &&
+    !Array.isArray(val) &&
+    !(val instanceof Date) &&
+    !(typeof val === 'function')
+  );
+}
 
 /**
  * @description Method to perform a deep merge of objects
