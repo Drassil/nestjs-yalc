@@ -1,4 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
+import { Test } from '@nestjs/testing';
 import {
   YalcBaseAppModule,
   filterSingletonDynamicModules,
@@ -9,7 +10,6 @@ import {
 } from '../base-app-module.helper.js';
 import { LifeCycleHandler } from '../life-cycle-handler.service.js';
 import { APP_LOGGER_SERVICE } from '../def.const.js';
-import { NestFactory } from '@nestjs/core';
 import { DynamicModule, Module } from '@nestjs/common';
 import { IBaseAppOptions } from '../base-app.interface.js';
 
@@ -56,14 +56,13 @@ class DummyStaticModule2 {}
 describe('base-app', () => {
   describe('actual Nest module instantiation', () => {
     it('should create dynamic module', async () => {
-      const module = await NestFactory.create({
-        module: DummyStaticModule1,
-        imports: [DummyStaticModule2],
+      const module = await Test.createTestingModule({
+        imports: [DummyStaticModule2, DummyStaticModule1],
       });
 
-      await module.init();
+      const moduleRef = await module.compile();
 
-      const lifeCycleHandler = module.get(LifeCycleHandler);
+      const lifeCycleHandler = moduleRef.get(LifeCycleHandler);
 
       expect(module).toBeDefined();
       expect(lifeCycleHandler).toBeDefined();
