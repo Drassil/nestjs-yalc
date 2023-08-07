@@ -11,6 +11,7 @@ export interface ISingletonOption {
    * This is used to make sure that the module is not instantiated multiple times
    * This is useful when you have a dynamic module that is imported in multiple other modules
    * If you use static modules, this is not needed
+   * NOTE: should be used in conjunction with the `global` property
    */
   isSingleton?: boolean;
 }

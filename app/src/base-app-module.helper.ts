@@ -14,7 +14,7 @@ import { createAppConfigProvider } from './app-config.service.js';
 import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
 import Joi from 'joi';
 
-const singletonDynamicModules = new Set<any>();
+const singletonDynamicModules = new Map<any, any>();
 
 /**
  * We can use this "hack" to make sure that our nest apps (global modules) are only imported once even when you use dynamic modules
@@ -23,18 +23,39 @@ const singletonDynamicModules = new Set<any>();
  */
 export function filterSingletonDynamicModules(importedModules: any[]) {
   return importedModules.filter((module) => {
-    if (!(module as IBaseDynamicModule).isSingleton) return true; // not singleton, so we don't care
+    const moduleToken = (module as unknown as DynamicModule).module ?? module;
+    if (!(module as unknown as IBaseDynamicModule).isSingleton) return true; // not singleton, so we don't care
 
-    return registerSingletonDynamicModule(module);
+    return registerSingletonDynamicModule(moduleToken, module) === true;
   });
 }
 
-export function registerSingletonDynamicModule(module: IBaseDynamicModule) {
-  if (singletonDynamicModules.has(module.module)) {
-    return false;
+export function useCachedModuleIfPossible(
+  isSingleton: boolean,
+  moduleToken: any,
+  module: any,
+) {
+  if (!isSingleton) return module;
+
+  const cached = registerSingletonDynamicModule(moduleToken, module);
+
+  if (cached !== true) {
+    return cached;
   }
 
-  singletonDynamicModules.add(module.module);
+  return module;
+}
+
+export function registerSingletonDynamicModule(
+  moduleToken: any,
+  module: any,
+): any | true {
+  const cached = singletonDynamicModules.get(moduleToken);
+  if (cached) {
+    return cached;
+  }
+
+  singletonDynamicModules.set(moduleToken, module);
   return true;
 }
 
@@ -71,9 +92,14 @@ export function envFilePathList(dirname: string = '.') {
  * you should override it
  */
 export function baseAppModuleMetadataFactory(
+  module: any,
   appAlias: string,
-  options?: IBaseAppOptions,
+  options?: Omit<IBaseAppOptions, 'module'>,
 ): IBaseStaticModule {
+  const cachedModule = singletonDynamicModules.get(module);
+  if (options?.isSingleton && cachedModule) {
+  }
+
   const envFilePath: string[] = [];
 
   if (!options?.envPath) {
@@ -149,15 +175,21 @@ export function baseAppModuleMetadataFactory(
     _controllers.push(...controllers);
   }
 
-  return {
+  const config = {
     imports: _imports,
     exports: _exports,
     controllers: _controllers,
     providers: _providers,
   };
+
+  return useCachedModuleIfPossible(
+    options?.isSingleton ?? false,
+    module,
+    config,
+  );
 }
 
-@Module(baseAppModuleMetadataFactory('BaseApp'))
+@Module(baseAppModuleMetadataFactory(YalcBaseAppModule, 'BaseApp'))
 export class YalcBaseAppModule {
   /**
    * Used by the CLI and other non-network processes
@@ -172,7 +204,7 @@ export class YalcBaseAppModule {
   ): IBaseDynamicModule {
     return {
       ...this.dynamicProperties(options),
-      ...baseAppModuleMetadataFactory(appAlias, {
+      ...baseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
         ...options,
       }),
@@ -192,7 +224,7 @@ export class YalcBaseAppModule {
   ): IBaseDynamicModule {
     return {
       ...this.dynamicProperties(options),
-      ...baseAppModuleMetadataFactory(appAlias, {
+      ...baseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
         ...options,
       }),
