@@ -38,10 +38,6 @@ export interface IBaseAppOptions extends Partial<ISingletonDynamicModule> {
 export type BaseAppStaticOptions = Omit<IBaseAppOptions, 'module'>;
 
 export interface IBaseDynamicModule extends ISingletonDynamicModule {
-  /**
-   * @deprecated you can import the ConfigService everywhere now
-   */
-  configModule?: DynamicModule;
   imports: NonNullable<DynamicModule['imports']>;
   exports: NonNullable<DynamicModule['exports']>;
   controllers: NonNullable<DynamicModule['controllers']>;

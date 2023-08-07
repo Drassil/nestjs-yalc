@@ -100,10 +100,6 @@ export function baseAppModuleMetadataFactory(
   appAlias: string,
   options?: Omit<IBaseAppOptions, 'module'>,
 ): IBaseStaticModule {
-  const cachedModule = singletonDynamicModules.get(module);
-  if (options?.isSingleton && cachedModule) {
-  }
-
   const envFilePath: string[] = [];
 
   if (!options?.envPath) {
