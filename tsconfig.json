@@ -64,7 +64,8 @@
       "@nestjs-yalc/kafka/*": ["kafka/src/*"],
       "@nestjs-yalc/skeleton-module": ["examples/skeleton-module/src"],
       "@nestjs-yalc/skeleton-module/*": ["examples/skeleton-module/src/*"]
-    }
+    },
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
   "include": ["**/src/**/*.ts"],
   "exclude": [
