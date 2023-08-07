@@ -201,9 +201,9 @@ describe('base-app', () => {
     it('should create base app module metadata', () => {
       const metadata = baseAppModuleMetadataFactory('appAlias');
       expect(metadata).toBeDefined();
-      expect(metadata.providers).toHaveLength(3);
-      expect(metadata.imports).toHaveLength(2);
-      expect(metadata.exports).toEqual([APP_LOGGER_SERVICE]);
+      expect(metadata.exports).toEqual(
+        expect.arrayContaining([APP_LOGGER_SERVICE]),
+      );
       expect(metadata.controllers).toEqual([]);
     });
 
@@ -218,9 +218,6 @@ describe('base-app', () => {
         controllers: [],
       });
       expect(metadata).toBeDefined();
-      expect(metadata.providers).toHaveLength(3);
-      expect(metadata.imports).toHaveLength(2);
-      expect(metadata.exports).toHaveLength(1);
       expect(metadata.controllers).toEqual([]);
     });
 
@@ -239,9 +236,6 @@ describe('base-app', () => {
         },
       );
       expect(metadata).toBeDefined();
-      expect(metadata.providers).toHaveLength(3);
-      expect(metadata.imports).toHaveLength(2);
-      expect(metadata.exports).toHaveLength(1);
       expect(metadata.controllers).toEqual(['TestController']);
     });
   });

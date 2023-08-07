@@ -10,10 +10,10 @@ export class AppConfigService<T = any> {
   protected config: T;
 
   constructor(
-    protected readonly configService: ConfigService,
+    public readonly originalService: ConfigService,
     protected readonly appAlias: string,
   ) {
-    const config = this.configService.get<T>(this.appAlias);
+    const config = this.originalService.get<T>(this.appAlias);
     if (!config) {
       throw new Error(
         `AppConfigService: No config found for app alias '${this.appAlias}'`,
@@ -30,10 +30,14 @@ export class AppConfigService<T = any> {
 
 export function createAppConfigProvider(appAlias: string): Provider {
   return {
-    provide: AppConfigService,
+    provide: `${appAlias}Config`,
     useFactory: (config: ConfigService): AppConfigService => {
       return new AppConfigService(config, appAlias);
     },
     inject: [ConfigService],
   };
+}
+
+export function getAppConfigToken(appAlias: string): string {
+  return `${appAlias}Config`;
 }

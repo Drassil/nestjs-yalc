@@ -6,11 +6,15 @@ import {
 } from './base-app.interface.js';
 import { APP_LOGGER_SERVICE } from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
-import { DynamicModule, Logger, Module } from '@nestjs/common';
+import { DynamicModule, Logger } from '@nestjs/common';
 import { ConfigModule, registerAs } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
-import { createAppConfigProvider } from './app-config.service.js';
+import {
+  AppConfigService,
+  createAppConfigProvider,
+  getAppConfigToken,
+} from './app-config.service.js';
 import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
 import Joi from 'joi';
 
@@ -143,6 +147,13 @@ export function baseAppModuleMetadataFactory(
     LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
     createLifeCycleHandlerProvider(appAlias, options),
     createAppConfigProvider(appAlias),
+    /**
+     * Alias
+     */
+    {
+      provide: AppConfigService,
+      useExisting: getAppConfigToken(appAlias),
+    },
   ];
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -163,7 +174,11 @@ export function baseAppModuleMetadataFactory(
 
   _imports = filterSingletonDynamicModules(_imports);
 
-  const _exports: DynamicModule['exports'] = [APP_LOGGER_SERVICE];
+  const _exports: DynamicModule['exports'] = [
+    APP_LOGGER_SERVICE,
+    getAppConfigToken(appAlias),
+    AppConfigService,
+  ];
 
   if (exports) {
     _exports.push(...exports);
@@ -189,7 +204,9 @@ export function baseAppModuleMetadataFactory(
   );
 }
 
-@Module(baseAppModuleMetadataFactory(YalcBaseAppModule, 'BaseApp'))
+/**
+ * Util class that can be extended to create a NestJS application
+ */
 export class YalcBaseAppModule {
   /**
    * Used by the CLI and other non-network processes
