@@ -69,6 +69,7 @@
     "decimal.js": "^10.4.3",
     "faker": "^6.6.6",
     "google-libphonenumber": "^3.2.32",
+    "joi": "^17.9.2",
     "lodash": "^4.17.21",
     "mobile-detect": "^1.4.5",
     "mysql2": "^3.1.2",
