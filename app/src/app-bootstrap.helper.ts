@@ -161,7 +161,9 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
       SwaggerModule.setup('api', this.getApp(), document);
     }
 
-    useContainer(this.getApp(), { fallbackOnErrors: true });
+    useContainer(this.getApp().select(this.getModule()), {
+      fallbackOnErrors: true,
+    });
 
     return this;
   }
