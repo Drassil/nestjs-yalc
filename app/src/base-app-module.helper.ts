@@ -95,7 +95,7 @@ export function envFilePathList(dirname: string = '.') {
  * Used for applications with controller/resolver support
  * you should override it
  */
-export function baseAppModuleMetadataFactory(
+export function yalcBaseAppModuleMetadataFactory(
   module: any,
   appAlias: string,
   options?: Omit<IBaseAppOptions, 'module'>,
@@ -217,7 +217,7 @@ export class YalcBaseAppModule {
   ): IBaseDynamicModule {
     return {
       ...this.dynamicProperties(options),
-      ...baseAppModuleMetadataFactory(this, appAlias, {
+      ...yalcBaseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
         ...options,
       }),
@@ -237,7 +237,7 @@ export class YalcBaseAppModule {
   ): IBaseDynamicModule {
     return {
       ...this.dynamicProperties(options),
-      ...baseAppModuleMetadataFactory(this, appAlias, {
+      ...yalcBaseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
         ...options,
       }),

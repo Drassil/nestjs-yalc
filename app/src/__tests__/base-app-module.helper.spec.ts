@@ -6,7 +6,7 @@ import {
   registerSingletonDynamicModule,
   createLifeCycleHandlerProvider,
   envFilePathList,
-  baseAppModuleMetadataFactory,
+  yalcBaseAppModuleMetadataFactory,
 } from '../base-app-module.helper.js';
 import { LifeCycleHandler } from '../life-cycle-handler.service.js';
 import { APP_LOGGER_SERVICE } from '../def.const.js';
@@ -17,7 +17,7 @@ class DummyDynamicModule extends YalcBaseAppModule {
   static forRoot(options?: IBaseAppOptions): DynamicModule {
     return {
       ...this.dynamicProperties(options),
-      ...baseAppModuleMetadataFactory(this, 'appAlias', {
+      ...yalcBaseAppModuleMetadataFactory(this, 'appAlias', {
         isSingleton: true,
         ...options,
       }),
@@ -198,7 +198,7 @@ describe('base-app', () => {
 
   describe('baseAppModuleMetadataFactory', () => {
     it('should create base app module metadata', () => {
-      const metadata = baseAppModuleMetadataFactory('appAlias');
+      const metadata = yalcBaseAppModuleMetadataFactory('appAlias');
       expect(metadata).toBeDefined();
       expect(metadata.exports).toEqual(
         expect.arrayContaining([APP_LOGGER_SERVICE]),
@@ -207,7 +207,7 @@ describe('base-app', () => {
     });
 
     it('should create base app module metadata with options', () => {
-      const metadata = baseAppModuleMetadataFactory('appAlias', {
+      const metadata = yalcBaseAppModuleMetadataFactory('appAlias', {
         isStandalone: true,
         envPath: ['./.env.test'],
         extraConfigs: [],
@@ -221,7 +221,7 @@ describe('base-app', () => {
     });
 
     it('should create base app module metadata with options and controllers', () => {
-      const metadata = baseAppModuleMetadataFactory(
+      const metadata = yalcBaseAppModuleMetadataFactory(
         DummyStaticModule1,
         'appAlias',
         {

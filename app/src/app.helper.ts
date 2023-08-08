@@ -4,6 +4,10 @@ import lodash from 'lodash';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
 const { curry } = lodash;
 
+export function isDynamicModule(module: any): module is DynamicModule {
+  return module.module !== undefined;
+}
+
 export const executeStandaloneFunctionForApp = async (
   app: INestApplicationContext,
   serviceType: any,
@@ -23,10 +27,13 @@ export const executeStandaloneFunctionForApp = async (
  * @param module
  * @returns
  */
-export const curriedExecuteStandaloneFunction = async (module: DynamicModule) =>
+export const curriedExecuteStandaloneFunction = async (module: any) =>
   curry(executeStandaloneFunctionForApp)(
     (
-      await new StandaloneAppBootstrap(module.module.name, module).initApp()
+      await new StandaloneAppBootstrap(
+        isDynamicModule(module) ? module.module.name : module.name,
+        module,
+      ).initApp()
     ).getApp(),
   );
 

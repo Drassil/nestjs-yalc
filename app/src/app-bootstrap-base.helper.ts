@@ -1,8 +1,4 @@
-import {
-  DynamicModule,
-  INestApplicationContext,
-  LoggerService,
-} from '@nestjs/common';
+import { INestApplicationContext, LoggerService, Type } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
@@ -18,7 +14,7 @@ export abstract class BaseAppBootstrap<
 
   constructor(
     protected appAlias: string,
-    protected readonly module: DynamicModule,
+    protected readonly module: Type<any>,
   ) {}
 
   setApp(app: TAppType) {

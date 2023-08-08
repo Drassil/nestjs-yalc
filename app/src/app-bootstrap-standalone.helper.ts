@@ -1,4 +1,4 @@
-import { DynamicModule, INestApplicationContext } from '@nestjs/common';
+import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import { FastifyInstance } from 'fastify';
@@ -7,7 +7,7 @@ import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
 
 export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
-  constructor(appAlias: string, readonly module: DynamicModule) {
+  constructor(appAlias: string, readonly module: any) {
     super(appAlias, module);
   }
 
