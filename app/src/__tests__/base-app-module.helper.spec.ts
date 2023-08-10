@@ -2,7 +2,6 @@ import { describe, expect, it } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import {
   YalcBaseAppModule,
-  filterSingletonDynamicModules,
   registerSingletonDynamicModule,
   createLifeCycleHandlerProvider,
   envFilePathList,
@@ -15,13 +14,13 @@ import { IBaseAppOptions } from '../base-app.interface.js';
 
 class DummyDynamicModule extends YalcBaseAppModule {
   static forRoot(options?: IBaseAppOptions): DynamicModule {
-    return {
-      ...this.dynamicProperties(options),
-      ...yalcBaseAppModuleMetadataFactory(this, 'appAlias', {
+    return this.assignDynamicProperties(
+      yalcBaseAppModuleMetadataFactory(this, 'appAlias', {
         isSingleton: true,
         ...options,
       }),
-    };
+      options,
+    );
   }
 }
 
@@ -75,35 +74,26 @@ describe('base-app', () => {
     });
 
     it('should create dynamic properties', () => {
-      const dynamicProperties = YalcBaseAppModule.dynamicProperties();
+      const dynamicProperties = YalcBaseAppModule.assignDynamicProperties({});
       expect(dynamicProperties).toEqual({
         module: YalcBaseAppModule,
         global: true,
+        isSingleton: false,
+      });
+    });
+
+    it('should create dynamic properties with options', () => {
+      const dynamicProperties = YalcBaseAppModule.assignDynamicProperties(
+        {},
+        {
+          global: false,
+          isSingleton: true,
+        },
+      );
+      expect(dynamicProperties).toEqual({
+        module: YalcBaseAppModule,
+        global: false,
         isSingleton: true,
-      });
-    });
-
-    it('should create dynamic properties with options', () => {
-      const dynamicProperties = YalcBaseAppModule.dynamicProperties({
-        global: false,
-        isSingleton: false,
-      });
-      expect(dynamicProperties).toEqual({
-        module: YalcBaseAppModule,
-        global: false,
-        isSingleton: false,
-      });
-    });
-
-    it('should create dynamic properties with options', () => {
-      const dynamicProperties = YalcBaseAppModule.dynamicProperties({
-        global: false,
-        isSingleton: false,
-      });
-      expect(dynamicProperties).toEqual({
-        module: YalcBaseAppModule,
-        global: false,
-        isSingleton: false,
       });
     });
 
@@ -111,33 +101,14 @@ describe('base-app', () => {
       const dynamicModule = YalcBaseAppModule._forRootStandalone('appAlias');
       expect(dynamicModule).toBeDefined();
       expect(dynamicModule.global).toBe(true);
-      expect(dynamicModule.isSingleton).toBe(true);
+      expect(dynamicModule.isSingleton).toBe(false);
     });
 
     it('should create dynamic module', () => {
       const dynamicModule = YalcBaseAppModule._forRoot('appAlias');
       expect(dynamicModule).toBeDefined();
       expect(dynamicModule.global).toBe(true);
-      expect(dynamicModule.isSingleton).toBe(true);
-    });
-  });
-
-  describe('filterSingletonDynamicModules', () => {
-    class TestModule extends DummyDynamicModule {
-      static forRoot(options?: IBaseAppOptions | undefined): DynamicModule {
-        return this._forRoot('test', options);
-      }
-    }
-
-    it('should filter singleton dynamic modules', () => {
-      const modules = [
-        { ...TestModule.forRoot(), isSingleton: true },
-        { ...TestModule.forRoot(), isSingleton: false },
-        { ...TestModule.forRoot(), isSingleton: true }, // this should be filtered
-        DummyStaticModule1,
-      ];
-      const result = filterSingletonDynamicModules(modules);
-      expect(result).toHaveLength(3);
+      expect(dynamicModule.isSingleton).toBe(false);
     });
   });
 
@@ -150,6 +121,7 @@ describe('base-app', () => {
 
     it('should register singleton dynamic module', () => {
       const result = registerSingletonDynamicModule(
+        true,
         TestModule,
         TestModule.forRoot(),
       );
@@ -158,6 +130,7 @@ describe('base-app', () => {
 
     it('should not register the same singleton dynamic module twice', () => {
       const result = registerSingletonDynamicModule(
+        true,
         TestModule,
         TestModule.forRoot(),
       );

@@ -20,40 +20,15 @@ import Joi from 'joi';
 
 const singletonDynamicModules = new Map<any, any>();
 
-/**
- * We can use this "hack" to make sure that our nest apps (global modules) are only imported once even when you use dynamic modules
- *
- * @see https://github.com/nestjs/nest/issues/3519#issuecomment-560287805
- */
-export function filterSingletonDynamicModules(importedModules: any[]) {
-  return importedModules.filter((module) => {
-    const moduleToken = (module as unknown as DynamicModule).module ?? module;
-    if (!(module as unknown as IBaseDynamicModule).isSingleton) return true; // not singleton, so we don't care
-
-    return registerSingletonDynamicModule(moduleToken, module) === true;
-  });
-}
-
-export function useCachedModuleIfPossible(
+export function registerSingletonDynamicModule(
   isSingleton: boolean,
   moduleToken: any,
   module: any,
-) {
-  if (!isSingleton) return module;
-
-  const cached = registerSingletonDynamicModule(moduleToken, module);
-
-  if (cached !== true) {
-    return cached;
+): any | true {
+  if (!isSingleton) {
+    return false;
   }
 
-  return module;
-}
-
-export function registerSingletonDynamicModule(
-  moduleToken: any,
-  module: any,
-): any | true {
   const cached = singletonDynamicModules.get(moduleToken);
   if (cached) {
     return cached;
@@ -73,6 +48,13 @@ export function createLifeCycleHandlerProvider(
       new LifeCycleHandler(logger, appAlias, options),
     inject: [APP_LOGGER_SERVICE],
   };
+}
+
+export function getCachedModule(module: any, isSingleton: boolean) {
+  if (isSingleton) {
+    return singletonDynamicModules.get(module);
+  }
+  return null;
 }
 
 export function envFilePathList(dirname: string = '.') {
@@ -100,6 +82,14 @@ export function yalcBaseAppModuleMetadataFactory(
   appAlias: string,
   options?: Omit<IBaseAppOptions, 'module'>,
 ): IBaseStaticModule {
+  const isSingleton = options?.isSingleton ?? false;
+
+  const cached = getCachedModule(module, isSingleton);
+  if (cached) {
+    // Logger.debug(`Using cached metadata for ${module.name}`);
+    return cached;
+  }
+
   const envFilePath: string[] = [];
 
   if (!options?.envPath) {
@@ -168,8 +158,6 @@ export function yalcBaseAppModuleMetadataFactory(
     _imports.push(...imports);
   }
 
-  _imports = filterSingletonDynamicModules(_imports);
-
   const _exports: DynamicModule['exports'] = [
     APP_LOGGER_SERVICE,
     getAppConfigToken(appAlias),
@@ -193,11 +181,9 @@ export function yalcBaseAppModuleMetadataFactory(
     providers: _providers,
   };
 
-  return useCachedModuleIfPossible(
-    options?.isSingleton ?? false,
-    module,
-    config,
-  );
+  registerSingletonDynamicModule(isSingleton, module, config);
+
+  return config;
 }
 
 /**
@@ -215,13 +201,13 @@ export class YalcBaseAppModule {
     appAlias: string,
     options?: IBaseAppOptions,
   ): IBaseDynamicModule {
-    return {
-      ...this.dynamicProperties(options),
-      ...yalcBaseAppModuleMetadataFactory(this, appAlias, {
+    return this.assignDynamicProperties(
+      yalcBaseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
         ...options,
       }),
-    };
+      options,
+    );
   }
 
   /**
@@ -235,20 +221,23 @@ export class YalcBaseAppModule {
     appAlias: string,
     options?: IBaseAppOptions,
   ): IBaseDynamicModule {
-    return {
-      ...this.dynamicProperties(options),
-      ...yalcBaseAppModuleMetadataFactory(this, appAlias, {
-        isStandalone: true,
+    return this.assignDynamicProperties(
+      yalcBaseAppModuleMetadataFactory(this, appAlias, {
+        isStandalone: false,
         ...options,
       }),
-    };
+      options,
+    );
   }
 
-  protected static dynamicProperties(options?: IBaseAppOptions) {
-    return {
-      module: this,
-      global: options?.global ?? true,
-      isSingleton: options?.isSingleton ?? true,
-    };
+  protected static assignDynamicProperties(
+    config: any,
+    options?: IBaseAppOptions,
+  ) {
+    config.module = this;
+    config.global = options?.global ?? true;
+    config.isSingleton = options?.isSingleton ?? false;
+
+    return config;
   }
 }
