@@ -46,6 +46,7 @@ export interface IOptions {
   coverageOutputPath?: { (subProjectPath: string): string };
   defaultConfOptions?: IDefaultConfOptions;
   tsJestConfig?: any;
+  extraSetupFiles?: string[] 
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -107,7 +108,7 @@ export function jestConfGenerator(
     rootDir: `${rootPath}/${proj.sourcePath}/`,
     roots: [`${rootPath}/${proj.path}`],
     maxWorkers,
-    setupFiles: [`${__dirname}/jest.setup.ts`],
+    setupFiles: [`${__dirname}/jest.setup.ts`, ...(options.extraSetupFiles ?? [])],
     coverageThreshold: coverageThreshold(
       projects,
       options.defaultCoverageThreshold,
