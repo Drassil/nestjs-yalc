@@ -1,10 +1,13 @@
-import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import {
   IBaseAppOptions,
   IBaseDynamicModule,
   IBaseStaticModule,
 } from './base-app.interface.js';
-import { APP_LOGGER_SERVICE } from './def.const.js';
+import {
+  APP_ALIAS_TOKEN,
+  APP_LOGGER_SERVICE,
+  APP_OPTION_TOKEN,
+} from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
 import { DynamicModule, Logger } from '@nestjs/common';
 import { ConfigModule, registerAs } from '@nestjs/config';
@@ -17,6 +20,7 @@ import {
 } from './app-config.service.js';
 import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
 import Joi from 'joi';
+import { AppContextModule } from './app-context.module.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -36,18 +40,6 @@ export function registerSingletonDynamicModule(
 
   singletonDynamicModules.set(moduleToken, module);
   return true;
-}
-
-export function createLifeCycleHandlerProvider(
-  appAlias: string,
-  options?: IBaseAppOptions,
-) {
-  return {
-    provide: LifeCycleHandler,
-    useFactory: (logger: ImprovedLoggerService) =>
-      new LifeCycleHandler(logger, appAlias, options),
-    inject: [APP_LOGGER_SERVICE],
-  };
 }
 
 export function getCachedModule(module: any, isSingleton: boolean) {
@@ -130,8 +122,16 @@ export function yalcBaseAppModuleMetadataFactory(
   });
 
   const _providers: Array<any> = [
+    {
+      provide: APP_ALIAS_TOKEN,
+      useValue: appAlias,
+    },
+    {
+      provide: APP_OPTION_TOKEN,
+      useValue: options,
+    },
     LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
-    createLifeCycleHandlerProvider(appAlias, options),
+    LifeCycleHandler,
     createAppConfigProvider(appAlias),
     /**
      * Alias
@@ -152,6 +152,7 @@ export function yalcBaseAppModuleMetadataFactory(
   let _imports: DynamicModule['imports'] = [
     configModule,
     EventEmitterModule.forRoot(),
+    AppContextModule,
   ];
 
   if (imports) {

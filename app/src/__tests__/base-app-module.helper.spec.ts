@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import {
   YalcBaseAppModule,
   registerSingletonDynamicModule,
-  createLifeCycleHandlerProvider,
   envFilePathList,
   yalcBaseAppModuleMetadataFactory,
 } from '../base-app-module.helper.js';
@@ -11,6 +10,12 @@ import { LifeCycleHandler } from '../life-cycle-handler.service.js';
 import { APP_LOGGER_SERVICE } from '../def.const.js';
 import { DynamicModule, Module } from '@nestjs/common';
 import { IBaseAppOptions } from '../base-app.interface.js';
+import { createMock } from '@golevelup/ts-jest';
+import { AppContextService } from '../app-context.service.js';
+
+let appContextService: AppContextService = createMock<AppContextService>({
+  initializedApps: new Set(),
+});
 
 class DummyDynamicModule extends YalcBaseAppModule {
   static forRoot(options?: IBaseAppOptions): DynamicModule {
@@ -57,7 +62,9 @@ describe('base-app', () => {
     it('should create dynamic module', async () => {
       const module = await Test.createTestingModule({
         imports: [DummyStaticModule2, DummyStaticModule1],
-      });
+      })
+        .overrideProvider(AppContextService)
+        .useValue(appContextService);
 
       const moduleRef = await module.compile();
 
@@ -135,15 +142,6 @@ describe('base-app', () => {
         TestModule.forRoot(),
       );
       expect(result).not.toBe(true);
-    });
-  });
-
-  describe('createLifeCycleHandlerProvider', () => {
-    it('should create life cycle handler provider', () => {
-      const provider = createLifeCycleHandlerProvider('appAlias');
-      expect(provider).toBeDefined();
-      expect(provider.provide).toBe(LifeCycleHandler);
-      expect(provider.inject).toEqual([APP_LOGGER_SERVICE]);
     });
   });
 
