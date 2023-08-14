@@ -10,7 +10,6 @@ import {
 } from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
 import { DynamicModule, Logger } from '@nestjs/common';
-import { ConfigModule, registerAs } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 import {
@@ -18,9 +17,10 @@ import {
   createAppConfigProvider,
   getAppConfigToken,
 } from './app-config.service.js';
-import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
-import Joi from 'joi';
 import { AppContextModule } from './app-context.module.js';
+import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
+import { ConfigModule, registerAs } from '@nestjs/config';
+import Joi from 'joi';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -92,35 +92,6 @@ export function yalcBaseAppModuleMetadataFactory(
     envFilePath.push(...options.envPath);
   }
 
-  const configModule = ConfigModule.forRoot({
-    envFilePath,
-    load: [
-      registerAs(appAlias, async () => {
-        return options?.configFactory?.() ?? {};
-      }),
-      ...(options?.extraConfigs ?? []),
-    ],
-    validationSchema: Joi.object({
-      NODE_ENV: Joi.string()
-        .valid(
-          NODE_ENV.DEVELOPMENT,
-          NODE_ENV.PRODUCTION,
-          NODE_ENV.TEST,
-          NODE_ENV.PIPELINE,
-        )
-        .default(NODE_ENV.DEVELOPMENT),
-    }),
-    validationOptions: {
-      allowUnknown: true,
-      abortEarly: true,
-    },
-    /**
-     * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
-     * It allows us to use the ConfigService in any module without having to import the ConfigModule
-     */
-    isGlobal: true,
-  });
-
   const _providers: Array<any> = [
     {
       provide: APP_ALIAS_TOKEN,
@@ -150,7 +121,39 @@ export function yalcBaseAppModuleMetadataFactory(
   }
 
   let _imports: DynamicModule['imports'] = [
-    configModule,
+    ConfigModule.forRoot({
+      envFilePath,
+      load: [
+        registerAs(appAlias, async () => {
+          /**
+           * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+           */
+          await ConfigModule.envVariablesLoaded;
+
+          return await (options?.configFactory?.() ?? {});
+        }),
+        ...(options?.extraConfigs ?? []),
+      ],
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid(
+            NODE_ENV.DEVELOPMENT,
+            NODE_ENV.PRODUCTION,
+            NODE_ENV.TEST,
+            NODE_ENV.PIPELINE,
+          )
+          .default(NODE_ENV.DEVELOPMENT),
+      }),
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+      /**
+       * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+       * It allows us to use the ConfigService in any module without having to import the ConfigModule
+       */
+      isGlobal: true,
+    }),
     EventEmitterModule.forRoot(),
     AppContextModule,
   ];

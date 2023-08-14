@@ -149,9 +149,12 @@ export const decryptSsmVariable = async (
 export const setEnvironmentVariablesFromSsm = async (envVariableToDecrypt: {
   [key: string]: string;
 }) => {
+  const ssmVars: { [key: string]: string } = {};
   for (const variable of Object.keys(envVariableToDecrypt)) {
-    process.env[variable] = await decryptSsmVariable(
+    process.env[variable] = ssmVars[variable] = await decryptSsmVariable(
       envVariableToDecrypt[variable],
     );
   }
+
+  return ssmVars;
 };
