@@ -95,7 +95,7 @@ export function yalcBaseAppModuleMetadataFactory(
   const configModule = ConfigModule.forRoot({
     envFilePath,
     load: [
-      registerAs(appAlias, () => {
+      registerAs(appAlias, async () => {
         return options?.configFactory?.() ?? {};
       }),
       ...(options?.extraConfigs ?? []),
