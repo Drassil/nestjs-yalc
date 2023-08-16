@@ -101,17 +101,32 @@ export function yalcBaseAppModuleMetadataFactory(
       provide: APP_OPTION_TOKEN,
       useValue: options,
     },
-    LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
-    LifeCycleHandler,
-    createAppConfigProvider(appAlias),
-    /**
-     * Alias
-     */
-    {
-      provide: AppConfigService,
-      useExisting: getAppConfigToken(appAlias),
-    },
   ];
+
+  const hasConfig = options?.extraConfigs || options?.configFactory;
+
+  if (hasConfig) {
+    _providers.push(
+      createAppConfigProvider(appAlias),
+      /**
+       * Alias
+       */
+      {
+        provide: AppConfigService,
+        useExisting: getAppConfigToken(appAlias),
+      },
+    );
+  }
+
+  if (options?.logger) {
+    _providers.push(
+      LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
+    );
+  }
+
+  if (!options?.skipDuplicateAppCheck) {
+    _providers.push(LifeCycleHandler);
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   const { controllers, exports, imports, providers } = options ?? {};
@@ -121,52 +136,61 @@ export function yalcBaseAppModuleMetadataFactory(
   }
 
   let _imports: DynamicModule['imports'] = [
-    ConfigModule.forRoot({
-      envFilePath,
-      load: [
-        registerAs(appAlias, async () => {
-          /**
-           * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
-           */
-          await ConfigModule.envVariablesLoaded;
-
-          return await (options?.configFactory?.() ?? {});
-        }),
-        ...(options?.extraConfigs ?? []),
-      ],
-      validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid(
-            NODE_ENV.DEVELOPMENT,
-            NODE_ENV.PRODUCTION,
-            NODE_ENV.TEST,
-            NODE_ENV.PIPELINE,
-          )
-          .default(NODE_ENV.DEVELOPMENT),
-      }),
-      validationOptions: {
-        allowUnknown: true,
-        abortEarly: true,
-      },
-      /**
-       * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
-       * It allows us to use the ConfigService in any module without having to import the ConfigModule
-       */
-      isGlobal: true,
-    }),
     EventEmitterModule.forRoot(),
     AppContextModule,
   ];
+
+  if (hasConfig) {
+    _imports.push(
+      ConfigModule.forRoot({
+        envFilePath,
+        load: [
+          registerAs(appAlias, async () => {
+            /**
+             * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+             */
+            await ConfigModule.envVariablesLoaded;
+
+            return await (options?.configFactory?.() ?? {});
+          }),
+          ...(options?.extraConfigs ?? []),
+        ],
+        validationSchema: Joi.object({
+          NODE_ENV: Joi.string()
+            .valid(
+              NODE_ENV.DEVELOPMENT,
+              NODE_ENV.PRODUCTION,
+              NODE_ENV.TEST,
+              NODE_ENV.PIPELINE,
+            )
+            .default(NODE_ENV.DEVELOPMENT),
+        }),
+        validationOptions: {
+          allowUnknown: true,
+          abortEarly: true,
+        },
+        /**
+         * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+         * It allows us to use the ConfigService in any module without having to import the ConfigModule
+         */
+        isGlobal: true,
+      }),
+    );
+  }
 
   if (imports) {
     _imports.push(...imports);
   }
 
-  const _exports: DynamicModule['exports'] = [
-    APP_LOGGER_SERVICE,
-    getAppConfigToken(appAlias),
-    AppConfigService,
-  ];
+  const _exports: DynamicModule['exports'] = [];
+
+  if (hasConfig) {
+    _exports.push(getAppConfigToken(appAlias), AppConfigService);
+  }
+
+  if (options?.logger && options?.global) {
+    _exports.push(APP_LOGGER_SERVICE);
+  }
 
   if (exports) {
     _exports.push(...exports);
@@ -208,6 +232,7 @@ export class YalcBaseAppModule {
     return this.assignDynamicProperties(
       yalcBaseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: true,
+        ...this.assignDynamicProperties({}),
         ...options,
       }),
       options,
@@ -228,6 +253,7 @@ export class YalcBaseAppModule {
     return this.assignDynamicProperties(
       yalcBaseAppModuleMetadataFactory(this, appAlias, {
         isStandalone: false,
+        ...this.assignDynamicProperties({}),
         ...options,
       }),
       options,

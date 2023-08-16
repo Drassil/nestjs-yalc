@@ -21,6 +21,9 @@ class DummyDynamicModule extends YalcBaseAppModule {
   static forRoot(options?: IBaseAppOptions): DynamicModule {
     return this.assignDynamicProperties(
       yalcBaseAppModuleMetadataFactory(this, 'appAlias', {
+        ...this.assignDynamicProperties({}),
+        configFactory: () => ({}),
+        logger: true,
         isSingleton: true,
         ...options,
       }),
@@ -169,7 +172,10 @@ describe('base-app', () => {
 
   describe('baseAppModuleMetadataFactory', () => {
     it('should create base app module metadata', () => {
-      const metadata = yalcBaseAppModuleMetadataFactory('appAlias');
+      const metadata = yalcBaseAppModuleMetadataFactory({}, 'appAlias', {
+        logger: true,
+        global: true,
+      });
       expect(metadata).toBeDefined();
       expect(metadata.exports).toEqual(
         expect.arrayContaining([APP_LOGGER_SERVICE]),
@@ -178,7 +184,7 @@ describe('base-app', () => {
     });
 
     it('should create base app module metadata with options', () => {
-      const metadata = yalcBaseAppModuleMetadataFactory('appAlias', {
+      const metadata = yalcBaseAppModuleMetadataFactory({}, 'appAlias', {
         isStandalone: true,
         envPath: ['./.env.test'],
         extraConfigs: [],

@@ -33,6 +33,7 @@ export interface IBaseAppOptions extends Partial<ISingletonDynamicModule> {
   skipDuplicateAppCheck?: boolean;
   skipGlobalInterceptors?: boolean;
   isStandalone?: boolean;
+  logger?: boolean;
 }
 
 export type BaseAppStaticOptions = Omit<IBaseAppOptions, 'module'>;
