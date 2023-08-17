@@ -5,13 +5,10 @@ import {
   OnModuleInit,
   OnModuleDestroy,
 } from '@nestjs/common';
-import { type IBaseAppOptions } from './base-app.interface.js';
-import {
-  APP_ALIAS_TOKEN,
-  APP_LOGGER_SERVICE,
-  APP_OPTION_TOKEN,
-} from './def.const.js';
+import { type IYalcBaseAppOptions } from './base-app.interface.js';
+import { APP_LOGGER_SERVICE, MODULE_ALIAS_TOKEN } from './def.const.js';
 import { AppContextService } from './app-context.service.js';
+import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
 
 /**
  * This class is used to handle the lifecycle of the app
@@ -22,39 +19,37 @@ export class LifeCycleHandler implements OnModuleDestroy, OnModuleInit {
   /**
    * We do this in the constructor since onModuleInit doesn't seem to be called
    * when we use 'useFactory' to create the provider
-   * TODO: investigate why onModuleInit is not called
+   * @todo: investigate why onModuleInit is not called
    *
-   * @param logger
-   * @param appAlias
-   * @param options
    */
   constructor(
     @Inject(APP_LOGGER_SERVICE) private readonly logger: ImprovedLoggerService,
-    @Inject(APP_ALIAS_TOKEN) private readonly appAlias: string,
+    @Inject(MODULE_ALIAS_TOKEN) private readonly moduleAlias: string,
     @Inject(AppContextService)
     private readonly appContextService: AppContextService,
-    @Inject(APP_OPTION_TOKEN) private readonly options?: IBaseAppOptions,
+    @Inject(MODULE_OPTIONS_TOKEN)
+    private readonly options?: IYalcBaseAppOptions,
   ) {
     this.logger.debug?.(
-      `====================== Init ${this.appAlias} ======================`,
+      `====================== Init ${this.moduleAlias} ======================`,
     );
     if (
       this.options?.skipDuplicateAppCheck !== true &&
-      this.appContextService.initializedApps.has(this.appAlias)
+      this.appContextService.initializedApps.has(this.moduleAlias)
     ) {
       throw new Error(
-        `Cannot initialize the same app (${this.appAlias}) twice`,
+        `Cannot initialize the same app (${this.moduleAlias}) twice`,
       );
     }
-    this.appContextService.initializedApps.add(this.appAlias);
+    this.appContextService.initializedApps.add(this.moduleAlias);
   }
 
   onModuleInit() {}
 
   onModuleDestroy() {
     this.logger.debug?.(
-      `====================== Close ${this.appAlias} ======================`,
+      `====================== Close ${this.moduleAlias} ======================`,
     );
-    this.appContextService.initializedApps.delete(this.appAlias);
+    this.appContextService.initializedApps.delete(this.moduleAlias);
   }
 }

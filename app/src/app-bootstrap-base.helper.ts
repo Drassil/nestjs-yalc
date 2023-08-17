@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { IServiceConf } from './conf.type.js';
-import { APP_LOGGER_SERVICE } from './def.const.js';
+import { SYSTEM_LOGGER_SERVICE } from './def.const.js';
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
@@ -41,7 +41,7 @@ export abstract class BaseAppBootstrap<
   }
 
   async applyBootstrapGlobals(_options?: TGlobalOptions) {
-    this.loggerService = this.getApp().get(APP_LOGGER_SERVICE);
+    this.loggerService = this.getApp().get(SYSTEM_LOGGER_SERVICE);
     this.loggerService.debug?.('Setting logger service...');
     this.getApp().useLogger(this.loggerService);
     return this;

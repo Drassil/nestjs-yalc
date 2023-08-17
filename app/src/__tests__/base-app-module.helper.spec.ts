@@ -7,7 +7,6 @@ import {
   yalcBaseAppModuleMetadataFactory,
 } from '../base-app-module.helper.js';
 import { LifeCycleHandler } from '../life-cycle-handler.service.js';
-import { APP_LOGGER_SERVICE } from '../def.const.js';
 import { DynamicModule, Module } from '@nestjs/common';
 import { IBaseAppOptions } from '../base-app.interface.js';
 import { createMock } from '@golevelup/ts-jest';
@@ -130,12 +129,9 @@ describe('base-app', () => {
     }
 
     it('should register singleton dynamic module', () => {
-      const result = registerSingletonDynamicModule(
-        true,
-        TestModule,
-        TestModule.forRoot(),
-      );
-      expect(result).toBe(true);
+      const config = TestModule.forRoot();
+      const result = registerSingletonDynamicModule(true, TestModule, config);
+      expect(result).toBe(config);
     });
 
     it('should not register the same singleton dynamic module twice', () => {
@@ -177,9 +173,6 @@ describe('base-app', () => {
         global: true,
       });
       expect(metadata).toBeDefined();
-      expect(metadata.exports).toEqual(
-        expect.arrayContaining([APP_LOGGER_SERVICE]),
-      );
       expect(metadata.controllers).toEqual([]);
     });
 

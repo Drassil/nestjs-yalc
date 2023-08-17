@@ -20,7 +20,7 @@ export interface ISingletonDynamicModule
   extends ISingletonOption,
     DynamicModule {}
 
-export interface IBaseAppOptions extends Partial<ISingletonDynamicModule> {
+export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   configFactory?: ConfigFactory<ConfigObject>;
   extraConfigs?: (ConfigFactory<ConfigObject> &
     ConfigFactoryKeyHost<ReturnType<ConfigFactory<ConfigObject>>>)[];
@@ -32,20 +32,28 @@ export interface IBaseAppOptions extends Partial<ISingletonDynamicModule> {
   migrations?: ClassType[];
   skipDuplicateAppCheck?: boolean;
   skipGlobalInterceptors?: boolean;
+  /**
+   * used internally, probably you don't wan to set thi
+   */
+  skipDefaultApp?: boolean;
   isStandalone?: boolean;
+  /**
+   * used to define when a module is used as an application or loaded within an application
+   */
+  isApp?: boolean;
   logger?: boolean;
 }
 
-export type BaseAppStaticOptions = Omit<IBaseAppOptions, 'module'>;
+export type BaseAppStaticOptions = Omit<IYalcBaseAppOptions, 'module'>;
 
-export interface IBaseDynamicModule extends ISingletonDynamicModule {
+export interface IYalcBaseDynamicModule extends ISingletonDynamicModule {
   imports: NonNullable<DynamicModule['imports']>;
   exports: NonNullable<DynamicModule['exports']>;
   controllers: NonNullable<DynamicModule['controllers']>;
   providers: NonNullable<DynamicModule['providers']>;
 }
 
-export interface IBaseStaticModule extends ModuleMetadata {
+export interface IYalcBaseStaticModule extends ModuleMetadata {
   imports: NonNullable<DynamicModule['imports']>;
   exports: NonNullable<DynamicModule['exports']>;
   controllers: NonNullable<DynamicModule['controllers']>;
