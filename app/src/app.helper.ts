@@ -1,14 +1,14 @@
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { DynamicModule, INestApplicationContext } from '@nestjs/common';
-import lodash from 'lodash';
 import { StandaloneAppBootstrap } from './app-bootstrap-standalone.helper.js';
+import lodash from 'lodash';
 const { curry } = lodash;
 
 export function isDynamicModule(module: any): module is DynamicModule {
   return module.module !== undefined;
 }
 
-export const executeStandaloneFunctionForApp = async (
+export const executeFunctionForApp = async (
   app: INestApplicationContext,
   serviceType: any,
   fn: { (service: any): Promise<any> },
@@ -28,7 +28,7 @@ export const executeStandaloneFunctionForApp = async (
  * @returns
  */
 export const curriedExecuteStandaloneFunction = async (module: any) =>
-  curry(executeStandaloneFunctionForApp)(
+  curry(executeFunctionForApp)(
     (
       await new StandaloneAppBootstrap(
         isDynamicModule(module) ? module.module.name : module.name,
