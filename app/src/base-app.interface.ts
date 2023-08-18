@@ -10,7 +10,9 @@ export interface ISingletonOption {
   /**
    * This is used to make sure that the module is not instantiated multiple times
    * This is useful when you have a dynamic module that is imported in multiple other modules
-   * If you use static modules, this is not needed
+   * If you use static modules, this is not needed. Please use it with caution because it might
+   * cause unexpected behavior
+   *
    * NOTE: should be used in conjunction with the `global` property
    */
   isSingleton?: boolean;
@@ -31,16 +33,6 @@ export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   envDir?: string;
   migrations?: ClassType[];
   skipDuplicateAppCheck?: boolean;
-  skipGlobalInterceptors?: boolean;
-  /**
-   * used internally, probably you don't wan to set thi
-   */
-  skipDefaultApp?: boolean;
-  isStandalone?: boolean;
-  /**
-   * used to define when a module is used as an application or loaded within an application
-   */
-  isApp?: boolean;
   logger?: boolean;
 }
 

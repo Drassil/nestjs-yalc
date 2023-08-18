@@ -5,6 +5,8 @@ import { FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import { YalcDefaultAppModule } from './base-app-module.helper.js';
+import { IGlobalOptions } from './app-bootstrap.helper.js';
 
 export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
   constructor(appAlias: string, readonly module: any) {
@@ -12,7 +14,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }
 
   async initApp(options?: {
-    globalsOptions?: unknown;
+    globalsOptions?: IGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
@@ -33,12 +35,18 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }
 
   async createApp(_options?: {
-    globalsOptions?: unknown;
+    globalsOptions?: IGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     let app: INestApplicationContext;
     try {
-      app = await NestFactory.createApplicationContext(this.module);
+      const appModule = YalcDefaultAppModule.forRoot(
+        this.appAlias,
+        [this.module, ...(_options?.globalsOptions?.extraImports ?? [])],
+        _options?.globalsOptions,
+      );
+
+      app = await NestFactory.createApplicationContext(appModule);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));

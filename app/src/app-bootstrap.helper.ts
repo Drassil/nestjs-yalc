@@ -1,6 +1,7 @@
 import { SystemExceptionFilter } from '@nestjs-yalc/errors/filters/index.js';
 import {
   BadRequestException,
+  DynamicModule,
   ExceptionFilter,
   ValidationPipe,
   ValidationPipeOptions,
@@ -18,6 +19,7 @@ import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import { YalcDefaultAppModule } from './base-app-module.helper.js';
 
 export interface IGlobalOptions {
   /**
@@ -28,6 +30,8 @@ export interface IGlobalOptions {
   abortOnError?: boolean;
   enableSwagger?: boolean;
   validationPipeOptions?: ValidationPipeOptions;
+  appAlias: string;
+  extraImports?: NonNullable<DynamicModule['imports']>;
 }
 
 export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
@@ -91,10 +95,16 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
 
+    const appModule = YalcDefaultAppModule.forRoot(
+      this.appAlias,
+      [this.module, ...(options?.globalsOptions?.extraImports ?? [])],
+      options?.globalsOptions,
+    );
+
     let app;
     try {
       app = await NestFactory.create<NestFastifyApplication>(
-        this.module,
+        appModule,
         new FastifyAdapter(this.fastifyInstance as any),
         {
           bufferLogs: false,
