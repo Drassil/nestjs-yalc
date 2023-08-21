@@ -4,6 +4,9 @@ import { LogLevel } from '@nestjs/common';
 declare global {
   var __JEST_DISABLE_DB: boolean;
   var TypeORM_Seeding_Connection: any;
+  var TypeORM_Migration_classes:
+    | { [connName: string]: MigrationInterface[] | undefined }
+    | undefined;
 
   namespace NodeJS {
     interface ProcessEnv {
