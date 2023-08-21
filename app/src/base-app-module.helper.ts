@@ -21,7 +21,7 @@ import {
 } from './app-config.service.js';
 import { AppContextModule } from './app-context.module.js';
 import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
-import { ConfigModule, registerAs } from '@nestjs/config';
+import { ConfigModule, ConfigService, registerAs } from '@nestjs/config';
 import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
 import { IGlobalOptions } from './app-bootstrap.helper.js';
@@ -105,9 +105,7 @@ export function yalcBaseAppModuleMetadataFactory(
   ];
 
   if (options?.logger) {
-    _providers.push(
-      LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
-    );
+    _providers.push(LoggerServiceFactory(APP_LOGGER_SERVICE, appAlias));
   }
 
   const hasConfig = _options.extraConfigs || _options.configFactory;
@@ -302,7 +300,14 @@ export class YalcDefaultAppModule {
     ];
 
     providers.push(
-      LoggerServiceFactory(appAlias, APP_LOGGER_SERVICE, appAlias),
+      LoggerServiceFactory(APP_LOGGER_SERVICE, appAlias),
+      {
+        provide: AppConfigService,
+        useFactory: (config: ConfigService) => {
+          return new AppConfigService(config, appAlias);
+        },
+        inject: [ConfigService],
+      },
       {
         provide: SYSTEM_LOGGER_SERVICE,
         useFactory: (logger) => logger,

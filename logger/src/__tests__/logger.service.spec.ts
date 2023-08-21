@@ -28,11 +28,7 @@ describe('LoggerServiceFactory', () => {
   });
 
   it('should create logger service', () => {
-    const loggerService = LoggerServiceFactory(
-      'TestConf',
-      'TestProvide',
-      'TestContext',
-    );
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
     expect(loggerService).toBeDefined();
     expect(loggerService.provide).toBe('TestProvide');
     expect(loggerService.inject).toEqual([ConfigService]);
@@ -47,11 +43,7 @@ describe('LoggerServiceFactory', () => {
       logLevels: ['warn', 'log'],
     });
 
-    const loggerService = LoggerServiceFactory(
-      'TestConf',
-      'TestProvide',
-      'TestContext',
-    );
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
     const logger = loggerService.useFactory(configService);
     expect(logger).toBeDefined();
   });
