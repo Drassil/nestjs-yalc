@@ -5,6 +5,7 @@ import {
   registerSingletonDynamicModule,
   envFilePathList,
   yalcBaseAppModuleMetadataFactory,
+  YalcDefaultAppModule,
 } from '../base-app-module.helper.js';
 import { LifeCycleHandler } from '../life-cycle-handler.service.js';
 import { DynamicModule, Module } from '@nestjs/common';
@@ -24,6 +25,7 @@ class DummyDynamicModule extends YalcBaseAppModule {
         configFactory: () => ({}),
         logger: true,
         isSingleton: true,
+        imports: [YalcDefaultAppModule.forRoot('appAlias', [])],
         ...options,
       }),
       options,
