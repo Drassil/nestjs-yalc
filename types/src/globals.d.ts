@@ -1,5 +1,6 @@
 /* eslint-disable no-var */
 import { LogLevel } from '@nestjs/common';
+import { MigrationInterface } from 'typeorm';
 
 declare global {
   var __JEST_DISABLE_DB: boolean;
