@@ -5,11 +5,10 @@ import { FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { YalcDefaultAppModule } from './base-app-module.helper.js';
 import { IGlobalOptions } from './app-bootstrap.helper.js';
 
 export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
-  constructor(appAlias: string, readonly module: any) {
+  constructor(appAlias: string, module: any) {
     super(appAlias, module);
   }
 
@@ -40,13 +39,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }) {
     let app: INestApplicationContext;
     try {
-      const appModule = YalcDefaultAppModule.forRoot(
-        this.appAlias,
-        [this.module, ...(_options?.globalsOptions?.extraImports ?? [])],
-        _options?.globalsOptions,
-      );
-
-      app = await NestFactory.createApplicationContext(appModule);
+      app = await NestFactory.createApplicationContext(this.module);
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(clc.red('Failed to create app'), clc.red(err));

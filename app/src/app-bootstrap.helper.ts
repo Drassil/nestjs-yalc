@@ -19,7 +19,6 @@ import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
-import { YalcDefaultAppModule } from './base-app-module.helper.js';
 
 export interface IGlobalOptions {
   /**
@@ -38,7 +37,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   private fastifyInstance?: FastifyInstance;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(appAlias: string, readonly module: any) {
+  constructor(appAlias: string, module: any) {
     super(appAlias, module);
   }
 
@@ -95,16 +94,10 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
 
-    const appModule = YalcDefaultAppModule.forRoot(
-      this.appAlias,
-      [this.module, ...(options?.globalsOptions?.extraImports ?? [])],
-      options?.globalsOptions,
-    );
-
     let app;
     try {
       app = await NestFactory.create<NestFastifyApplication>(
-        appModule,
+        this.module,
         new FastifyAdapter(this.fastifyInstance as any),
         {
           bufferLogs: false,
