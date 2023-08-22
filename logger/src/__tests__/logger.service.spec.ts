@@ -1,18 +1,18 @@
 import { jest, describe, beforeEach, it, expect } from '@jest/globals';
 import { Test } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
 const { LoggerServiceFactory } = await import('../logger.service.js');
+import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
 
 describe('LoggerServiceFactory', () => {
-  let configService: ConfigService;
+  let configService: AppConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         {
-          provide: ConfigService,
+          provide: AppConfigService,
           useValue: {
-            get: jest.fn().mockReturnValue({
+            values: jest.fn().mockReturnValue({
               loggerType: 'console',
               logContextLevels: {
                 TestContext: ['debug', 'error'],
@@ -24,34 +24,26 @@ describe('LoggerServiceFactory', () => {
       ],
     }).compile();
 
-    configService = moduleRef.get<ConfigService>(ConfigService);
+    configService = moduleRef.get<AppConfigService>(AppConfigService);
   });
 
   it('should create logger service', () => {
-    const loggerService = LoggerServiceFactory(
-      'TestConf',
-      'TestProvide',
-      'TestContext',
-    );
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
     expect(loggerService).toBeDefined();
     expect(loggerService.provide).toBe('TestProvide');
-    expect(loggerService.inject).toEqual([ConfigService]);
+    expect(loggerService.inject).toEqual([AppConfigService]);
 
     const logger = loggerService.useFactory(configService);
     expect(logger).toBeDefined();
   });
 
   it('should create logger service with default log levels', () => {
-    jest.spyOn(configService, 'get').mockReturnValue({
+    jest.spyOn(configService, 'values').mockReturnValue({
       loggerType: 'console',
       logLevels: ['warn', 'log'],
     });
 
-    const loggerService = LoggerServiceFactory(
-      'TestConf',
-      'TestProvide',
-      'TestContext',
-    );
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
     const logger = loggerService.useFactory(configService);
     expect(logger).toBeDefined();
   });

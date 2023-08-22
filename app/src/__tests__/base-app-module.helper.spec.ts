@@ -5,10 +5,11 @@ import {
   registerSingletonDynamicModule,
   envFilePathList,
   yalcBaseAppModuleMetadataFactory,
+  YalcDefaultAppModule,
 } from '../base-app-module.helper.js';
 import { LifeCycleHandler } from '../life-cycle-handler.service.js';
 import { DynamicModule, Module } from '@nestjs/common';
-import { IBaseAppOptions } from '../base-app.interface.js';
+import { IYalcBaseAppOptions } from '../base-app.interface.js';
 import { createMock } from '@golevelup/ts-jest';
 import { AppContextService } from '../app-context.service.js';
 
@@ -17,13 +18,14 @@ let appContextService: AppContextService = createMock<AppContextService>({
 });
 
 class DummyDynamicModule extends YalcBaseAppModule {
-  static forRoot(options?: IBaseAppOptions): DynamicModule {
+  static forRoot(options?: IYalcBaseAppOptions): DynamicModule {
     return this.assignDynamicProperties(
       yalcBaseAppModuleMetadataFactory(this, 'appAlias', {
         ...this.assignDynamicProperties({}),
         configFactory: () => ({}),
         logger: true,
         isSingleton: true,
+        imports: [YalcDefaultAppModule.forRoot('appAlias', [])],
         ...options,
       }),
       options,
@@ -123,7 +125,7 @@ describe('base-app', () => {
 
   describe('registerSingletonDynamicModule', () => {
     class TestModule extends DummyDynamicModule {
-      static forRoot(options?: IBaseAppOptions | undefined): DynamicModule {
+      static forRoot(options?: IYalcBaseAppOptions | undefined): DynamicModule {
         return this._forRoot('test', options);
       }
     }

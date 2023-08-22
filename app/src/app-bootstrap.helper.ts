@@ -1,6 +1,7 @@
 import { SystemExceptionFilter } from '@nestjs-yalc/errors/filters/index.js';
 import {
   BadRequestException,
+  DynamicModule,
   ExceptionFilter,
   ValidationPipe,
   ValidationPipeOptions,
@@ -28,13 +29,15 @@ export interface IGlobalOptions {
   abortOnError?: boolean;
   enableSwagger?: boolean;
   validationPipeOptions?: ValidationPipeOptions;
+  appAlias: string;
+  extraImports?: NonNullable<DynamicModule['imports']>;
 }
 
 export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   private fastifyInstance?: FastifyInstance;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(appAlias: string, readonly module: any) {
+  constructor(appAlias: string, module: any) {
     super(appAlias, module);
   }
 
