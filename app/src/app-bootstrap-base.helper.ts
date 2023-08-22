@@ -38,6 +38,10 @@ export abstract class BaseAppBootstrap<
     return this;
   }
 
+  getAppAlias() {
+    return this.appAlias;
+  }
+
   getConf() {
     const configService = this.getApp().get<ConfigService>(ConfigService);
     return configService.get<IServiceConf>(this.appAlias);
