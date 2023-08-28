@@ -118,8 +118,11 @@ export const encryptString = async (
   }
 };
 
+const cachedSsmVariables: { [key: string]: string } = {};
+
 export const decryptSsmVariable = async (
   toDecrypt: string,
+  cache: boolean = true,
 ): Promise<string> => {
   const ssm = new aws.SSM();
 
@@ -128,9 +131,13 @@ export const decryptSsmVariable = async (
    * @todo remove this
    */
   // eslint-disable-next-line no-console
-  console.trace('decryptSsmVariable', toDecrypt);
+  console.debug('decryptSsmVariable', toDecrypt);
 
-  return new Promise((resolve) => {
+  if (cache && cachedSsmVariables[toDecrypt]) {
+    return cachedSsmVariables[toDecrypt];
+  }
+
+  const value: string = await new Promise((resolve) => {
     ssm.getParameter(
       {
         Name: toDecrypt,
@@ -147,6 +154,12 @@ export const decryptSsmVariable = async (
       },
     );
   });
+
+  if (cache) {
+    cachedSsmVariables[toDecrypt] = value;
+  }
+
+  return value;
 };
 
 /**

@@ -1,3 +1,4 @@
+import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import {
   expect,
   jest,
@@ -8,217 +9,184 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
+import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
 
 jest.mock('aws-sdk');
 
-import { createMock } from '@golevelup/ts-jest';
 import AWS from 'aws-sdk';
-import crypto from 'crypto';
+const localEncryption = (await importMockedEsm(
+  '@nestjs-yalc/utils/encryption.helper.js',
+  import.meta,
+)) as DeepMocked<typeof import('@nestjs-yalc/utils/encryption.helper.js')>;
 const $ = await import('../encryption.helper.js');
 
-// Please let me know if you know how to solve this as unknown as void.
-jest
-  .spyOn(crypto, 'randomBytes')
-  .mockReturnValue(
-    Buffer.from('173606b5fe22770c890b48c41866abc3', 'hex') as unknown as void,
-  );
+var mockKMSDecrypt: jest.Mock;
+var mockKMSEncrypt: jest.Mock;
+var mockSSMGetParameter: jest.Mock;
 
 jest.mock('aws-sdk', () => {
-  type decryptType = typeof AWS.KMS.prototype.decrypt;
-  type encryptType = typeof AWS.KMS.prototype.encrypt;
-
-  const mockedKMS = createMock<AWS.KMS>();
-  const mockedSSM = createMock<AWS.SSM>();
-
-  mockedKMS.encrypt.mockImplementationOnce(((param: any, callback: any) => {
-    callback(null, {
-      CiphertextBlob: 'should be able to decrypt simply locally',
-    });
-  }) as encryptType);
-  mockedKMS.encrypt.mockImplementationOnce(((param: any, callback: any) => {
-    callback('some error message');
-  }) as encryptType);
-  mockedKMS.encrypt.mockImplementationOnce(((param: any, callback: any) => {
-    callback(null, {});
-  }) as encryptType);
-
-  mockedKMS.decrypt.mockImplementation(((param: any, callback: any) => {
-    callback(null, { Plaintext: 'someString' });
-  }) as decryptType);
-
-  // First call
-  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
-    callback(null, { Parameter: { Value: 'someString' } });
-  });
-
-  //second Call
-  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
-    callback('some error', {});
-  });
-
-  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
-    callback(null, { Parameter: null });
-  });
-
-  mockedSSM.getParameter.mockImplementationOnce((param: any, callback: any) => {
-    callback(null, { Parameter: { Value: 'someString' } });
-  });
+  mockKMSDecrypt = jest.fn();
+  mockKMSEncrypt = jest.fn();
+  mockSSMGetParameter = jest.fn();
 
   return {
-    KMS: jest.fn(() => mockedKMS),
-    SSM: jest.fn(() => mockedSSM),
+    KMS: jest.fn(() =>
+      createMock<AWS.KMS>({
+        decrypt: mockKMSDecrypt as any,
+        encrypt: mockKMSEncrypt as any,
+      }),
+    ),
+    SSM: jest.fn(() =>
+      createMock<AWS.SSM>({
+        getParameter: mockSSMGetParameter as any,
+      }),
+    ),
   };
 });
 
-beforeAll(async () => {
-  //get requires env vars
-});
-
-describe('Encryption helper test', () => {
-  const encryptionKey =
-    '60f810732e3c8d1eb5ba227143d46aabce1bb1ae0aa7081ef0b0c3bbaaed76a6';
-  const encrypted =
-    '173606b5fe22770c890b48c41866abc3:3d34fcfb20bc5aae0e821c721449af6b9a58dbbd1596719e919a25e35ed52fb0d74f62ff8b7b24b6';
-  const tempStage = process.env.NODE_ENV;
-
-  afterEach(() => {
-    delete process.env.IS_AWS_ENV;
-    delete process.env.AWS_REMOTE_KEYID;
-    process.env.NODE_ENV = tempStage;
-  });
-
-  it('should be defined', () => {
-    expect($.decryptString).toBeDefined();
-  });
-
-  it('should be able to decrypt simply locally', async () => {
-    const toEncrypt = 'should be able to decrypt simply locally';
-    const decoded = await $.decryptString(
-      encrypted,
-      $.EncryptMode.LOCAL,
-      encryptionKey,
-    );
-    expect(decoded).toEqual(toEncrypt);
-  });
-
-  it('should be able to encrypt simply locally', async () => {
-    const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-    const encoded = await $.encryptString(
-      toEncrypt,
-      $.EncryptMode.LOCAL,
-      encryptionKey,
-    );
-    expect(
-      await $.decryptString(encoded, $.EncryptMode.LOCAL, encryptionKey),
-    ).toEqual(toEncrypt);
-  });
-
-  it('should be able to encrypt remotely', async () => {
+// Please let me know if you know how to solve this as unknown as void.
+describe('Encryption/Decryption Module', () => {
+  beforeEach(() => {
     process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
     process.env.NODE_ENV = 'production';
-    const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-    const encoded = await $.encryptString(toEncrypt, $.EncryptMode.AWS);
-    expect(encoded).toEqual(toEncrypt); // change toEncrypt to encrypted
   });
 
-  it('should return an error when KMS returns error', async () => {
-    try {
-      process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
-      process.env.NODE_ENV = 'production';
-      const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
-    } catch (error) {
-      expect(error).toEqual('some error message');
-    }
-  });
-
-  it('should return an error when KMS returns object which is missing CiphertextBlob', async () => {
-    try {
-      process.env.AWS_REMOTE_KEYID = 'SomeRemoteKeyWeHaveStoredExternally';
-      process.env.NODE_ENV = 'production';
-      const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
-    } catch (error) {
-      expect(error).toEqual(
-        'Error CiphertextBlob coming from kms encrypt is undefined',
-      );
-    }
-  });
-
-  it('should return an error when AWS_REMOTE_KEYID is missing', async () => {
-    try {
-      process.env.NODE_ENV = 'production';
-      const toEncrypt = 'should be able to decrypt simply locally'; // use same string, even though message is strange
-      await $.encryptString(toEncrypt, $.EncryptMode.AWS);
-    } catch (error) {
-      expect(error).toEqual(
-        new Error(
-          'Calling kms encrypt function without setting the AWS_REMOTE_KEYID variable',
-        ),
-      );
-    }
-  });
-
-  it('should callback after the decrypt', async () => {
-    const result = await new Promise((resolve, reject) => {
-      $.decryptCallback(resolve, reject)(undefined, {
-        Plaintext: 'someString',
-      });
+  // Your test cases go here
+  it('should decrypt using AWS', async () => {
+    mockKMSDecrypt.mockImplementation((params, callback) => {
+      callback(null, { Plaintext: 'decrypted' });
     });
-    expect(result).toEqual('someString');
+
+    const result = await $.decryptString('toDecrypt', $.EncryptMode.AWS);
+    expect(result).toBe('decrypted');
   });
 
-  it('should callback after the decrypt with an error', async () => {
-    const err = new Error('unexpected error');
-
-    await expect(async () => {
-      await new Promise((resolve, reject) => {
-        $.decryptCallback(resolve, reject)(err, {
-          Plaintext: 'someString',
-        });
-      });
-    }).rejects.toEqual(err);
-  });
-
-  it('should callback after the decrypt with empty string if plaintext is undefined', async () => {
-    const result = await new Promise((resolve, reject) => {
-      $.decryptCallback(resolve, reject)(undefined, {});
+  it('should handle AWS decryption error', async () => {
+    mockKMSDecrypt.mockImplementation((params, callback) => {
+      callback(new Error('AWS Error'), null);
     });
-    expect(result).toEqual('');
+
+    await expect(
+      $.decryptString('toDecrypt', $.EncryptMode.AWS),
+    ).rejects.toThrow('AWS Error');
   });
 
-  it('should async decrypt', async () => {
-    await $.asyncDecrypt('someInput');
+  it('should decrypt using LOCAL', async () => {
+    jest.spyOn(localEncryption, 'decryptAes').mockReturnValue('localDecrypted');
+    const result = await $.decryptString('toDecrypt', $.EncryptMode.LOCAL);
+    expect(result).toBe('localDecrypted');
   });
 
-  it('should be able to decrypt remotely on aws', async () => {
-    process.env.NODE_ENV = 'production';
-    const result = await $.decryptString(encrypted, $.EncryptMode.AWS);
-    delete process.env.IS_AWS_ENV;
-    expect(result).toEqual('someString');
+  it('should encrypt using AWS', async () => {
+    const encryptionResult = Buffer.from('encrypted');
+    mockKMSEncrypt.mockImplementation((params, callback) => {
+      callback(null, { CiphertextBlob: encryptionResult });
+    });
+
+    const result = await $.encryptString('toEncrypt', $.EncryptMode.AWS);
+    expect(result).toBe(encryptionResult.toString('base64'));
   });
 
-  it('Should be able to decrypt an SSM Secure variable', async () => {
-    const result = await $.decryptSsmVariable('toDecrypt');
-    expect(result).toEqual('someString');
+  it('should handle AWS encryption error', async () => {
+    mockKMSEncrypt.mockImplementation((params, callback) => {
+      callback(new Error('AWS Error'), null);
+    });
+
+    await expect(
+      $.encryptString('toEncrypt', $.EncryptMode.AWS),
+    ).rejects.toThrow('AWS Error');
   });
 
-  it('Should return an empty string if there are some error during ssm decryption ', async () => {
-    const result = await $.decryptSsmVariable('toDecrypt');
+  it('should encrypt using LOCAL', async () => {
+    jest.spyOn(localEncryption, 'encryptAes').mockReturnValue('localEncrypted');
+    const result = await $.encryptString('toEncrypt', $.EncryptMode.LOCAL);
+    expect(result).toBe('localEncrypted');
+  });
+
+  it('should handle SSM variable decryption with cache', async () => {
+    mockSSMGetParameter.mockImplementation((params, callback) => {
+      callback(null, { Parameter: { Value: 'ssmDecrypted' } });
+    });
+
+    const result = await $.decryptSsmVariable('toDecrypt', true);
+    expect(result).toBe('ssmDecrypted');
+  });
+
+  it('should handle SSM variable decryption with cache', async () => {
+    mockSSMGetParameter.mockImplementation((params, callback) => {
+      callback(null, { Parameter: { Value: 'test' } });
+    });
+
+    const result = await $.decryptSsmVariable('toDecrypt', true);
+    expect(result).toBe('ssmDecrypted');
+  });
+
+  it('should handle SSM variable decryption error', async () => {
+    mockSSMGetParameter.mockImplementation((params, callback) => {
+      callback(new Error('SSM Error'), null);
+    });
+
+    const result = await $.decryptSsmVariable('toDecrypt', false);
     expect(result).toBe('');
   });
 
-  it('Should return an empty string if the variable has no ssm decrypted value', async () => {
-    const result = await $.decryptSsmVariable('toDecrypt');
-    expect(result).toBe('');
+  it('should set environment variables from SSM', async () => {
+    mockSSMGetParameter.mockImplementation((params, callback) => {
+      callback(null, { Parameter: { Value: 'ssmDecrypted' } });
+    });
+
+    const envVars = { TEST_VAR: 'ssmVar' };
+    const result = await $.setEnvironmentVariablesFromSsm(envVars);
+    expect(result).toEqual({ TEST_VAR: 'ssmDecrypted' });
+    expect(process.env.TEST_VAR).toBe('ssmDecrypted');
   });
 
-  it('Should be set the environment variable with ssm decrypted variable', async () => {
-    process.env['TEST_ENV'] = '';
-    const envVariableToDecrypt = {
-      ['TEST_ENV']: 'TEST_ENV',
-    };
-    await $.setEnvironmentVariablesFromSsm(envVariableToDecrypt);
-    expect(process.env['TEST_ENV']).toBe('someString');
+  it('should throw error if AWS_REMOTE_KEYID is undefined in asyncEncrypt', async () => {
+    delete process.env.AWS_REMOTE_KEYID;
+    await expect($.asyncEncrypt('toEncrypt')).rejects.toThrow(
+      'Calling kms encrypt function without setting the AWS_REMOTE_KEYID variable',
+    );
+  });
+
+  it('should handle decryptCallback success', () => {
+    const resolve = jest.fn();
+    const reject = jest.fn();
+    const callback = $.decryptCallback(resolve, reject);
+
+    callback(null, { Plaintext: 'decrypted' });
+    expect(resolve).toHaveBeenCalledWith('decrypted');
+    expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should handle decryptCallback error', () => {
+    const resolve = jest.fn();
+    const reject = jest.fn();
+    const callback = $.decryptCallback(resolve, reject);
+
+    callback(new Error('Some error'), null);
+    expect(reject).toHaveBeenCalledWith(new Error('Some error'));
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it('should handle decryptCallback with undefined Plaintext', () => {
+    const resolve = jest.fn();
+    const reject = jest.fn();
+    const callback = $.decryptCallback(resolve, reject);
+
+    callback(null, {});
+    expect(resolve).toHaveBeenCalledWith('');
+    expect(reject).not.toHaveBeenCalled();
+  });
+
+  it('should handle undefined CiphertextBlob in asyncEncrypt', async () => {
+    mockKMSEncrypt.mockImplementation((params, callback) => {
+      callback(null, { CiphertextBlob: undefined });
+    });
+
+    const result = $.asyncEncrypt('toEncrypt');
+
+    await expect(result).rejects.toEqual(
+      'Error CiphertextBlob coming from kms encrypt is undefined',
+    );
   });
 });

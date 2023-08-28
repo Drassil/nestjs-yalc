@@ -20,7 +20,7 @@ Object.keys(paths).map((k: string) => {
   if (!k.endsWith('*')) {
     projectList[k] = {
       path: path.replace('/src', '').replace('./', ''),
-      sourcePath: path,
+      sourcePath: path.replace('./', ''),
       type: 'library',
     };
   }
