@@ -126,14 +126,18 @@ export const decryptSsmVariable = async (
 ): Promise<string> => {
   const ssm = new aws.SSM();
 
-  /**
-   * Temporary log to debug ssm variable
-   * @todo remove this
-   */
-  // eslint-disable-next-line no-console
-  console.debug('decryptSsmVariable', toDecrypt);
-
   if (cache && cachedSsmVariables[toDecrypt]) {
+    /**
+     * Temporary log to debug ssm variable
+     * @todo remove this
+     */
+    // eslint-disable-next-line no-console
+    console.debug(
+      'decryptSsmVariable cached',
+      toDecrypt,
+      cachedSsmVariables[toDecrypt],
+    );
+
     return cachedSsmVariables[toDecrypt];
   }
 
@@ -158,6 +162,13 @@ export const decryptSsmVariable = async (
   if (cache) {
     cachedSsmVariables[toDecrypt] = value;
   }
+
+  /**
+   * Temporary log to debug ssm variable
+   * @todo remove this
+   */
+  // eslint-disable-next-line no-console
+  console.debug('decryptSsmVariable', toDecrypt, cachedSsmVariables[toDecrypt]);
 
   return value;
 };
