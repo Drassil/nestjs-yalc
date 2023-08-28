@@ -123,6 +123,13 @@ export const decryptSsmVariable = async (
 ): Promise<string> => {
   const ssm = new aws.SSM();
 
+  /**
+   * Temporary log to debug ssm variable
+   * @todo remove this
+   */
+  // eslint-disable-next-line no-console
+  console.trace('decryptSsmVariable', toDecrypt);
+
   return new Promise((resolve) => {
     ssm.getParameter(
       {
