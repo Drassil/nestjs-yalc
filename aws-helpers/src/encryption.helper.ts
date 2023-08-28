@@ -153,15 +153,15 @@ export const decryptSsmVariable = async (
           console.error('Error while decrypting ssm variable', err);
           resolve('');
         } else {
+          if (cache) {
+            cachedSsmVariables[toDecrypt] = data.Parameter.Value;
+          }
+
           resolve(data.Parameter.Value);
         }
       },
     );
   });
-
-  if (cache) {
-    cachedSsmVariables[toDecrypt] = value;
-  }
 
   /**
    * Temporary log to debug ssm variable
