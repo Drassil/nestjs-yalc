@@ -1,6 +1,7 @@
 import aws from 'aws-sdk';
 import * as localEncryption from '@nestjs-yalc/utils/encryption.helper.js';
 import { PromiseResult } from 'aws-sdk/lib/request.js';
+import { Logger } from '@nestjs/common';
 
 /**
  *  Used for everything locally, must still be passed since sometimes we want to use other keys
@@ -131,8 +132,8 @@ export const decryptSsmVariable = async (
   if (useCache) {
     if (cachedSsmVariables.has(toDecrypt)) {
       const cachedValue = cachedSsmVariables.get(toDecrypt)!;
-      // eslint-disable-next-line no-console
-      console.debug('decryptSsmVariable cached', toDecrypt, cachedValue);
+
+      Logger.debug('decryptSsmVariable cached', toDecrypt, cachedValue);
       const value = await cachedValue;
       return value.Parameter?.Value ?? '';
     }
@@ -150,13 +151,11 @@ export const decryptSsmVariable = async (
 
     const data = await dataPromise;
 
-    // eslint-disable-next-line no-console
-    console.debug('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
+    Logger.debug('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
 
     return data.Parameter?.Value ?? '';
   } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Error while decrypting ssm variable', err);
+    Logger.error('Error while decrypting ssm variable', err);
     return '';
   }
 };
@@ -170,8 +169,8 @@ export const setEnvironmentVariablesFromSsm = async (
     async ([envVar, ssmVar]) => {
       const value = await decryptSsmVariable(ssmVar, useCache);
       process.env[envVar] = ssmVars[envVar] = value;
-      // eslint-disable-next-line no-console
-      console.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
+
+      Logger.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
     },
   );
 
