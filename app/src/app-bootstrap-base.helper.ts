@@ -1,6 +1,7 @@
 import {
   DynamicModule,
   INestApplicationContext,
+  Logger,
   LoggerService,
   Type,
 } from '@nestjs/common';
@@ -75,6 +76,7 @@ export abstract class BaseAppBootstrap<
     this.loggerService = this.getApp().get(SYSTEM_LOGGER_SERVICE);
     this.loggerService.debug?.('Setting logger service...');
     this.getApp().useLogger(this.loggerService);
+    Logger.overrideLogger(this.loggerService);
     return this;
   }
 }

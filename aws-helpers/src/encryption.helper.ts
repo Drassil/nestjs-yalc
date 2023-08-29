@@ -1,5 +1,7 @@
 import aws from 'aws-sdk';
 import * as localEncryption from '@nestjs-yalc/utils/encryption.helper.js';
+import { PromiseResult } from 'aws-sdk/lib/request.js';
+import { Logger } from '@nestjs/common';
 
 /**
  *  Used for everything locally, must still be passed since sometimes we want to use other keys
@@ -118,43 +120,66 @@ export const encryptString = async (
   }
 };
 
+const cachedSsmVariables = new Map<
+  string,
+  Promise<PromiseResult<aws.SSM.GetParameterResult, aws.AWSError>>
+>();
+
 export const decryptSsmVariable = async (
   toDecrypt: string,
+  useCache: boolean = true,
 ): Promise<string> => {
-  const ssm = new aws.SSM();
+  if (useCache) {
+    if (cachedSsmVariables.has(toDecrypt)) {
+      const cachedValue = cachedSsmVariables.get(toDecrypt)!;
 
-  return new Promise((resolve) => {
-    ssm.getParameter(
-      {
-        Name: toDecrypt,
-        WithDecryption: true,
-      },
-      (err, data) => {
-        if (err || !data.Parameter?.Value) {
-          // eslint-disable-next-line no-console
-          console.error('Error while decrypting ssm variable', err);
-          resolve('');
-        } else {
-          resolve(data.Parameter.Value);
-        }
-      },
-    );
-  });
-};
-
-/**
- * This function set the process.env variables passed as paramenter with the corrisponding ssm variable decrypted
- * @param envVariableToDecrypt mapping variable between process.env and ssm variables name
- */
-export const setEnvironmentVariablesFromSsm = async (envVariableToDecrypt: {
-  [key: string]: string;
-}) => {
-  const ssmVars: { [key: string]: string } = {};
-  for (const variable of Object.keys(envVariableToDecrypt)) {
-    process.env[variable] = ssmVars[variable] = await decryptSsmVariable(
-      envVariableToDecrypt[variable],
-    );
+      const value = await cachedValue;
+      // Logger.debug(
+      //   `decryptSsmVariable cached ${toDecrypt}: ${value.Parameter?.Value}`,
+      // );
+      return value.Parameter?.Value ?? '';
+    }
   }
 
+  const ssm = new aws.SSM();
+  try {
+    // Logger.debug('decryptSsmVariable getting...' + toDecrypt);
+
+    const dataPromise = ssm
+      .getParameter({ Name: toDecrypt, WithDecryption: true })
+      .promise();
+
+    if (useCache) {
+      cachedSsmVariables.set(toDecrypt, dataPromise);
+    }
+
+    const data = await dataPromise;
+
+    // Logger.debug(
+    //   `decryptSsmVariable got ${toDecrypt}: ${data.Parameter?.Value}`,
+    // );
+
+    return data.Parameter?.Value ?? '';
+  } catch (err) {
+    Logger.error('Error while decrypting ssm variable', err);
+    return '';
+  }
+};
+
+export const setEnvironmentVariablesFromSsm = async (
+  envVariableToDecrypt: Record<string, string>,
+  useCache: boolean = true,
+): Promise<Record<string, string>> => {
+  const ssmVars: Record<string, string> = {};
+  const promises = Object.entries(envVariableToDecrypt).map(
+    async ([envVar, ssmVar]) => {
+      const value = await decryptSsmVariable(ssmVar, useCache);
+      process.env[envVar] = ssmVars[envVar] = value;
+
+      // Logger.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
+    },
+  );
+
+  await Promise.all(promises);
   return ssmVars;
 };

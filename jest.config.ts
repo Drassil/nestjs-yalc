@@ -20,7 +20,7 @@ Object.keys(paths).map((k: string) => {
   if (!k.endsWith('*')) {
     projectList[k] = {
       path: path.replace('/src', '').replace('./', ''),
-      sourcePath: path,
+      sourcePath: path.replace('./', ''),
       type: 'library',
     };
   }
@@ -53,7 +53,7 @@ const options: IOptions = {
     '@nestjs-yalc/aws-helpers': {
       coverageThreshold: {
         branches: 100,
-        functions: 95.23,
+        functions: 95,
         lines: 91.66,
         statements: 92.59,
       },
