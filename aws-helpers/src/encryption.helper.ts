@@ -133,14 +133,18 @@ export const decryptSsmVariable = async (
     if (cachedSsmVariables.has(toDecrypt)) {
       const cachedValue = cachedSsmVariables.get(toDecrypt)!;
 
-      Logger.debug('decryptSsmVariable cached', toDecrypt, cachedValue);
       const value = await cachedValue;
+      Logger.debug(
+        `decryptSsmVariable cached ${toDecrypt}: ${value.Parameter?.Value}`,
+      );
       return value.Parameter?.Value ?? '';
     }
   }
 
   const ssm = new aws.SSM();
   try {
+    Logger.debug('decryptSsmVariable getting...' + toDecrypt);
+
     const dataPromise = ssm
       .getParameter({ Name: toDecrypt, WithDecryption: true })
       .promise();
@@ -151,7 +155,9 @@ export const decryptSsmVariable = async (
 
     const data = await dataPromise;
 
-    Logger.debug('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
+    Logger.debug(
+      `decryptSsmVariable got ${toDecrypt}: ${data.Parameter?.Value}`,
+    );
 
     return data.Parameter?.Value ?? '';
   } catch (err) {
