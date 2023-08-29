@@ -126,7 +126,16 @@ describe('Encryption/Decryption Module', () => {
       Parameter: {},
     });
 
-    const result = await $.decryptSsmVariable('toDecrypt', false);
+    const result = await $.decryptSsmVariable('toDecryptNoValue');
+    expect(result).toBe('');
+  });
+
+  it('should handle SSM variable decryption with cache with empty value...again', async () => {
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: {},
+    });
+
+    const result = await $.decryptSsmVariable('toDecryptNoValue');
     expect(result).toBe('');
   });
 
@@ -208,5 +217,32 @@ describe('Encryption/Decryption Module', () => {
     await expect(result).rejects.toEqual(
       'Error CiphertextBlob coming from kms encrypt is undefined',
     );
+  });
+
+  it('should handle concurrent SSM variable decryption with cache', async () => {
+    mockSSMGetParameter.mockReset();
+    // Mock SSM getParameter to return a promise that resolves after 100ms
+    mockSSMGetParameter.mockReturnValue(
+      new Promise((resolve) =>
+        setTimeout(
+          () => resolve({ Parameter: { Value: 'ssmDecrypted' } }),
+          100,
+        ),
+      ),
+    );
+
+    // Make concurrent calls to decryptSsmVariable
+    const promises = Array(5)
+      .fill(null)
+      .map(() => $.decryptSsmVariable('concurrentDecrypt', true));
+
+    // Wait for all promises to resolve
+    const results = await Promise.all(promises);
+
+    // Check that all promises resolved to the same value
+    expect(results).toEqual(Array(5).fill('ssmDecrypted'));
+
+    // Check that SSM getParameter was called only once
+    expect(mockSSMGetParameter).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,5 +1,6 @@
 import aws from 'aws-sdk';
 import * as localEncryption from '@nestjs-yalc/utils/encryption.helper.js';
+import { PromiseResult } from 'aws-sdk/lib/request.js';
 
 /**
  *  Used for everything locally, must still be passed since sometimes we want to use other keys
@@ -118,21 +119,37 @@ export const encryptString = async (
   }
 };
 
-const cachedSsmVariables: Record<string, Promise<string> | undefined> = {};
+const cachedSsmVariables = new Map<
+  string,
+  Promise<PromiseResult<aws.SSM.GetParameterResult, aws.AWSError>>
+>();
 
-const getDecryptedValue = async (
-  ssm: aws.SSM,
+export const decryptSsmVariable = async (
   toDecrypt: string,
+  useCache: boolean = true,
 ): Promise<string> => {
+  if (useCache) {
+    if (cachedSsmVariables.has(toDecrypt)) {
+      const cachedValue = cachedSsmVariables.get(toDecrypt)!;
+      // eslint-disable-next-line no-console
+      console.trace('decryptSsmVariable cached', toDecrypt, cachedValue);
+      const value = await cachedValue;
+      return value.Parameter?.Value ?? '';
+    }
+  }
+
+  const ssm = new aws.SSM();
   try {
-    const data = await ssm
+    const dataPromise = ssm
       .getParameter({ Name: toDecrypt, WithDecryption: true })
       .promise();
 
-    /**
-     * Temporary log to debug ssm variable
-     * @todo remove this
-     */
+    if (useCache) {
+      cachedSsmVariables.set(toDecrypt, dataPromise);
+    }
+
+    const data = await dataPromise;
+
     // eslint-disable-next-line no-console
     console.trace('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
 
@@ -142,36 +159,6 @@ const getDecryptedValue = async (
     console.error('Error while decrypting ssm variable', err);
     return '';
   }
-};
-
-export const decryptSsmVariable = async (
-  toDecrypt: string,
-  useCache: boolean = true,
-): Promise<string> => {
-  const cachedValue = await cachedSsmVariables[toDecrypt];
-  if (useCache && typeof cachedValue !== 'undefined') {
-    /**
-     * Temporary log to debug ssm variable
-     * @todo remove this
-     */
-    // eslint-disable-next-line no-console
-    console.debug('decryptSsmVariable cached', toDecrypt, cachedValue);
-
-    return cachedValue;
-  }
-
-  // If the cache is enabled and the variable is not yet cached,
-  // we check if a promise is already in progress for the same variable.
-  // If so, we return that promise to avoid a race condition.
-  if (useCache && typeof cachedValue === 'undefined') {
-    const ssm = new aws.SSM();
-    const value = getDecryptedValue(ssm, toDecrypt);
-    cachedSsmVariables[toDecrypt] = value;
-    return value;
-  }
-
-  const ssm = new aws.SSM();
-  return getDecryptedValue(ssm, toDecrypt);
 };
 
 export const setEnvironmentVariablesFromSsm = async (
