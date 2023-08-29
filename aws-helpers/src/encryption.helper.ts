@@ -132,7 +132,7 @@ export const decryptSsmVariable = async (
     if (cachedSsmVariables.has(toDecrypt)) {
       const cachedValue = cachedSsmVariables.get(toDecrypt)!;
       // eslint-disable-next-line no-console
-      console.trace('decryptSsmVariable cached', toDecrypt, cachedValue);
+      console.debug('decryptSsmVariable cached', toDecrypt, cachedValue);
       const value = await cachedValue;
       return value.Parameter?.Value ?? '';
     }
@@ -151,7 +151,7 @@ export const decryptSsmVariable = async (
     const data = await dataPromise;
 
     // eslint-disable-next-line no-console
-    console.trace('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
+    console.debug('decryptSsmVariable', toDecrypt, data.Parameter?.Value);
 
     return data.Parameter?.Value ?? '';
   } catch (err) {
@@ -170,6 +170,8 @@ export const setEnvironmentVariablesFromSsm = async (
     async ([envVar, ssmVar]) => {
       const value = await decryptSsmVariable(ssmVar, useCache);
       process.env[envVar] = ssmVars[envVar] = value;
+      // eslint-disable-next-line no-console
+      console.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
     },
   );
 
