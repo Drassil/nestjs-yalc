@@ -134,16 +134,16 @@ export const decryptSsmVariable = async (
       const cachedValue = cachedSsmVariables.get(toDecrypt)!;
 
       const value = await cachedValue;
-      Logger.debug(
-        `decryptSsmVariable cached ${toDecrypt}: ${value.Parameter?.Value}`,
-      );
+      // Logger.debug(
+      //   `decryptSsmVariable cached ${toDecrypt}: ${value.Parameter?.Value}`,
+      // );
       return value.Parameter?.Value ?? '';
     }
   }
 
   const ssm = new aws.SSM();
   try {
-    Logger.debug('decryptSsmVariable getting...' + toDecrypt);
+    // Logger.debug('decryptSsmVariable getting...' + toDecrypt);
 
     const dataPromise = ssm
       .getParameter({ Name: toDecrypt, WithDecryption: true })
@@ -155,9 +155,9 @@ export const decryptSsmVariable = async (
 
     const data = await dataPromise;
 
-    Logger.debug(
-      `decryptSsmVariable got ${toDecrypt}: ${data.Parameter?.Value}`,
-    );
+    // Logger.debug(
+    //   `decryptSsmVariable got ${toDecrypt}: ${data.Parameter?.Value}`,
+    // );
 
     return data.Parameter?.Value ?? '';
   } catch (err) {
@@ -176,7 +176,7 @@ export const setEnvironmentVariablesFromSsm = async (
       const value = await decryptSsmVariable(ssmVar, useCache);
       process.env[envVar] = ssmVars[envVar] = value;
 
-      Logger.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
+      // Logger.debug(`Process env: ${envVar} set to ${process.env[envVar]}`);
     },
   );
 
