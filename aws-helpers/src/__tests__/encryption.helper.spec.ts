@@ -38,7 +38,7 @@ jest.mock('aws-sdk', () => {
     ),
     SSM: jest.fn(() =>
       createMock<AWS.SSM>({
-        getParameter: mockSSMGetParameter as any,
+        getParameter: () => ({ promise: mockSSMGetParameter }),
       }),
     ),
   };
@@ -104,26 +104,35 @@ describe('Encryption/Decryption Module', () => {
   });
 
   it('should handle SSM variable decryption with cache', async () => {
-    mockSSMGetParameter.mockImplementation((params, callback) => {
-      callback(null, { Parameter: { Value: 'ssmDecrypted' } });
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: { Value: 'ssmDecrypted' },
+    });
+
+    const result = await $.decryptSsmVariable('toDecrypt');
+    expect(result).toBe('ssmDecrypted');
+  });
+
+  it('should handle SSM variable decryption with cache without value', async () => {
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: null,
     });
 
     const result = await $.decryptSsmVariable('toDecrypt', true);
     expect(result).toBe('ssmDecrypted');
   });
 
-  it('should handle SSM variable decryption with cache', async () => {
-    mockSSMGetParameter.mockImplementation((params, callback) => {
-      callback(null, { Parameter: { Value: 'test' } });
+  it('should handle SSM variable decryption with cache with empty value', async () => {
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: {},
     });
 
-    const result = await $.decryptSsmVariable('toDecrypt', true);
-    expect(result).toBe('ssmDecrypted');
+    const result = await $.decryptSsmVariable('toDecrypt', false);
+    expect(result).toBe('');
   });
 
   it('should handle SSM variable decryption error', async () => {
-    mockSSMGetParameter.mockImplementation((params, callback) => {
-      callback(new Error('SSM Error'), null);
+    mockSSMGetParameter.mockImplementation(() => {
+      throw new Error('SSM Error');
     });
 
     const result = await $.decryptSsmVariable('toDecrypt', false);
@@ -131,8 +140,19 @@ describe('Encryption/Decryption Module', () => {
   });
 
   it('should set environment variables from SSM', async () => {
-    mockSSMGetParameter.mockImplementation((params, callback) => {
-      callback(null, { Parameter: { Value: 'ssmDecrypted' } });
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: { Value: 'ssmDecrypted' },
+    });
+
+    const envVars = { TEST_VAR: 'ssmVar' };
+    const result = await $.setEnvironmentVariablesFromSsm(envVars, false);
+    expect(result).toEqual({ TEST_VAR: 'ssmDecrypted' });
+    expect(process.env.TEST_VAR).toBe('ssmDecrypted');
+  });
+
+  it('should set environment variables from SSM with cache', async () => {
+    mockSSMGetParameter.mockReturnValue({
+      Parameter: { Value: 'ssmDecrypted' },
     });
 
     const envVars = { TEST_VAR: 'ssmVar' };
