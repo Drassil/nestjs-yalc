@@ -190,7 +190,7 @@ export function yalcBaseAppModuleMetadataFactory(
   const _exports: DynamicModule['exports'] = [];
 
   if (hasConfig) {
-    _exports.push(getAppConfigToken(appAlias), AppConfigService);
+    _exports.push(getAppConfigToken(appAlias));
   }
 
   if (exports) {
