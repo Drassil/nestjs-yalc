@@ -46,6 +46,7 @@ export interface IOptions {
   coverageOutputPath?: { (subProjectPath: string): string };
   defaultConfOptions?: IDefaultConfOptions;
   tsJestConfig?: any;
+  extraSetupFiles?: string[] 
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
@@ -107,7 +108,7 @@ export function jestConfGenerator(
     rootDir: `${rootPath}/${proj.sourcePath}/`,
     roots: [`${rootPath}/${proj.path}`],
     maxWorkers,
-    setupFiles: [`${__dirname}/jest.setup.ts`],
+    setupFiles: [`${__dirname}/jest.setup.ts`, ...(options.extraSetupFiles ?? [])],
     coverageThreshold: coverageThreshold(
       projects,
       options.defaultCoverageThreshold,
@@ -149,10 +150,22 @@ export function jestConfGenerator(
 
   // use argv to catch the path argument in any position
   const argv: any = yargs(process.argv.slice(2))
-    .command('$0 [path]', 'test path', (yargs) => {
-      return yargs.positional('path', {
-        describe: 'test path',
-      });
+    .command('$0 [paths]', 'test paths', (yargs) => {
+      return yargs
+        .positional('path', {
+          describe: 'test path',
+          type: 'string',
+          coerce: (arg: string): string[] => {
+            return arg.split(',');
+          },
+        })
+        .option('paths', {
+          describe: 'comma-separated test paths',
+          type: 'string',
+          coerce: (arg: string): string[] => {
+            return arg.split(',');
+          },
+        });
     })
     .showHelpOnFail(false)
     // .options(jestOptionObject)
@@ -160,53 +173,98 @@ export function jestConfGenerator(
       // nothing to do
     }).argv;
 
-  const possiblePath = argv.path ?? argv.testPathPattern?.[0] ?? argv.coverage;
-  const testPath: string = typeof possiblePath === 'string' ? possiblePath : '';
+  const paths = [];
+
+  if (argv.path) {
+    paths.push(argv.path);
+  }
+
+  if (argv.paths) {
+    paths.push(...argv.paths);
+  }
+
+  let possiblePath =
+    (paths.length > 0 ? paths : null) ??
+    argv.testPathPattern?.[0] ??
+    argv.coverage ??
+    '';
 
   // eslint-disable-next-line no-console
-  console.debug('possiblePath', possiblePath);
+  console.debug('possiblePaths', possiblePath);
 
   let config: any = {};
 
-  // "." must be converted to "/"
-  let subProjectPath = testPath.startsWith('.') ? testPath.slice(1) : testPath;
-  subProjectPath = subProjectPath.startsWith(rootPath)
-    ? subProjectPath.slice(rootPath.length)
-    : subProjectPath;
-  // we always need "/" at the beginning of the string
-  subProjectPath = subProjectPath.startsWith('/')
-    ? subProjectPath
-    : `/${subProjectPath}`;
+  function getSubprojectPath(testPath: string) {
+    // "." must be converted to "/"
+    let subProjectPath = testPath.startsWith('.')
+      ? testPath.slice(1)
+      : testPath;
+    subProjectPath = subProjectPath.startsWith(rootPath)
+      ? subProjectPath.slice(rootPath.length)
+      : subProjectPath;
+    // we always need "/" at the beginning of the string
+    subProjectPath = subProjectPath.startsWith('/')
+      ? subProjectPath
+      : `/${subProjectPath}`;
 
-  // get the project which prefix is closest to testPath
-  // to apply the correct path for coverage etc.
-  for (const proj of Object.values(projectList)) {
-    const root: string = proj.path;
-    if (testPath.startsWith(root) && subProjectPath.length < root.length) {
-      subProjectPath = `/${root}`;
+    // get the project which prefix is closest to testPath
+    // to apply the correct path for coverage etc.
+    for (const proj of Object.values(projectList)) {
+      const root: string = proj.path;
+      if (testPath.startsWith(root) && subProjectPath.length < root.length) {
+        subProjectPath = `/${root}`;
+      }
     }
+
+    const lastIndexOfSrc = subProjectPath.lastIndexOf(`/src/`);
+    if (lastIndexOfSrc >= 0)
+      subProjectPath = subProjectPath.substring(0, lastIndexOfSrc);
+
+    return subProjectPath;
   }
 
-  const lastIndexOfSrc = subProjectPath.lastIndexOf(`/src/`);
-  if (lastIndexOfSrc >= 0)
-    subProjectPath = subProjectPath.substring(0, lastIndexOfSrc);
+  let selectedProjects: any[] = [];
+  if (possiblePath === true) {
+    selectedProjects = projects;
+  } else {
+    const testPaths: string[] = Array.isArray(possiblePath)
+      ? possiblePath
+      : [possiblePath];
+
+    // eslint-disable-next-line no-console
+    console.debug('testPaths', testPaths);
+    let subProjectPathList = testPaths.map((v) => getSubprojectPath(v));
+
+    selectedProjects = projects.filter((v: any) =>
+      subProjectPathList.some((subProjectPath) =>
+        v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
+      ),
+    );
+
+    // eslint-disable-next-line no-console
+    console.debug('Subproject path:', subProjectPathList ?? ['']);
+  }
 
   // eslint-disable-next-line no-console
-  console.debug('Subproject path:', subProjectPath ?? '');
+  console.debug(
+    'selectedProjects',
+    selectedProjects.map((v: any) => v.displayName),
+  );
+
+  // we can still support specific coverage output path when only one project is selected
+  const coverageFolder = selectedProjects.length > 1 ? '' : selectedProj;
 
   config = {
     coverageReporters: ['json-summary', 'json', 'lcov', 'text', 'clover'],
     rootDir: `${rootPath}`,
     coverageThreshold: coverageThreshold(
-      projects.filter((v: any) =>
-        v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
-      ),
+      selectedProjects,
       options.defaultCoverageThreshold,
     ),
     coverageDirectory: path.join(
       rootPath,
-      options.coverageOutputPath?.(subProjectPath) ??
-        `docs/compodoc/jestcoverage/${subProjectPath}`,
+      options.coverageOutputPath?.(coverageFolder) ??
+        `docs/compodoc/jestcoverage/${coverageFolder}`,
     ),
     collectCoverageFrom: [
       `**/*.{js,ts}`,
@@ -215,7 +273,7 @@ export function jestConfGenerator(
     ],
   };
 
-  config.projects = projects;
+  config.projects = selectedProjects;
 
   return config;
 }

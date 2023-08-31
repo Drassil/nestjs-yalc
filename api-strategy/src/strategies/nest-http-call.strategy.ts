@@ -19,6 +19,9 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     path: string,
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
+    const headers = {
+      ...options?.headers,
+    };
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to AxiosRequestConfig
@@ -28,7 +31,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
           [k: string | number | symbol]: never;
         }
       | AxiosRequestConfig = {
-      headers: options?.headers,
+      headers,
       method: options?.method,
       signal: options?.signal,
       data: options?.data,

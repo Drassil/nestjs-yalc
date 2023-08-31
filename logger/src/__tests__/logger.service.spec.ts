@@ -1,0 +1,50 @@
+import { jest, describe, beforeEach, it, expect } from '@jest/globals';
+import { Test } from '@nestjs/testing';
+const { LoggerServiceFactory } = await import('../logger.service.js');
+import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
+
+describe('LoggerServiceFactory', () => {
+  let configService: AppConfigService;
+
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        {
+          provide: AppConfigService,
+          useValue: {
+            values: jest.fn().mockReturnValue({
+              loggerType: 'console',
+              logContextLevels: {
+                TestContext: ['debug', 'error'],
+              },
+              logLevels: ['warn', 'log'],
+            }),
+          },
+        },
+      ],
+    }).compile();
+
+    configService = moduleRef.get<AppConfigService>(AppConfigService);
+  });
+
+  it('should create logger service', () => {
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
+    expect(loggerService).toBeDefined();
+    expect(loggerService.provide).toBe('TestProvide');
+    expect(loggerService.inject).toEqual([AppConfigService]);
+
+    const logger = loggerService.useFactory(configService);
+    expect(logger).toBeDefined();
+  });
+
+  it('should create logger service with default log levels', () => {
+    jest.spyOn(configService, 'values').mockReturnValue({
+      loggerType: 'console',
+      logLevels: ['warn', 'log'],
+    });
+
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
+    const logger = loggerService.useFactory(configService);
+    expect(logger).toBeDefined();
+  });
+});

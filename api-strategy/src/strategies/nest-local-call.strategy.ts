@@ -22,18 +22,19 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
-
+    const headers = {
+      ...options?.headers,
+    };
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to InjectOptions;
      */
-
     const _options:
       | {
           [k: string | number | symbol]: never;
         }
       | InjectOptions = {
-      headers: options?.headers,
+      headers,
       method: options?.method,
       /**@todo investigate where to set thi */
       // signal: options?.signal,

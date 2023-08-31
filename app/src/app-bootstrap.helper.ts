@@ -29,18 +29,21 @@ export interface IGlobalOptions {
   abortOnError?: boolean;
   enableSwagger?: boolean;
   validationPipeOptions?: ValidationPipeOptions;
+  extraImports?: NonNullable<DynamicModule['imports']>;
 }
 
-export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
+export class AppBootstrap<
+  TGlobalOptions extends IGlobalOptions = IGlobalOptions,
+> extends BaseAppBootstrap<NestFastifyApplication> {
   private fastifyInstance?: FastifyInstance;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(appAlias: string, readonly module: DynamicModule) {
+  constructor(appAlias: string, module: any) {
     super(appAlias, module);
   }
 
   async startServer(options?: {
-    globalsOptions?: IGlobalOptions;
+    globalsOptions?: TGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
@@ -58,7 +61,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }
 
   async initApp(options?: {
-    globalsOptions?: IGlobalOptions;
+    globalsOptions?: TGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
@@ -70,7 +73,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }
 
   async initSetup(options?: {
-    globalsOptions?: IGlobalOptions;
+    globalsOptions?: TGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.applyBootstrapGlobals(options?.globalsOptions);
@@ -87,7 +90,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }
 
   async createApp(options?: {
-    globalsOptions?: IGlobalOptions;
+    globalsOptions?: TGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
@@ -119,10 +122,8 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
     this.isSwaggerEnabled = enabled;
   }
 
-  async applyBootstrapGlobals(options?: IGlobalOptions) {
+  async applyBootstrapGlobals(options?: TGlobalOptions) {
     await super.applyBootstrapGlobals(options);
-
-    useContainer(this.getApp().select(this.module), { fallbackOnErrors: true });
 
     this.getApp().useGlobalPipes(
       new ValidationPipe({
@@ -163,6 +164,10 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
       );
       SwaggerModule.setup('api', this.getApp(), document);
     }
+
+    useContainer(this.getApp().select(this.getModule()), {
+      fallbackOnErrors: true,
+    });
 
     return this;
   }

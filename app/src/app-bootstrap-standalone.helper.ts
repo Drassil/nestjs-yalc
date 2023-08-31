@@ -1,18 +1,19 @@
-import { DynamicModule, INestApplicationContext } from '@nestjs/common';
+import { INestApplicationContext } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 // import { GqlExceptionFilter } from '@nestjs/graphql';
 import { FastifyInstance } from 'fastify';
 import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import { IGlobalOptions } from './app-bootstrap.helper.js';
 
 export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationContext> {
-  constructor(appAlias: string, readonly module: DynamicModule) {
+  constructor(appAlias: string, module: any) {
     super(appAlias, module);
   }
 
   async initApp(options?: {
-    globalsOptions?: unknown;
+    globalsOptions?: IGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
@@ -33,7 +34,7 @@ export class StandaloneAppBootstrap extends BaseAppBootstrap<INestApplicationCon
   }
 
   async createApp(_options?: {
-    globalsOptions?: unknown;
+    globalsOptions?: IGlobalOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     let app: INestApplicationContext;

@@ -11,7 +11,7 @@ import {
 import {
   defaultDateTransformer,
   enumTransformer,
-} from '../transformer.helper.js';
+} from '../typeorm-transformer.helper.js';
 
 enum TestEnum {
   TEST = 'test',
