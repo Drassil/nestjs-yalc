@@ -1,6 +1,15 @@
+
+/**
+ * Exported by the app modules and used within the apps
+ * NOTE: a system can run multiple apps at the same time
+ */
 export const APP_LOGGER_SERVICE = 'APP_LOGGER_SERVICE';
 export const APP_EVENT_SERVICE = 'APP_EVENT_SERVICE';
 
+/**
+ * Globally exported from the main yalc module
+ */
+export const SYSTEM_EVENT_SERVICE = 'SYSTEM_EVENT_SERVICE';
 export const SYSTEM_LOGGER_SERVICE = 'SYSTEM_LOGGER_SERVICE';
 
 export const CURAPP_CONF_ALIAS = 'conf';

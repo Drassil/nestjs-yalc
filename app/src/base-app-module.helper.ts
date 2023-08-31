@@ -8,6 +8,7 @@ import {
   APP_LOGGER_SERVICE,
   APP_OPTION_TOKEN,
   MODULE_ALIAS_TOKEN,
+  SYSTEM_EVENT_SERVICE,
   SYSTEM_LOGGER_SERVICE,
 } from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
@@ -25,6 +26,7 @@ import { ConfigModule, ConfigService, registerAs } from '@nestjs/config';
 import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
 import { IGlobalOptions } from './app-bootstrap.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -283,7 +285,11 @@ export class YalcDefaultAppModule {
     options?: IGlobalOptions,
   ) {
     const _imports: NonNullable<DynamicModule['imports']> = [
-      EventEmitterModule.forRoot(),
+      EventEmitterModule.forRoot({ wildcard: true }),
+      EventModule.forRootAsync({
+        loggerProvider: SYSTEM_LOGGER_SERVICE,
+        eventServiceToken: SYSTEM_EVENT_SERVICE
+      }),
       AppContextModule,
       ...imports,
     ];
@@ -300,18 +306,17 @@ export class YalcDefaultAppModule {
     ];
 
     providers.push(
-      LoggerServiceFactory(APP_LOGGER_SERVICE, appAlias),
+      {
+        provide: SYSTEM_LOGGER_SERVICE,
+        useFactory: (configService) => LoggerServiceFactory(SYSTEM_LOGGER_SERVICE, appAlias).useFactory(configService),
+        inject: [AppConfigService],
+      },
       {
         provide: AppConfigService,
         useFactory: (config: ConfigService) => {
           return new AppConfigService(config, appAlias);
         },
         inject: [ConfigService],
-      },
-      {
-        provide: SYSTEM_LOGGER_SERVICE,
-        useFactory: (logger) => logger,
-        inject: [APP_LOGGER_SERVICE],
       },
     );
 
@@ -320,7 +325,7 @@ export class YalcDefaultAppModule {
       APP_ALIAS_TOKEN,
     ];
 
-    exports.push(APP_LOGGER_SERVICE, SYSTEM_LOGGER_SERVICE);
+    exports.push(SYSTEM_LOGGER_SERVICE);
 
     return {
       exports,
