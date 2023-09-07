@@ -9,6 +9,13 @@ export interface IEventEmitterOptions<TFormatter extends EventNameFormatter> {
   await?: boolean;
 }
 
+export function formatName<TFormatter extends EventNameFormatter>(
+  name: Parameters<TFormatter> | string,
+  formatter?: TFormatter,
+) {
+  return formatter?.(...name) ?? (Array.isArray(name) ? name.join() : name);
+}
+
 export async function emitEvent<TFormatter extends EventNameFormatter>(
   eventEmitter: EventEmitter2,
   name: Parameters<TFormatter> | string,
@@ -19,8 +26,7 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
     ? maskDataInObject(payload, options.mask)
     : payload;
 
-  const _name =
-    options?.formatter?.(...name) ?? (Array.isArray(name) ? name.join() : name);
+  const _name = formatName(name, options?.formatter);
 
   if (options?.await) {
     return eventEmitter.emitAsync(_name, data);

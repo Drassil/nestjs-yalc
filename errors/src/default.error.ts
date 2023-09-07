@@ -24,6 +24,7 @@ export interface IDefaultErrorOptions {
    */
   systemMessage?: string;
   eventEmitter?: EventEmitter2 | EventEmitter;
+  eventName?: string;
 }
 
 /**
@@ -94,7 +95,7 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
       }
 
       if (options?.eventEmitter) {
-        options.eventEmitter.emit(ON_DEFAULT_ERROR_EVENT, {
+        options.eventEmitter.emit(options.eventName ?? ON_DEFAULT_ERROR_EVENT, {
           data: this.data,
           systemMessage: this.systemMessage,
           message,
