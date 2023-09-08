@@ -5,6 +5,8 @@ import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
+import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helpers.js';
+import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
@@ -19,12 +21,6 @@ function isLoggerOptions(
   );
 }
 
-function isConstructorOptions(
-  eventEmitter?: EventEmitter2 | ConstructorOptions,
-): eventEmitter is ConstructorOptions {
-  return eventEmitter !== undefined && 'wildcard' in eventEmitter;
-}
-
 export interface ILoggerProviderOptions {
   context: string;
   loggerLevels?: LogLevel[];
@@ -34,8 +30,12 @@ export interface ILoggerProviderOptions {
 export interface IEventModuleOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > extends IEventServiceOptions<TFormatter> {
-  loggerProvider?: ImprovedLoggerService | ILoggerProviderOptions | string;
-  eventEmitter?: EventEmitter2 | ConstructorOptions | string;
+  loggerProvider?:
+    | ImprovedLoggerService
+    | ILoggerProviderOptions
+    | Provider<ImprovedLoggerService>
+    | string;
+  eventEmitter?: EventEmitterModuleOptions | Provider<EventEmitter2>;
   eventService?: (
     logger: ImprovedLoggerService,
     emitter: EventEmitter2,
@@ -62,6 +62,8 @@ export class EventModule {
     const loggerProviderName =
       typeof options?.loggerProvider === 'string'
         ? options.loggerProvider
+        : options && isProviderObject(options.loggerProvider)
+        ? (options.loggerProvider as any).provide
         : EVENT_LOGGER;
     const emitterProviderName =
       typeof options?.eventEmitter === 'string'
@@ -69,10 +71,6 @@ export class EventModule {
         : EventEmitter2;
 
     const eventProviderName = options?.eventServiceToken ?? EventService;
-
-    const isEmitterInstance =
-      typeof options?.eventEmitter !== 'string' &&
-      !isConstructorOptions(options?.eventEmitter);
 
     let imports: any[] = [];
     let providers: Provider[] = [
@@ -88,34 +86,37 @@ export class EventModule {
       },
     ];
 
-    providers.push({
-      provide: loggerProviderName,
-      useFactory: (providedOptions?: IProviderOptions) => {
-        const _options = providedOptions?.logger ?? options?.loggerProvider;
-
-        return isLoggerOptions(_options)
-          ? AppLoggerFactory(
-              _options.context,
-              _options.loggerLevels,
-              _options.loggerType,
-            )
-          : options?.loggerProvider;
-      },
-      inject: [{ token: OPTION_PROVIDER, optional: true }],
-    });
-
-    if (!isEmitterInstance) {
-      imports.push(
-        EventEmitterModule.forRoot(options?.eventEmitter as ConstructorOptions),
-      );
+    const loggerProvider = options?.loggerProvider;
+    if (isProviderObject(loggerProvider)) {
+      providers.push(loggerProvider);
     } else {
-      // providers.push({
-      //   provide: emitterProviderName,
-      //   useFactory: (providedOptions: IProviderOptions) => {
-      //     return providedOptions.emitter ?? options?.eventEmitter;
-      //   },
-      //   inject: [OPTION_PROVIDER],
-      // });
+      providers.push({
+        provide: loggerProviderName,
+        useFactory: (providedOptions?: IProviderOptions) => {
+          const _options = providedOptions?.logger ?? loggerProvider;
+
+          return isLoggerOptions(_options)
+            ? AppLoggerFactory(
+                _options.context,
+                _options.loggerLevels,
+                _options.loggerType,
+              )
+            : options?.loggerProvider;
+        },
+        inject: [{ token: OPTION_PROVIDER, optional: true }],
+      });
+    }
+
+    if (options?.eventEmitter && isProviderObject(options.eventEmitter)) {
+      providers.push(options.eventEmitter);
+    } else {
+      imports.push(
+        EventEmitterModule.forRoot(
+          options?.eventEmitter
+            ? (options?.eventEmitter as ConstructorOptions)
+            : {},
+        ),
+      );
     }
 
     if (optionProvider) {

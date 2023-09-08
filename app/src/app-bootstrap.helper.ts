@@ -19,6 +19,7 @@ import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
 
 export interface IGlobalOptions {
   /**
@@ -30,6 +31,7 @@ export interface IGlobalOptions {
   enableSwagger?: boolean;
   validationPipeOptions?: ValidationPipeOptions;
   extraImports?: NonNullable<DynamicModule['imports']>;
+  eventModuleClass?: typeof EventModule;
 }
 
 export class AppBootstrap<

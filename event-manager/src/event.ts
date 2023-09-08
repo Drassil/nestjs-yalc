@@ -97,7 +97,7 @@ function event<
       loggerInstance.error(message, trace, { masks: mask });
     } else {
       loggerInstance[loggerLevel]?.(message, {
-        data: { ...dataPayload, formattedEventName },
+        data: { ...dataPayload, eventName: formattedEventName },
       });
     }
   }
@@ -109,7 +109,7 @@ function event<
    * We emit the event here unless the event is false
    */
   let result;
-  if (event !== false && event !== undefined) {
+  if (event !== false) {
     let eventEmitter = event?.emitter ?? getEventEmitter();
     let formatter = event?.formatter;
 
@@ -293,17 +293,6 @@ export async function eventDebugAsync<
     },
   });
 }
-
-export function eventDebug<
-  TFormatter extends EventNameFormatter = EventNameFormatter,
->(
-  eventName: Parameters<TFormatter> | string,
-  options?: IEventOptions<TFormatter>,
-): any;
-
-export function eventDebug<
-  TFormatter extends EventNameFormatter = EventNameFormatter,
->(message: string, options?: IEventOptions<TFormatter>): any;
 
 export function eventDebug<
   TFormatter extends EventNameFormatter = EventNameFormatter,

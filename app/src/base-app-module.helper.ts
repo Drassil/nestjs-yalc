@@ -14,7 +14,6 @@ import {
 } from './def.const.js';
 import { LifeCycleHandler } from './life-cycle-handler.service.js';
 import { DynamicModule, Logger } from '@nestjs/common';
-import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 import {
   AppConfigService,
@@ -28,6 +27,7 @@ import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
 import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
+import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -157,9 +157,14 @@ export function yalcBaseAppModuleMetadataFactory(
     }
 
     _imports.push(
+      EventEmitterModule.forRoot({ wildcard: true, global: true }),
       EventModule.forRootAsync({
         loggerProvider: 'INTERNAL_APP_LOGGER_SERVICE',
         eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
+        eventEmitter: {
+          provide: 'INTERNAL_EVENT_EMITTER',
+          useExisting: EventEmitter2,
+        },
       }),
       ConfigModule.forRoot({
         envFilePath,
@@ -301,10 +306,13 @@ export class YalcDefaultAppModule {
     options?: IGlobalOptions,
   ) {
     const _imports: NonNullable<DynamicModule['imports']> = [
-      EventEmitterModule.forRoot({ wildcard: true }),
-      EventModule.forRootAsync({
-        loggerProvider: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
+      (options?.eventModuleClass ?? EventModule).forRootAsync({
+        loggerProvider: {
+          provide: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
+          useExisting: SYSTEM_LOGGER_SERVICE,
+        },
         eventServiceToken: 'INTERNAL_SYSTEM_EVENT_SERVICE',
+        eventEmitter: { wildcard: true, global: true },
       }),
       AppContextModule,
       ...imports,
@@ -324,22 +332,20 @@ export class YalcDefaultAppModule {
     providers.push(
       {
         provide: SYSTEM_LOGGER_SERVICE,
-        useFactory: (configService) =>
-          LoggerServiceFactory(SYSTEM_LOGGER_SERVICE, appAlias).useFactory(
-            configService,
-          ),
-        inject: [AppConfigService],
+        useFactory: (configService) => {
+          return LoggerServiceFactory(
+            SYSTEM_LOGGER_SERVICE,
+            appAlias,
+          ).useFactory(configService);
+        },
+        inject: ['INTERNAL_CONFIG_SERVICE'],
       },
       {
-        provide: AppConfigService,
+        provide: 'INTERNAL_CONFIG_SERVICE',
         useFactory: (config: ConfigService) => {
           return new AppConfigService(config, appAlias);
         },
         inject: [ConfigService],
-      },
-      {
-        provide: SYSTEM_LOGGER_SERVICE,
-        useExisting: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
       },
       {
         provide: SYSTEM_EVENT_SERVICE,

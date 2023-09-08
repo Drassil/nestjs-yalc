@@ -133,7 +133,7 @@ export class EventService<
     let _options = { ...options };
 
     let event: IEventOptions<TFormatter>['event'];
-    if (_options?.event !== undefined) {
+    if (_options?.event !== undefined || this.eventEmitter) {
       event =
         _options.event === false
           ? false
