@@ -66,8 +66,8 @@ export class EventModule {
         ? (options.loggerProvider as any).provide
         : EVENT_LOGGER;
     const emitterProviderName =
-      typeof options?.eventEmitter === 'string'
-        ? options.eventEmitter
+      options && isProviderObject(options.eventEmitter)
+        ? (options.eventEmitter as any).provide
         : EventEmitter2;
 
     const eventProviderName = options?.eventServiceToken ?? EventService;

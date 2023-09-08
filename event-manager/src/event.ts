@@ -61,7 +61,7 @@ type ReturnType<T> = T extends { error: false }
   ? boolean | any[] | undefined
   : Error | DefaultError | undefined;
 
-function event<
+export function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
   TOption extends IEventOptions<TFormatter> = IEventOptions<TFormatter>,
 >(
@@ -159,6 +159,10 @@ function event<
   return result as Promise<ReturnType<TOption>>;
 }
 
+function getLoggerOption(options?: IEventOptions) {
+  return options?.logger ?? {};
+}
+
 export async function eventLogAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
@@ -169,7 +173,7 @@ export async function eventLogAsync<
   return event(eventName, {
     ..._options,
     logger: {
-      ...(_options?.logger || {}),
+      ...getLoggerOption(_options),
       level: LogLevelEnum.LOG,
     },
   });
@@ -184,7 +188,7 @@ export function eventLog<
   return event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.LOG,
     },
   });
@@ -200,7 +204,7 @@ export async function eventErrorAsync<
   const res = event(eventName, {
     ..._options,
     logger: {
-      ...(_options?.logger || {}),
+      ...getLoggerOption(_options),
       level: LogLevelEnum.ERROR,
     },
     error: false,
@@ -218,7 +222,7 @@ export function eventError<
   return event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.ERROR,
     },
   });
@@ -233,7 +237,7 @@ export function eventException<
   const res = event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.ERROR,
     },
     error: options?.error !== false && {
@@ -257,7 +261,7 @@ export async function eventWarnAsync<
   return event(eventName, {
     ..._options,
     logger: {
-      ...(_options?.logger || {}),
+      ...getLoggerOption(_options),
       level: LogLevelEnum.WARN,
     },
   });
@@ -272,7 +276,7 @@ export function eventWarn<
   return event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.WARN,
     },
   });
@@ -288,7 +292,7 @@ export async function eventDebugAsync<
   return event(eventName, {
     ..._options,
     logger: {
-      ...(_options?.logger || {}),
+      ...getLoggerOption(_options),
       level: LogLevelEnum.DEBUG,
     },
   });
@@ -303,7 +307,7 @@ export function eventDebug<
   return event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.DEBUG,
     },
   });
@@ -319,7 +323,7 @@ export async function eventVerboseAsync<
   return event(eventName, {
     ..._options,
     logger: {
-      ...(_options?.logger || {}),
+      ...getLoggerOption(_options),
       level: LogLevelEnum.VERBOSE,
     },
   });
@@ -334,7 +338,7 @@ export function eventVerbose<
   return event(eventName, {
     ...options,
     logger: {
-      ...(options?.logger || {}),
+      ...getLoggerOption(options),
       level: LogLevelEnum.VERBOSE,
     },
   });

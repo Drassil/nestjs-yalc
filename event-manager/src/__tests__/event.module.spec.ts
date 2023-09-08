@@ -5,6 +5,7 @@ import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.servi
 import { ImprovedNestLogger } from '@nestjs-yalc/logger/logger-nest.service.js';
 import { EventModule, EVENT_LOGGER, OPTION_PROVIDER } from '../event.module.js';
 import { EventService } from '../event.service.js';
+import { Logger } from '@nestjs/common';
 
 describe('EventModule', () => {
   it('should provide EventService', async () => {
@@ -33,7 +34,9 @@ describe('EventModule', () => {
     const emitter = new EventEmitter2();
     const moduleRef = await Test.createTestingModule({
       imports: [
-        EventModule.forRootAsync({ eventEmitter: emitter }),
+        EventModule.forRootAsync({
+          eventEmitter: { provide: EventEmitter2, useValue: emitter },
+        }),
         EventEmitterModule.forRoot(),
       ],
     }).compile();
@@ -68,6 +71,24 @@ describe('EventModule', () => {
     expect(providedLogger).toBeDefined();
   });
 
+  it('should provide logger from factory if loggerProvider is a provider', async () => {
+    const loggerProvider = {
+      provide: 'Test',
+      useFactory: () => Logger,
+    };
+    const moduleRef = await Test.createTestingModule({
+      imports: [
+        EventModule.forRootAsync({ loggerProvider }),
+        EventEmitterModule.forRoot(),
+      ],
+    }).compile();
+
+    const providedLogger = moduleRef.get<ImprovedLoggerService>(
+      loggerProvider.provide,
+    );
+    expect(providedLogger).toBeDefined();
+  });
+
   it('should provide emitter from factory if eventEmitter is an object', async () => {
     const eventEmitter = { wildcard: true };
     const moduleRef = await Test.createTestingModule({
@@ -90,7 +111,7 @@ describe('EventModule', () => {
     expect(providedEmitter).toBeDefined();
   });
 
-  it('should provide emitter from factory if eventEmitter is a string', async () => {
+  it('should provide emitter from factory if eventEmitter is a provider', async () => {
     const eventEmitter = 'Test';
     const provider = {
       provide: eventEmitter,
@@ -98,7 +119,9 @@ describe('EventModule', () => {
     };
     const moduleRef = await Test.createTestingModule({
       imports: [
-        EventModule.forRootAsync({ eventEmitter }),
+        EventModule.forRootAsync({
+          eventEmitter: { provide: 'test', useExisting: eventEmitter },
+        }),
         {
           module: EventEmitterModule,
           providers: [provider],
