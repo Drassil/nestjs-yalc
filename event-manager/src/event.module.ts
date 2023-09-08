@@ -5,7 +5,7 @@ import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
-import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helpers.js';
+import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helper.js';
 import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';

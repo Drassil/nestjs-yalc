@@ -32,6 +32,14 @@ describe('DefaultErrorMixin', () => {
     expect(error.data).toBe('data'); // Note: You might want to mock `maskDataInObject` to test this
   });
 
+  it('should set data when masked data option is provided', () => {
+    const error = new (DefaultErrorMixin())(
+      { data: { test: 'test' }, masks: ['test'] },
+      'message',
+    );
+    expect(error.data).toEqual({ test: '[REDACTED]' });
+  });
+
   it('should set systemMessage when systemMessage option is provided', () => {
     const error = new (DefaultErrorMixin())(
       {
