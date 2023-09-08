@@ -5,6 +5,7 @@ import {
 } from './base-app.interface.js';
 import {
   APP_ALIAS_TOKEN,
+  APP_EVENT_SERVICE,
   APP_LOGGER_SERVICE,
   APP_OPTION_TOKEN,
   MODULE_ALIAS_TOKEN,
@@ -104,10 +105,17 @@ export function yalcBaseAppModuleMetadataFactory(
       provide: MODULE_OPTIONS_TOKEN,
       useValue: options,
     },
+    {
+      provide: APP_EVENT_SERVICE,
+      useExisting: 'INTERNAL_APP_EVENT_SERVICE',
+    },
   ];
 
   if (options?.logger) {
-    _providers.push(LoggerServiceFactory(APP_LOGGER_SERVICE, appAlias));
+    _providers.push({
+      provide: APP_LOGGER_SERVICE,
+      useExisting: 'INTERNAL_APP_LOGGER_SERVICE',
+    });
   }
 
   const hasConfig = _options.extraConfigs || _options.configFactory;
@@ -149,6 +157,10 @@ export function yalcBaseAppModuleMetadataFactory(
     }
 
     _imports.push(
+      EventModule.forRootAsync({
+        loggerProvider: 'INTERNAL_APP_LOGGER_SERVICE',
+        eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
+      }),
       ConfigModule.forRoot({
         envFilePath,
         load: [
@@ -189,7 +201,11 @@ export function yalcBaseAppModuleMetadataFactory(
     _imports.push(...imports);
   }
 
-  const _exports: DynamicModule['exports'] = [];
+  const _exports: DynamicModule['exports'] = [APP_EVENT_SERVICE];
+
+  if (options?.logger) {
+    _exports.push(APP_LOGGER_SERVICE);
+  }
 
   if (hasConfig) {
     _exports.push(getAppConfigToken(appAlias));
@@ -287,8 +303,8 @@ export class YalcDefaultAppModule {
     const _imports: NonNullable<DynamicModule['imports']> = [
       EventEmitterModule.forRoot({ wildcard: true }),
       EventModule.forRootAsync({
-        loggerProvider: SYSTEM_LOGGER_SERVICE,
-        eventServiceToken: SYSTEM_EVENT_SERVICE
+        loggerProvider: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
+        eventServiceToken: 'INTERNAL_SYSTEM_EVENT_SERVICE',
       }),
       AppContextModule,
       ...imports,
@@ -308,7 +324,10 @@ export class YalcDefaultAppModule {
     providers.push(
       {
         provide: SYSTEM_LOGGER_SERVICE,
-        useFactory: (configService) => LoggerServiceFactory(SYSTEM_LOGGER_SERVICE, appAlias).useFactory(configService),
+        useFactory: (configService) =>
+          LoggerServiceFactory(SYSTEM_LOGGER_SERVICE, appAlias).useFactory(
+            configService,
+          ),
         inject: [AppConfigService],
       },
       {
@@ -318,14 +337,22 @@ export class YalcDefaultAppModule {
         },
         inject: [ConfigService],
       },
+      {
+        provide: SYSTEM_LOGGER_SERVICE,
+        useExisting: 'INTERNAL_SYSTEM_LOGGER_SERVICE',
+      },
+      {
+        provide: SYSTEM_EVENT_SERVICE,
+        useExisting: 'INTERNAL_SYSTEM_EVENT_SERVICE',
+      },
     );
 
     const exports: NonNullable<DynamicModule['exports']> = [
       APP_OPTION_TOKEN,
       APP_ALIAS_TOKEN,
+      SYSTEM_LOGGER_SERVICE,
+      SYSTEM_EVENT_SERVICE,
     ];
-
-    exports.push(SYSTEM_LOGGER_SERVICE);
 
     return {
       exports,

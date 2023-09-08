@@ -1,10 +1,4 @@
-import {
-  DynamicModule,
-  Global,
-  LogLevel,
-  Module,
-  Provider,
-} from '@nestjs/common';
+import { DynamicModule, LogLevel, Module, Provider } from '@nestjs/common';
 import { EventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
@@ -57,7 +51,6 @@ export interface IProviderOptions {
   emitter: EventEmitter2;
 }
 
-@Global()
 @Module({})
 export class EventModule {
   static forRootAsync<

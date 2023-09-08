@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   eventLogAsync,
   eventDebugAsync,
@@ -14,7 +14,6 @@ import {
   eventWarn,
 } from './event.js';
 import type { ImprovedLoggerService } from '../../logger/src/logger-abstract.service.js';
-import { APP_LOGGER_SERVICE } from '../../app/src/def.const.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
@@ -30,7 +29,6 @@ export class EventService<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
   constructor(
-    @Inject(APP_LOGGER_SERVICE)
     protected readonly loggerService: ImprovedLoggerService,
     protected readonly eventEmitter: EventEmitter2,
     protected options?: IEventServiceOptions<TFormatter>,
