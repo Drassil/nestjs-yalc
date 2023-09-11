@@ -13,12 +13,16 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 let eventEmitter: EventEmitter2;
 
-export function getEventEmitter() {
+export function getGlobalEventEmitter() {
   if (!eventEmitter)
     eventEmitter = new EventEmitter2({
       maxListeners: 1000,
     });
   return eventEmitter;
+}
+
+export function setGlobalEventEmitter(eventEmitter: EventEmitter2) {
+  eventEmitter = eventEmitter;
 }
 
 interface IEventEmitterOptions<
@@ -94,10 +98,11 @@ export function event<
     const loggerLevel = logger?.level ?? 'log';
 
     if (loggerLevel === 'error') {
-      loggerInstance.error(message, trace, { masks: mask });
+      loggerInstance.error(message, trace, { masks: mask, event: false });
     } else {
       loggerInstance[loggerLevel]?.(message, {
         data: { ...dataPayload, eventName: formattedEventName },
+        event: false,
       });
     }
   }
@@ -110,7 +115,7 @@ export function event<
    */
   let result;
   if (event !== false) {
-    let eventEmitter = event?.emitter ?? getEventEmitter();
+    let eventEmitter = event?.emitter ?? getGlobalEventEmitter();
     let formatter = event?.formatter;
 
     result = emitEvent<TFormatter>(
@@ -150,7 +155,7 @@ export function event<
       {
         data: dataPayload,
         systemMessage,
-        eventName: formattedEventName,
+        eventName: false,
       },
       baseOptions,
     ) as ReturnType<TOption>;

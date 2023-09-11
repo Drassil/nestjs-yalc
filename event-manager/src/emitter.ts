@@ -1,6 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
-
 export type EventNameFormatter = (...args: any[]) => string;
 
 export interface IEventEmitterOptions<TFormatter extends EventNameFormatter> {
@@ -28,10 +27,10 @@ export async function emitEvent<TFormatter extends EventNameFormatter>(
 
   const _name = formatName(name, options?.formatter);
 
-  if (options?.await) {
-    return eventEmitter.emitAsync(_name, data);
-  } else {
+  if (!options?.await) {
     return eventEmitter.emit(_name, data);
+  } else {
+    return eventEmitter.emitAsync(_name, data);
   }
 }
 

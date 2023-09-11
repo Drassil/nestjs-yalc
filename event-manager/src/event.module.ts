@@ -1,4 +1,4 @@
-import { DynamicModule, LogLevel, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { EventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
@@ -7,25 +7,24 @@ import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
 import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helper.js';
 import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
+import { setGlobalEventEmitter } from './event.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
 
 function isLoggerOptions(
-  loggerProvider?: ImprovedLoggerService | { context: string } | string,
-): loggerProvider is { context: string } {
+  loggerProvider?: ImprovedLoggerService | ILoggerProviderOptions | string,
+): loggerProvider is ILoggerProviderOptions {
   return (
     loggerProvider !== undefined &&
     typeof loggerProvider === 'object' &&
-    'context' in loggerProvider
+    'context' in loggerProvider &&
+    'loggerLevels' in loggerProvider &&
+    'loggerType' in loggerProvider
   );
 }
 
-export interface ILoggerProviderOptions {
-  context: string;
-  loggerLevels?: LogLevel[];
-  loggerType?: string;
-}
+export type ILoggerProviderOptions = Parameters<typeof AppLoggerFactory>;
 
 export interface IEventModuleOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -77,6 +76,8 @@ export class EventModule {
       {
         provide: eventProviderName,
         useFactory: (logger: ImprovedLoggerService, emitter: EventEmitter2) => {
+          setGlobalEventEmitter(emitter);
+
           return (
             options?.eventService?.(logger, emitter, options) ??
             new EventService(logger, emitter, options)
@@ -96,12 +97,8 @@ export class EventModule {
           const _options = providedOptions?.logger ?? loggerProvider;
 
           return isLoggerOptions(_options)
-            ? AppLoggerFactory(
-                _options.context,
-                _options.loggerLevels,
-                _options.loggerType,
-              )
-            : options?.loggerProvider;
+            ? AppLoggerFactory(..._options)
+            : _options;
         },
         inject: [{ token: OPTION_PROVIDER, optional: true }],
       });

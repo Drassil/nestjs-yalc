@@ -8,7 +8,7 @@ import {
 } from '@jest/globals';
 
 import { Logger } from 'pino';
-import { PinoLogger, FLUSH_INTERVAL } from '../logger-pino.service.js';
+import { PinoLogger, FLUSH_INTERVAL } from '../index.js';
 import { LOG_LEVEL_ALL } from '../logger.enum.js';
 
 const logOptions = {

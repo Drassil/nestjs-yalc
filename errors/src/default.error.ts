@@ -1,3 +1,4 @@
+import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/event.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
@@ -24,7 +25,7 @@ export interface IDefaultErrorOptions {
    */
   systemMessage?: string;
   eventEmitter?: EventEmitter2 | EventEmitter;
-  eventName?: string;
+  eventName?: string | false;
 }
 
 /**
@@ -81,11 +82,14 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
       if (options?.systemMessage) this.systemMessage = options?.systemMessage;
 
       if (options?.logger) {
+        let logger: ImprovedLoggerService | Console;
         if (options.logger === true) {
-          options.logger = console;
+          logger = console;
+        } else {
+          logger = options.logger;
         }
 
-        options.logger.error(this.systemMessage ?? message, this.stack, {
+        logger.error(this.systemMessage ?? message, this.stack, {
           data: {
             ...this.data,
             // This is the original message that was thrown.
@@ -94,8 +98,10 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
         });
       }
 
-      if (options?.eventEmitter) {
-        options.eventEmitter.emit(options.eventName ?? ON_DEFAULT_ERROR_EVENT, {
+      const eventEmitter = options?.eventEmitter ?? getGlobalEventEmitter();
+
+      if (options?.eventName !== false) {
+        eventEmitter.emit(options?.eventName ?? ON_DEFAULT_ERROR_EVENT, {
           data: this.data,
           systemMessage: this.systemMessage,
           message,

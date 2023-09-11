@@ -2,7 +2,7 @@ import { describe, it, expect } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
-import { ImprovedNestLogger } from '@nestjs-yalc/logger/logger-nest.service.js';
+import { ImprovedNestLogger } from '@nestjs-yalc/logger';
 import { EventModule, EVENT_LOGGER, OPTION_PROVIDER } from '../event.module.js';
 import { EventService } from '../event.service.js';
 import { Logger } from '@nestjs/common';
@@ -18,7 +18,7 @@ describe('EventModule', () => {
   });
 
   it('should provide custom logger', async () => {
-    const logger = new ImprovedNestLogger();
+    const logger = new ImprovedNestLogger('test', {});
     const moduleRef = await Test.createTestingModule({
       imports: [
         EventModule.forRootAsync({ loggerProvider: logger }),

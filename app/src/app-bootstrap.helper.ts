@@ -20,18 +20,23 @@ import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 
-export interface IGlobalOptions {
+export interface ICreateOptions {
+  abortOnError?: boolean;
+  enableSwagger?: boolean;
+  filters?: ExceptionFilter[];
+  validationPipeOptions?: ValidationPipeOptions;
   /**
    * On some cases we do want to manually override the apiPrefix of the service conf
    */
   apiPrefix?: string;
-  filters?: ExceptionFilter[];
-  abortOnError?: boolean;
-  enableSwagger?: boolean;
-  validationPipeOptions?: ValidationPipeOptions;
+}
+
+export interface IGlobalOptions {
   extraImports?: NonNullable<DynamicModule['imports']>;
   eventModuleClass?: typeof EventModule;
+  logger?: typeof LoggerServiceFactory;
 }
 
 export class AppBootstrap<
@@ -40,12 +45,12 @@ export class AppBootstrap<
   private fastifyInstance?: FastifyInstance;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(appAlias: string, module: any) {
-    super(appAlias, module);
+  constructor(appAlias: string, module: any, options?: TGlobalOptions) {
+    super(appAlias, module, { globalsOptions: options });
   }
 
   async startServer(options?: {
-    globalsOptions?: TGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
@@ -63,22 +68,25 @@ export class AppBootstrap<
   }
 
   async initApp(options?: {
-    globalsOptions?: TGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
       fastifyInstance: this.fastifyInstance,
-      globalsOptions: options?.globalsOptions,
+      createOptions: options?.createOptions,
     });
 
-    return this.initSetup(options);
+    return this.initSetup({
+      fastifyInstance: this.fastifyInstance,
+      createOptions: options?.createOptions,
+    });
   }
 
   async initSetup(options?: {
-    globalsOptions?: TGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
-    await this.applyBootstrapGlobals(options?.globalsOptions);
+    await this.applyBootstrapGlobals(options?.createOptions);
 
     await this.getApp().init();
 
@@ -92,7 +100,7 @@ export class AppBootstrap<
   }
 
   async createApp(options?: {
-    globalsOptions?: TGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
@@ -104,7 +112,7 @@ export class AppBootstrap<
         new FastifyAdapter(this.fastifyInstance as any),
         {
           bufferLogs: false,
-          abortOnError: options?.globalsOptions?.abortOnError ?? false,
+          abortOnError: options?.createOptions?.abortOnError ?? false,
         },
       );
     } catch (err) {
@@ -124,7 +132,7 @@ export class AppBootstrap<
     this.isSwaggerEnabled = enabled;
   }
 
-  async applyBootstrapGlobals(options?: TGlobalOptions) {
+  async applyBootstrapGlobals(options?: ICreateOptions) {
     await super.applyBootstrapGlobals(options);
 
     this.getApp().useGlobalPipes(

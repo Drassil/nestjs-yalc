@@ -27,7 +27,7 @@ import Joi from 'joi';
 import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definition.js';
 import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
-import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -112,10 +112,12 @@ export function yalcBaseAppModuleMetadataFactory(
   ];
 
   if (options?.logger) {
-    _providers.push({
-      provide: APP_LOGGER_SERVICE,
-      useExisting: 'INTERNAL_APP_LOGGER_SERVICE',
-    });
+    _providers.push(
+      (options?.logger === true ? LoggerServiceFactory : options?.logger)(
+        APP_LOGGER_SERVICE,
+        appAlias,
+      ),
+    );
   }
 
   const hasConfig = _options.extraConfigs || _options.configFactory;
@@ -157,13 +159,16 @@ export function yalcBaseAppModuleMetadataFactory(
     }
 
     _imports.push(
-      EventEmitterModule.forRoot({ wildcard: true, global: true }),
       EventModule.forRootAsync({
-        loggerProvider: 'INTERNAL_APP_LOGGER_SERVICE',
+        loggerProvider: {
+          provide: 'INTERNAL_APP_LOGGER_SERVICE',
+          useExisting: APP_LOGGER_SERVICE,
+        },
         eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
         eventEmitter: {
-          provide: 'INTERNAL_EVENT_EMITTER',
-          useExisting: EventEmitter2,
+          global: true,
+          wildcard: true,
+          maxListeners: 1000,
         },
       }),
       ConfigModule.forRoot({
@@ -332,16 +337,25 @@ export class YalcDefaultAppModule {
     providers.push(
       {
         provide: SYSTEM_LOGGER_SERVICE,
-        useFactory: (configService) => {
-          return LoggerServiceFactory(
-            SYSTEM_LOGGER_SERVICE,
-            appAlias,
-          ).useFactory(configService);
+        useFactory: (configService, eventEmitter) => {
+          const loggerFactory = options?.logger ?? LoggerServiceFactory;
+          console.log(
+            loggerFactory,
+            options?.logger,
+            LoggerServiceFactory,
+            loggerFactory === options?.logger,
+            loggerFactory === LoggerServiceFactory,
+          );
+          return loggerFactory(SYSTEM_LOGGER_SERVICE, appAlias, {
+            event: {
+              eventEmitter: eventEmitter,
+            },
+          }).useFactory(configService, eventEmitter);
         },
-        inject: ['INTERNAL_CONFIG_SERVICE'],
+        inject: ['MAIN_APP_CONFIG_SERVICE', EventEmitter2],
       },
       {
-        provide: 'INTERNAL_CONFIG_SERVICE',
+        provide: 'MAIN_APP_CONFIG_SERVICE',
         useFactory: (config: ConfigService) => {
           return new AppConfigService(config, appAlias);
         },
@@ -358,6 +372,7 @@ export class YalcDefaultAppModule {
       APP_ALIAS_TOKEN,
       SYSTEM_LOGGER_SERVICE,
       SYSTEM_EVENT_SERVICE,
+      'MAIN_APP_CONFIG_SERVICE',
     ];
 
     return {

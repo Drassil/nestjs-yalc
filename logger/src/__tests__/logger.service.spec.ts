@@ -2,6 +2,7 @@ import { jest, describe, beforeEach, it, expect } from '@jest/globals';
 import { Test } from '@nestjs/testing';
 const { LoggerServiceFactory } = await import('../logger.service.js');
 import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('LoggerServiceFactory', () => {
   let configService: AppConfigService;
@@ -31,7 +32,7 @@ describe('LoggerServiceFactory', () => {
     const loggerService = LoggerServiceFactory('TestProvide', 'TestContext');
     expect(loggerService).toBeDefined();
     expect(loggerService.provide).toBe('TestProvide');
-    expect(loggerService.inject).toEqual([AppConfigService]);
+    expect(loggerService.inject).toEqual([AppConfigService, EventEmitter2]);
 
     const logger = loggerService.useFactory(configService);
     expect(logger).toBeDefined();

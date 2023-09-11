@@ -1,7 +1,7 @@
 import { expect, describe, it } from '@jest/globals';
 import { createMock } from '@golevelup/ts-jest';
 import { LoggerService } from '@nestjs/common';
-import { LoggerAbstractService } from '../logger-abstract.service.js';
+import { LoggerAbstractService } from '../';
 
 class DummyLogger extends LoggerAbstractService {
   constructor(logLevels) {

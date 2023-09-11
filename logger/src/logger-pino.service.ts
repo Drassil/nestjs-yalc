@@ -1,6 +1,9 @@
 import { LogLevel } from '@nestjs/common';
 import { pino, Logger, stdTimeFunctions } from 'pino';
-import { LoggerAbstractService } from './logger-abstract.service.js';
+import {
+  IImprovedLoggerOptions,
+  LoggerAbstractService,
+} from './logger-abstract.service.js';
 import { maskDataInObject } from './logger.helper.js';
 
 let logger: Logger;
@@ -12,49 +15,58 @@ export class PinoLogger extends LoggerAbstractService {
     return logger;
   }
 
-  constructor(context: string, logLevels: LogLevel[]) {
-    super(context, logLevels, {
-      log: (message, options) =>
-        logger.info(
-          {
-            context: options?.context ?? context,
-            data: maskDataInObject(options?.data, options?.masks),
-          },
-          `${message} ${options?.trace}`,
-        ),
-      error: (message, trace, options) =>
-        logger.error(
-          {
-            context: options?.context ?? context,
-            data: maskDataInObject(options?.data, options?.masks),
-          },
-          `${message} ${trace}`,
-        ),
-      debug: (message, options) =>
-        logger.debug(
-          {
-            context: options?.context ?? context,
-            data: maskDataInObject(options?.data, options?.masks),
-          },
-          `${message} ${options?.trace}`,
-        ),
-      warn: (message, options) =>
-        logger.warn(
-          {
-            context: options?.context ?? context,
-            data: maskDataInObject(options?.data, options?.masks),
-          },
-          `${message} ${options?.trace}`,
-        ),
-      verbose: (message, options) =>
-        logger.trace(
-          {
-            context: options?.context ?? context,
-            data: maskDataInObject(options?.data, options?.masks),
-          },
-          `${message} ${options?.trace}`,
-        ),
-    });
+  constructor(
+    context: string,
+    logLevels: LogLevel[],
+    options: IImprovedLoggerOptions = {},
+  ) {
+    super(
+      context,
+      logLevels,
+      {
+        log: (message, options) =>
+          logger.info(
+            {
+              context: options?.context ?? context,
+              data: maskDataInObject(options?.data, options?.masks),
+            },
+            `${message} ${options?.trace}`,
+          ),
+        error: (message, trace, options) =>
+          logger.error(
+            {
+              context: options?.context ?? context,
+              data: maskDataInObject(options?.data, options?.masks),
+            },
+            `${message} ${trace}`,
+          ),
+        debug: (message, options) =>
+          logger.debug(
+            {
+              context: options?.context ?? context,
+              data: maskDataInObject(options?.data, options?.masks),
+            },
+            `${message} ${options?.trace}`,
+          ),
+        warn: (message, options) =>
+          logger.warn(
+            {
+              context: options?.context ?? context,
+              data: maskDataInObject(options?.data, options?.masks),
+            },
+            `${message} ${options?.trace}`,
+          ),
+        verbose: (message, options) =>
+          logger.trace(
+            {
+              context: options?.context ?? context,
+              data: maskDataInObject(options?.data, options?.masks),
+            },
+            `${message} ${options?.trace}`,
+          ),
+      },
+      options,
+    );
 
     if (!logger) {
       const dest = pino.destination({ sync: false });
