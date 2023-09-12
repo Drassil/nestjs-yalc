@@ -3,7 +3,7 @@ import { PinoLogger } from './logger-pino.service.js';
 import { LogLevel } from '@nestjs/common';
 import { LoggerTypeEnum, LOG_LEVEL_DEFAULT } from './logger.enum.js';
 import { ImprovedNestLogger } from './logger-nest.service.js';
-import {
+import type {
   IImprovedLoggerOptions,
   ImprovedLoggerService,
 } from './logger-abstract.service.js';

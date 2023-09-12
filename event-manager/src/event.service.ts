@@ -13,7 +13,7 @@ import {
   eventVerbose,
   eventWarn,
   applyAwaitOption,
-} from './index.js';
+} from './event.js';
 import type { ImprovedLoggerService } from '@nestjs-yalc/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';

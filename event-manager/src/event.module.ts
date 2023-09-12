@@ -7,7 +7,7 @@ import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
 import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helper.js';
 import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
-import { setGlobalEventEmitter } from './event.js';
+import { setGlobalEventEmitter } from './global-emitter.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';

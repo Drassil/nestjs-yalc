@@ -3,8 +3,8 @@ import { pino, Logger, stdTimeFunctions } from 'pino';
 import {
   type IImprovedLoggerOptions,
   LoggerAbstractService,
-  maskDataInObject,
-} from './index.js';
+} from './logger-abstract.service.js';
+import { maskDataInObject } from './logger.helper.js';
 
 let logger: Logger;
 

@@ -1,5 +1,5 @@
-import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager';
-import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
+import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
+import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';

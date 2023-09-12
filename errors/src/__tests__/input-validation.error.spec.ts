@@ -8,10 +8,8 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
-import {
-  BadRequestError,
-  InputValidationError,
-} from '../input-validation.error.js';
+import { BadRequestError, InputValidationError } from '../error.class.js';
+import { ErrorsEnum } from '../error.enum.js';
 
 describe('InputValidationError', () => {
   it('should set the custom message', () => {
@@ -23,6 +21,8 @@ describe('InputValidationError', () => {
   it('should set the custom message', () => {
     const customMessage = 'INVALID_INPUT_MESSAGE';
     const customError = new BadRequestError(customMessage);
-    expect(customError.message).toEqual(customMessage);
+    expect(customError.message).toEqual(
+      `${ErrorsEnum.BAD_REQUEST}: ${customMessage}`,
+    );
   });
 });

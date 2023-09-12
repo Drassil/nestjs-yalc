@@ -1,29 +1,12 @@
-import { LogLevel } from '@nestjs/common';
+import { LogLevel, Logger } from '@nestjs/common';
 import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
-import { ConsoleLogger } from '@nestjs-yalc/logger/logger-console.service.js';
-import {
-  LOG_LEVEL_ALL,
-  LogLevelEnum,
-} from '@nestjs-yalc/logger/logger.enum.js';
+import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
-
-let eventEmitter: EventEmitter2;
-
-export function getGlobalEventEmitter() {
-  if (!eventEmitter)
-    eventEmitter = new EventEmitter2({
-      maxListeners: 1000,
-    });
-  return eventEmitter;
-}
-
-export function setGlobalEventEmitter(eventEmitter: EventEmitter2) {
-  eventEmitter = eventEmitter;
-}
+import { getGlobalEventEmitter } from './global-emitter.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -100,8 +83,7 @@ export function event<
   if (logger !== false) {
     const message = optionalMessage ?? formattedEventName;
 
-    const loggerInstance =
-      logger?.instance ?? new ConsoleLogger('event', LOG_LEVEL_ALL);
+    const loggerInstance = logger?.instance ?? Logger;
     const loggerLevel = logger?.level ?? 'log';
 
     if (loggerLevel === 'error') {
