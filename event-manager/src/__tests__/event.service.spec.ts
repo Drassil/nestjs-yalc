@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { createMock } from '@golevelup/ts-jest';
-import type { EventService as EventServiceType } from '../event.service.js';
+import type { YalcEventService as EventServiceType } from '../event.service.js';
 
 jest.unstable_mockModule('../event.js', () => ({
   eventLogAsync: jest.fn(),
@@ -19,7 +19,7 @@ jest.unstable_mockModule('../event.js', () => ({
   eventWarn: jest.fn(),
 }));
 
-const { EventService } = await import('../event.service.js');
+const { YalcEventService } = await import('../event.service.js');
 const {
   eventLogAsync,
   eventDebugAsync,
@@ -34,7 +34,7 @@ const {
   eventWarn,
 } = await import('../event.js');
 
-describe('EventService', () => {
+describe('YalcEventService', () => {
   let service: EventServiceType;
   let mockLoggerService: Partial<ImprovedLoggerService>;
   let mockEventEmitter: Partial<EventEmitter2>;
@@ -47,12 +47,12 @@ describe('EventService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         {
-          provide: EventService,
+          provide: YalcEventService,
           useFactory: (
             loggerService: ImprovedLoggerService,
             eventEmitter: EventEmitter2,
           ) => {
-            return new EventService(loggerService, eventEmitter);
+            return new YalcEventService(loggerService, eventEmitter);
           },
           inject: ['INTERNAL_APP_LOGGER_SERVICE', EventEmitter2],
         },
@@ -67,7 +67,7 @@ describe('EventService', () => {
       ],
     }).compile();
 
-    service = module.get<EventServiceType>(EventService);
+    service = module.get<EventServiceType>(YalcEventService);
   });
 
   it('should be defined', () => {

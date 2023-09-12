@@ -9,16 +9,16 @@ import {
   OPTION_PROVIDER,
   ILoggerProviderOptionsObject,
 } from '../event.module.js';
-import { EventService } from '../event.service.js';
+import { YalcEventService } from '../event.service.js';
 import { Logger } from '@nestjs/common';
 
 describe('EventModule', () => {
-  it('should provide EventService', async () => {
+  it('should provide YalcEventService', async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [EventModule.forRootAsync(), EventEmitterModule.forRoot()],
     }).compile();
 
-    const eventService = moduleRef.get<EventService>(EventService);
+    const eventService = moduleRef.get<YalcEventService>(YalcEventService);
     expect(eventService).toBeDefined();
   });
 

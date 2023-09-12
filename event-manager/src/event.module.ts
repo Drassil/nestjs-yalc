@@ -1,5 +1,5 @@
 import { DynamicModule, Module, Provider } from '@nestjs/common';
-import { EventService, IEventServiceOptions } from './event.service.js';
+import { YalcEventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
@@ -49,7 +49,7 @@ export interface IEventModuleOptions<
     logger: ImprovedLoggerService,
     emitter: EventEmitter2,
     options?: IEventModuleOptions<TFormatter>,
-  ) => EventService;
+  ) => YalcEventService;
   eventServiceToken?: string;
 }
 
@@ -79,7 +79,7 @@ export class EventModule {
         ? (options.eventEmitter as any).provide
         : EventEmitter2;
 
-    const eventProviderName = options?.eventServiceToken ?? EventService;
+    const eventProviderName = options?.eventServiceToken ?? YalcEventService;
 
     let imports: any[] = [];
     let providers: Provider[] = [
@@ -90,7 +90,7 @@ export class EventModule {
 
           return (
             options?.eventService?.(logger, emitter, options) ??
-            new EventService(logger, emitter, options)
+            new YalcEventService(logger, emitter, options)
           );
         },
         inject: [loggerProviderName, emitterProviderName],

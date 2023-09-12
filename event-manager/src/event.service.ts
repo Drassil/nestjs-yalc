@@ -25,7 +25,7 @@ export interface IEventServiceOptions<
 }
 
 @Injectable()
-export class EventService<
+export class YalcEventService<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
   constructor(
