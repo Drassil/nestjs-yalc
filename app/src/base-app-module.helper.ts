@@ -339,13 +339,7 @@ export class YalcDefaultAppModule {
         provide: SYSTEM_LOGGER_SERVICE,
         useFactory: (configService, eventEmitter) => {
           const loggerFactory = options?.logger ?? LoggerServiceFactory;
-          console.log(
-            loggerFactory,
-            options?.logger,
-            LoggerServiceFactory,
-            loggerFactory === options?.logger,
-            loggerFactory === LoggerServiceFactory,
-          );
+
           return loggerFactory(SYSTEM_LOGGER_SERVICE, appAlias, {
             event: {
               eventEmitter: eventEmitter,

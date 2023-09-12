@@ -22,7 +22,7 @@ export const LoggerServiceFactory = (
     const loggerType = conf.loggerType;
     const loggerLevels: LogLevel[] =
       conf.logContextLevels?.[context] || conf.logLevels || [];
-    console.log('AAAAA', provide);
+
     return AppLoggerFactory(context, loggerLevels, loggerType, {
       event:
         options.event !== false
