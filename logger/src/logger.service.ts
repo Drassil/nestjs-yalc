@@ -5,10 +5,14 @@ import type {
   ImprovedLoggerService,
 } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { IServiceConf } from '@nestjs-yalc/app/conf.type.js';
-import { AppConfigService } from '@nestjs-yalc/app/app-config.service.js';
+import {
+  AppConfigService,
+  getAppConfigToken,
+} from '@nestjs-yalc/app/app-config.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export const LoggerServiceFactory = (
+  appAlias: string,
   provide: string,
   context: string,
   options: IImprovedLoggerOptions = {},
@@ -32,5 +36,5 @@ export const LoggerServiceFactory = (
           : false,
     });
   },
-  inject: [AppConfigService, EventEmitter2],
+  inject: [getAppConfigToken(appAlias), EventEmitter2],
 });

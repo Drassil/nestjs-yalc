@@ -114,6 +114,7 @@ export function yalcBaseAppModuleMetadataFactory(
   if (options?.logger) {
     _providers.push(
       (options?.logger === true ? LoggerServiceFactory : options?.logger)(
+        appAlias,
         APP_LOGGER_SERVICE,
         appAlias,
       ),
@@ -340,7 +341,7 @@ export class YalcDefaultAppModule {
         useFactory: (configService, eventEmitter) => {
           const loggerFactory = options?.logger ?? LoggerServiceFactory;
 
-          return loggerFactory(SYSTEM_LOGGER_SERVICE, appAlias, {
+          return loggerFactory(appAlias, SYSTEM_LOGGER_SERVICE, appAlias, {
             event: {
               eventEmitter: eventEmitter,
             },
