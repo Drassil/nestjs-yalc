@@ -1,5 +1,5 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
+import { maskDataInObject } from '@nestjs-yalc/logger';
 export type EventNameFormatter = (...args: any[]) => string;
 
 export interface IEventEmitterOptions<TFormatter extends EventNameFormatter> {

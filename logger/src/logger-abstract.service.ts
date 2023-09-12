@@ -2,7 +2,7 @@
 import { LoggerService, LogLevel } from '@nestjs/common';
 import { LogLevelEnum } from './logger.enum.js';
 import { type EventEmitter2 } from '@nestjs/event-emitter';
-import { event } from '@nestjs-yalc/event-manager/event.js';
+import { event } from '@nestjs-yalc/event-manager';
 import {
   PluginSystem,
   WithPluginSystem,

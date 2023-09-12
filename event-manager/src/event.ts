@@ -1,5 +1,5 @@
 import { LogLevel } from '@nestjs/common';
-import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
+import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { ConsoleLogger } from '@nestjs-yalc/logger/logger-console.service.js';
 import {
   LOG_LEVEL_ALL,
@@ -51,7 +51,7 @@ export interface IEventOptions<
     | boolean;
 }
 
-function applyAwaitOption<
+export function applyAwaitOption<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(options?: IEventOptions<TFormatter>): IEventOptions<TFormatter> {
   let event = options?.event;
@@ -72,17 +72,24 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  const { data, error, event, logger, mask, trace } = options ?? {};
-
-  let dataPayload = data;
-  if (mask) dataPayload = maskDataInObject(data, mask);
-
-  const optionalMessage = options?.logger ? options.message : undefined;
+  const {
+    data: receivedData,
+    error,
+    event,
+    logger,
+    mask,
+    trace,
+  } = options ?? {};
 
   const formattedEventName = formatName(
     eventName,
     options?.event ? options?.event?.formatter : undefined,
   );
+
+  let data = { ...receivedData, eventName: formattedEventName };
+  if (mask) data = maskDataInObject(data, mask);
+
+  const optionalMessage = options?.logger ? options.message : undefined;
 
   /**
    *
@@ -98,10 +105,13 @@ export function event<
     const loggerLevel = logger?.level ?? 'log';
 
     if (loggerLevel === 'error') {
-      loggerInstance.error(message, trace, { masks: mask, event: false });
+      loggerInstance.error(message, trace, {
+        data,
+        event: false,
+      });
     } else {
       loggerInstance[loggerLevel]?.(message, {
-        data: { ...dataPayload, eventName: formattedEventName },
+        data,
         event: false,
       });
     }
@@ -121,10 +131,9 @@ export function event<
     result = emitEvent<TFormatter>(
       eventEmitter,
       eventName,
-      { message: optionalMessage, data: dataPayload },
+      { message: optionalMessage, data },
       {
         formatter,
-        mask,
         await: event?.await,
       },
     );
@@ -153,7 +162,7 @@ export function event<
     return new errorClass(
       message,
       {
-        data: dataPayload,
+        data,
         systemMessage,
         eventName: false,
       },

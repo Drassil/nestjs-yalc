@@ -1,6 +1,6 @@
 import { expect, describe, it } from '@jest/globals';
-import { ErrorsEnum } from '../errors.enum.js';
-import { LoginError } from '../login.error.js';
+import { ErrorsEnum } from '../error.enum.js';
+import { LoginError } from '../index.js';
 
 describe('Login error', () => {
   const error = new LoginError();

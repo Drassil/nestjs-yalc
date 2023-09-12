@@ -1,24 +1,36 @@
-import { jest, beforeEach, describe, expect, it } from '@jest/globals';
+import {
+  jest,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  beforeAll,
+} from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { createMock } from '@golevelup/ts-jest';
 import type { YalcEventService as EventServiceType } from '../event.service.js';
 
-jest.unstable_mockModule('../event.js', () => ({
-  eventLogAsync: jest.fn(),
-  eventDebugAsync: jest.fn(),
-  eventErrorAsync: jest.fn(),
-  eventVerboseAsync: jest.fn(),
-  eventWarnAsync: jest.fn(),
-  eventException: jest.fn(),
-  eventDebug: jest.fn(),
-  eventError: jest.fn(),
-  eventLog: jest.fn(),
-  eventVerbose: jest.fn(),
-  eventWarn: jest.fn(),
-}));
-
+jest.unstable_mockModule('../event.js', async () => {
+  return {
+    eventLogAsync: jest.fn(),
+    eventDebugAsync: jest.fn(),
+    eventErrorAsync: jest.fn(),
+    eventVerboseAsync: jest.fn(),
+    eventWarnAsync: jest.fn(),
+    eventException: jest.fn(),
+    eventDebug: jest.fn(),
+    eventError: jest.fn(),
+    eventLog: jest.fn(),
+    eventVerbose: jest.fn(),
+    eventWarn: jest.fn(),
+    event: jest.fn(),
+    setGlobalEventEmitter: jest.fn(),
+    getGlobalEventEmitter: jest.fn(),
+    applyAwaitOption: (options) => options, // stupid workaround because of jest limitations with mocking esm modules
+  };
+});
 const { YalcEventService } = await import('../event.service.js');
 const {
   eventLogAsync,
@@ -38,6 +50,8 @@ describe('YalcEventService', () => {
   let service: EventServiceType;
   let mockLoggerService: Partial<ImprovedLoggerService>;
   let mockEventEmitter: Partial<EventEmitter2>;
+
+  beforeAll(async () => {});
 
   beforeEach(async () => {
     mockLoggerService = createMock<ImprovedLoggerService>();
@@ -158,6 +172,26 @@ describe('YalcEventService', () => {
       service.error('testEvent');
       expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
     });
+
+    function getErrorMethods(instance: any): string[] {
+      return Object.getOwnPropertyNames(Object.getPrototypeOf(instance)).filter(
+        (methodName) =>
+          methodName.startsWith('error') &&
+          typeof instance[methodName] === 'function',
+      );
+    }
+
+    const errorMethods = getErrorMethods(
+      new YalcEventService({} as any, {} as any),
+    );
+
+    it.each(errorMethods)(
+      'should call eventError with correct parameters for %s',
+      (methodName) => {
+        service[methodName]('testEvent');
+        expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
+      },
+    );
   });
 
   describe('warn', () => {

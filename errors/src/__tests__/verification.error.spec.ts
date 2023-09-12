@@ -9,7 +9,7 @@ import {
   afterEach,
 } from '@jest/globals';
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { AdditionalVerificationNeededException } from '../verification.error.js';
+import { AdditionalVerificationNeededException } from '../index.js';
 
 describe('Verification error', () => {
   const error = new AdditionalVerificationNeededException();

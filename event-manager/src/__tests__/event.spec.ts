@@ -6,6 +6,7 @@ import {
   beforeEach,
   afterEach,
 } from '@jest/globals';
+
 import {
   eventLogAsync,
   eventLog,
@@ -18,13 +19,14 @@ import {
   eventDebug,
   eventVerboseAsync,
   eventVerbose,
-  IEventOptions,
   event,
-} from '../event.js'; // replace with your actual module path
+  type IEventOptions,
+} from '../index.js';
+
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ImprovedNestLogger } from '@nestjs-yalc/logger/logger-nest.service.js';
 import { createMock } from '@golevelup/ts-jest';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import { type ImprovedNestLogger } from '@nestjs-yalc/logger';
 
 describe('Event Service', () => {
   let eventEmitter;

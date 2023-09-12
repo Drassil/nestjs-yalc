@@ -1,10 +1,10 @@
 import { LogLevel } from '@nestjs/common';
 import { pino, Logger, stdTimeFunctions } from 'pino';
 import {
-  IImprovedLoggerOptions,
+  type IImprovedLoggerOptions,
   LoggerAbstractService,
-} from './logger-abstract.service.js';
-import { maskDataInObject } from './logger.helper.js';
+  maskDataInObject,
+} from './index.js';
 
 let logger: Logger;
 
