@@ -48,4 +48,17 @@ describe('LoggerServiceFactory', () => {
     const logger = loggerService.useFactory(configService);
     expect(logger).toBeDefined();
   });
+
+  it('should create logger service with event disabled', () => {
+    jest.spyOn(configService, 'values').mockReturnValue({
+      loggerType: 'console',
+      logLevels: ['warn', 'log'],
+    });
+
+    const loggerService = LoggerServiceFactory('TestProvide', 'TestContext', {
+      event: false,
+    });
+    const logger = loggerService.useFactory(configService);
+    expect(logger).toBeDefined();
+  });
 });

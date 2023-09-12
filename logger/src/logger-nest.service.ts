@@ -21,11 +21,18 @@ export class ImprovedNestLogger
     super(context, options);
   }
 
-  private getOptions(options: LogMethodOptions | any) {
+  private getOptions(options: LogMethodOptions | any): LogMethodOptions {
     return typeof options === 'string' ? {} : options;
   }
 
+  private composeMessage(message: any, options: LogMethodOptions) {
+    const masked = maskDataInObject(options.data, options.masks, options.trace);
+
+    return message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : '');
+  }
+
   log(message: any): void;
+  log(message: any, options: LogMethodOptions): void;
   log(message: any, ...optionalParams: any[]): void;
   log(
     message: unknown,
@@ -36,19 +43,19 @@ export class ImprovedNestLogger
 
     this.beforeLogging(message, _options);
 
-    const masked = maskDataInObject(
-      _options.data,
-      _options.masks,
-      _options.trace,
-    );
     super.log(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       _options.context ?? this.context,
       ...rest,
     );
   }
 
   error(message: any, stack?: string | undefined): void;
+  error(
+    message: any,
+    stack: string | undefined,
+    options: LogMethodOptions,
+  ): void;
   error(message: any, ...optionalParams: any[]): void;
   error(
     message: unknown,
@@ -59,9 +66,8 @@ export class ImprovedNestLogger
     const _options = this.getOptions(options);
     this.beforeLogging(message, _options);
 
-    const masked = maskDataInObject(_options.data, _options.masks);
     super.error(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       stack,
       _options.context ?? this.context,
       ...rest,
@@ -69,6 +75,7 @@ export class ImprovedNestLogger
   }
 
   debug(message: any): void;
+  debug(message: any, options: LogMethodOptions): void;
   debug(message: any, ...optionalParams: any[]): void;
   debug(
     message: unknown,
@@ -78,19 +85,15 @@ export class ImprovedNestLogger
     const _options = this.getOptions(options);
     this.beforeLogging(message, _options);
 
-    const masked = maskDataInObject(
-      _options.data,
-      _options.masks,
-      _options.trace,
-    );
     super.debug(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       _options.context ?? this.context,
       ...rest,
     );
   }
 
   verbose(message: any): void;
+  verbose(message: any, options: LogMethodOptions): void;
   verbose(message: any, ...optionalParams: any[]): void;
   verbose(
     message: unknown,
@@ -100,19 +103,15 @@ export class ImprovedNestLogger
     const _options = this.getOptions(options);
     this.beforeLogging(message, _options);
 
-    const masked = maskDataInObject(
-      _options.data,
-      _options.masks,
-      _options.trace,
-    );
     super.verbose(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       _options.context ?? this.context,
       ...rest,
     );
   }
 
   warn(message: any): void;
+  warn(message: any, options: LogMethodOptions): void;
   warn(message: any, ...optionalParams: any[]): void;
   warn(
     message: unknown,
@@ -122,13 +121,8 @@ export class ImprovedNestLogger
     const _options = this.getOptions(options);
     this.beforeLogging(message, _options);
 
-    const masked = maskDataInObject(
-      _options.data,
-      _options.masks,
-      _options.trace,
-    );
     super.warn(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       _options.context ?? this.context,
       ...rest,
     );

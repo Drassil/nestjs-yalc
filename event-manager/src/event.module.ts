@@ -12,26 +12,36 @@ import { setGlobalEventEmitter } from './event.js';
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
 
-function isLoggerOptions(
-  loggerProvider?: ImprovedLoggerService | ILoggerProviderOptions | string,
-): loggerProvider is ILoggerProviderOptions {
+function isImprovedLoggerService(
+  loggerProvider?:
+    | ImprovedLoggerService
+    | ILoggerProviderOptionsObject
+    | string,
+): loggerProvider is ImprovedLoggerService {
   return (
     loggerProvider !== undefined &&
     typeof loggerProvider === 'object' &&
-    'context' in loggerProvider &&
-    'loggerLevels' in loggerProvider &&
-    'loggerType' in loggerProvider
+    'log' in loggerProvider &&
+    'error' in loggerProvider &&
+    'warn' in loggerProvider
   );
 }
 
 export type ILoggerProviderOptions = Parameters<typeof AppLoggerFactory>;
+
+export type ILoggerProviderOptionsObject = {
+  context: ILoggerProviderOptions[0];
+  loggerLevels?: ILoggerProviderOptions[1];
+  loggerType?: ILoggerProviderOptions[2];
+  options?: ILoggerProviderOptions[3];
+};
 
 export interface IEventModuleOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > extends IEventServiceOptions<TFormatter> {
   loggerProvider?:
     | ImprovedLoggerService
-    | ILoggerProviderOptions
+    | ILoggerProviderOptionsObject
     | Provider<ImprovedLoggerService>
     | string;
   eventEmitter?: EventEmitterModuleOptions | Provider<EventEmitter2>;
@@ -46,7 +56,7 @@ export interface IEventModuleOptions<
 export const OPTION_PROVIDER = 'OPTION_PROVIDER';
 
 export interface IProviderOptions {
-  logger: ImprovedLoggerService | ILoggerProviderOptions;
+  logger: ImprovedLoggerService | ILoggerProviderOptionsObject;
   emitter: EventEmitter2;
 }
 
@@ -96,9 +106,22 @@ export class EventModule {
         useFactory: (providedOptions?: IProviderOptions) => {
           const _options = providedOptions?.logger ?? loggerProvider;
 
-          return isLoggerOptions(_options)
-            ? AppLoggerFactory(..._options)
-            : _options;
+          if (isImprovedLoggerService(_options)) {
+            return _options;
+          } else {
+            const defaultArgs: ILoggerProviderOptionsObject = {
+              context: 'default',
+            };
+            const args =
+              _options && typeof _options !== 'string' ? _options : defaultArgs;
+
+            return AppLoggerFactory(
+              args.context,
+              args.loggerLevels,
+              args.loggerType,
+              args.options,
+            );
+          }
         },
         inject: [{ token: OPTION_PROVIDER, optional: true }],
       });
