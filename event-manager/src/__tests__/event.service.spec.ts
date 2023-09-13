@@ -38,7 +38,6 @@ const {
   eventErrorAsync,
   eventVerboseAsync,
   eventWarnAsync,
-  eventException,
   eventDebug,
   eventError,
   eventLog,
@@ -97,16 +96,6 @@ describe('YalcEventService', () => {
   describe('emitter', () => {
     it('should return event emitter', () => {
       expect(service.emitter).toBe(mockEventEmitter);
-    });
-  });
-
-  describe('exception', () => {
-    it('should call eventException with correct parameters', () => {
-      service.exception('testEvent');
-      expect(eventException).toHaveBeenCalledWith(
-        'testEvent',
-        expect.anything(),
-      );
     });
   });
 

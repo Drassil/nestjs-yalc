@@ -12,7 +12,6 @@ import {
   eventLog,
   eventErrorAsync,
   eventError,
-  eventException,
   eventWarnAsync,
   eventWarn,
   eventDebugAsync,
@@ -105,10 +104,6 @@ describe('Event Service', () => {
       eventName,
       expect.anything(),
     );
-  });
-
-  it('should throw exception', () => {
-    expect(eventException(message, options)).toBeInstanceOf(Error);
   });
 
   it('should log warning event asynchronously', async () => {
@@ -257,7 +252,7 @@ describe('Event Service', () => {
       error: true,
       message,
     };
-    const result = eventException(eventName, _options);
+    const result = eventError(eventName, _options);
     expect(result).toBeInstanceOf(Error);
   });
 
@@ -268,7 +263,7 @@ describe('Event Service', () => {
       error: { class: CustomError },
       message,
     };
-    const result = eventException(eventName, _options);
+    const result = eventError(eventName, _options);
     expect(result).toBeInstanceOf(CustomError);
   });
 

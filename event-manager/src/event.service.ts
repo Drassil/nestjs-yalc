@@ -6,7 +6,6 @@ import {
   eventVerboseAsync,
   eventWarnAsync,
   IEventOptions,
-  eventException,
   eventDebug,
   eventError,
   eventLog,
@@ -67,11 +66,11 @@ export class YalcEventService<
    */
   emit = this.log;
 
-  public exception(
+  public error(
     eventName: Parameters<TFormatter> | string,
     options?: IEventOptions<TFormatter>,
   ): Error | DefaultError | undefined {
-    return eventException(eventName, this.buildOptions(options));
+    return eventError(eventName, this.buildOptions(options));
   }
 
   public async logAsync(
@@ -136,14 +135,6 @@ export class YalcEventService<
   ): any {
     return eventVerbose(eventName, this.buildOptions(options));
   }
-
-  public error(
-    eventName: Parameters<TFormatter> | string,
-    options?: Omit<IEventOptions<TFormatter>, 'error'>,
-  ): any {
-    return eventError(eventName, this.buildOptions(options));
-  }
-
   /**
    * Use this method to throw a 400 Bad Request error when the request could not be understood or was missing required parameters.
    */

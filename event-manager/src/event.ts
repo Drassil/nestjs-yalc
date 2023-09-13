@@ -197,16 +197,7 @@ export async function eventErrorAsync<
   options?: Omit<IEventOptions<TFormatter>, 'error'>,
 ): Promise<any> {
   const _options = applyAwaitOption<TFormatter>(options);
-  const res = event(eventName, {
-    ..._options,
-    logger: {
-      ...getLoggerOption(_options),
-      level: LogLevelEnum.ERROR,
-    },
-    error: false,
-  });
-
-  return res;
+  return eventError(eventName, _options);
 }
 
 export function eventError<
@@ -221,21 +212,6 @@ export function eventError<
       ...getLoggerOption(options),
       level: LogLevelEnum.ERROR,
     },
-  });
-}
-
-export function eventException<
-  TFormatter extends EventNameFormatter = EventNameFormatter,
->(
-  eventName: Parameters<TFormatter> | string,
-  options?: IEventOptions<TFormatter>,
-): Error | DefaultError | undefined {
-  const res = event(eventName, {
-    ...options,
-    logger: {
-      ...getLoggerOption(options),
-      level: LogLevelEnum.ERROR,
-    },
     error: options?.error !== false && {
       class:
         typeof options?.error === 'object' && options.error.class
@@ -243,8 +219,6 @@ export function eventException<
           : DefaultError,
     },
   });
-
-  return res as Error | DefaultError | undefined;
 }
 
 export async function eventWarnAsync<
