@@ -11,11 +11,10 @@ import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { IServiceConf } from './conf.type.js';
 import { SYSTEM_LOGGER_SERVICE } from './def.const.js';
 import { YalcDefaultAppModule } from './base-app-module.helper.js';
-import { IGlobalOptions } from './app-bootstrap.helper.js';
+import { ICreateOptions, IGlobalOptions } from './app-bootstrap.helper.js';
 
 export abstract class BaseAppBootstrap<
   TAppType extends NestFastifyApplication | INestApplicationContext,
-  TGlobalOptions = IGlobalOptions,
 > {
   protected app?: TAppType;
   protected loggerService!: LoggerService;
@@ -72,7 +71,7 @@ export abstract class BaseAppBootstrap<
     return this.module;
   }
 
-  async applyBootstrapGlobals(_options?: TGlobalOptions) {
+  async applyBootstrapGlobals(_options?: ICreateOptions) {
     this.loggerService = this.getApp().get(SYSTEM_LOGGER_SERVICE);
     this.loggerService.debug?.('Setting logger service...');
     this.getApp().useLogger(this.loggerService);

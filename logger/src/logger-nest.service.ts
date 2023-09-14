@@ -1,90 +1,136 @@
-import { ConsoleLogger } from '@nestjs/common';
-import { LogMethodOptions } from './logger-abstract.service.js';
+import { ConsoleLogger, ConsoleLoggerOptions } from '@nestjs/common';
+import {
+  IImprovedLoggerOptions,
+  ILoggerPluginMethods,
+  ImprovedLoggerService,
+  LogMethodOptions,
+  beforeLogging,
+} from './logger-abstract.service.js';
 import { maskDataInObject } from './logger.helper.js';
+import { WithPluginSystem } from '@nestjs-yalc/utils/plugin.helper.js';
 
-export class ImprovedNestLogger extends ConsoleLogger {
+export class ImprovedNestLogger
+  extends WithPluginSystem<ILoggerPluginMethods>(ConsoleLogger)
+  implements ImprovedLoggerService
+{
+  constructor(
+    context: string,
+    options: ConsoleLoggerOptions,
+    protected _options: IImprovedLoggerOptions = {},
+  ) {
+    super(context, options);
+  }
+
+  private getOptions(options: LogMethodOptions | any): LogMethodOptions {
+    return typeof options === 'string' ? {} : options;
+  }
+
+  private composeMessage(message: any, options: LogMethodOptions) {
+    const masked = maskDataInObject(options.data, options.masks, options.trace);
+
+    return message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : '');
+  }
+
   log(message: any): void;
+  log(message: any, options: LogMethodOptions): void;
   log(message: any, ...optionalParams: any[]): void;
-  log(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
-    const masked = maskDataInObject(
-      options?.data,
-      options?.masks,
-      options?.trace,
-    );
+  log(
+    message: unknown,
+    options: LogMethodOptions = {},
+    ...rest: unknown[]
+  ): void {
+    const _options = this.getOptions(options);
+
+    this.beforeLogging(message, _options);
+
     super.log(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
-      options?.context ?? this.context,
+      this.composeMessage(message, _options),
+      _options.context ?? this.context,
       ...rest,
     );
   }
 
   error(message: any, stack?: string | undefined): void;
+  error(
+    message: any,
+    stack: string | undefined,
+    options: LogMethodOptions,
+  ): void;
   error(message: any, ...optionalParams: any[]): void;
   error(
     message: unknown,
     stack?: unknown,
-    options?: LogMethodOptions,
+    options: LogMethodOptions = {},
     ...rest: unknown[]
   ): void {
-    const masked = maskDataInObject(options?.data, options?.masks);
+    const _options = this.getOptions(options);
+    this.beforeLogging(message, _options);
+
     super.error(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
+      this.composeMessage(message, _options),
       stack,
-      options?.context ?? this.context,
+      _options.context ?? this.context,
       ...rest,
     );
   }
 
   debug(message: any): void;
+  debug(message: any, options: LogMethodOptions): void;
   debug(message: any, ...optionalParams: any[]): void;
   debug(
     message: unknown,
-    options?: LogMethodOptions,
+    options: LogMethodOptions = {},
     ...rest: unknown[]
   ): void {
-    const masked = maskDataInObject(
-      options?.data,
-      options?.masks,
-      options?.trace,
-    );
+    const _options = this.getOptions(options);
+    this.beforeLogging(message, _options);
+
     super.debug(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
-      options?.context ?? this.context,
+      this.composeMessage(message, _options),
+      _options.context ?? this.context,
       ...rest,
     );
   }
 
   verbose(message: any): void;
+  verbose(message: any, options: LogMethodOptions): void;
   verbose(message: any, ...optionalParams: any[]): void;
   verbose(
     message: unknown,
-    options?: LogMethodOptions,
+    options: LogMethodOptions = {},
     ...rest: unknown[]
   ): void {
-    const masked = maskDataInObject(
-      options?.data,
-      options?.masks,
-      options?.trace,
-    );
+    const _options = this.getOptions(options);
+    this.beforeLogging(message, _options);
+
     super.verbose(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
-      options?.context ?? this.context,
+      this.composeMessage(message, _options),
+      _options.context ?? this.context,
       ...rest,
     );
   }
 
   warn(message: any): void;
+  warn(message: any, options: LogMethodOptions): void;
   warn(message: any, ...optionalParams: any[]): void;
-  warn(message: unknown, options?: LogMethodOptions, ...rest: unknown[]): void {
-    const masked = maskDataInObject(
-      options?.data,
-      options?.masks,
-      options?.trace,
-    );
+  warn(
+    message: unknown,
+    options: LogMethodOptions = {},
+    ...rest: unknown[]
+  ): void {
+    const _options = this.getOptions(options);
+    this.beforeLogging(message, _options);
+
     super.warn(
-      message + (masked ? `\n${JSON.stringify(masked, null, 2)}` : ''),
-      options?.context ?? this.context,
+      this.composeMessage(message, _options),
+      _options.context ?? this.context,
       ...rest,
     );
+  }
+
+  beforeLogging(message: any, options: LogMethodOptions) {
+    this.options.event = this.options.event ?? {};
+    this.invokePlugins('onBeforeLogging', message, options);
+    void beforeLogging(message, options);
   }
 }

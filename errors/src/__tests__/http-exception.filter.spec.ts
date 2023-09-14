@@ -9,7 +9,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { GqlArgumentsHost } from '@nestjs/graphql';
-import { ExceptionContextEnum } from '../errors.enum.js';
+import { ExceptionContextEnum } from '../error.enum.js';
 import { HttpExceptionFilter } from '../filters/http-exception.filter.js';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
 import { LoginError } from '../index.js';

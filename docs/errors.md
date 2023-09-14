@@ -1,9 +1,11 @@
 # DefaultError Class
 
-This library provides an enhanced Error class that extends the built-in Error functionality with features like a system message that is not returned back to the user,
+This library provides an enhanced Error class that extends the built-in Error functionality with features like a system message (that can be used for logging but not returned back to the user in an API context),
 logging of the error at the moment it's thrown, event triggering for application reactivity during error occurrences,
 and defining a data object that can be logged with the message and masked.
 This mixin approach retains the original error class, allowing compatibility with NestJS exception filters and differentiation of errors by type.
+
+Also, it might be useful to read the [Event](./event-manager-event.md) and [Logger](./logger.md) documentation to understand how these 2 components work since they are used in the errors library.
 
 ## Constants
 
@@ -29,6 +31,7 @@ The module exports two interfaces:
 - `DefaultErrorMixin`: A function that returns a class extending from the provided base class (or the `Error` class if no base class is provided), with the `IAbstractDefaultError` interface. This class can accept options and parameters in its constructor, handles logging, and emits an event on error occurrence.
 
 ## Types
+
 - `DefaultErrorMixin`: A type alias for the `Mixin` of the `DefaultErrorMixin` function.
 
 ## Classes
@@ -81,3 +84,17 @@ class MyCustomError extends DefaultErrorMixin(UnauthorizedException) {
 
 throw new MyCustomError('Login failed', options);
 ```
+
+## Specialized classes
+
+The library also provides specialized classes that extend the `DefaultError` class and provide additional functionality. They also include HTTP codes to facilitate semantic error handling for HTTP requests. Some of these classes are:
+
+- `BadRequestError`: This class extends the `DefaultError` class and provides a constructor with optional parameters for a message and options for both the extended `BadRequestError` and the base error class. It also provides a static method `throw` that throws a `BadRequestError` with the provided message and options.
+
+- `UnauthorizedError`: This class extends the `DefaultError` class and provides a constructor with optional parameters for a message and options for both the extended `UnauthorizedError` and the base error class. It also provides a static method `throw` that throws an `UnauthorizedError` with the provided message and options.
+
+- `ForbiddenError`: This class extends the `DefaultError` class and provides a constructor with optional parameters for a message and options for both the extended `ForbiddenError` and the base error class. It also provides a static method `throw` that throws a `ForbiddenError` with the provided message and options.
+
+- `LoginError`: This class extends the `DefaultError` class and provides a constructor with optional parameters for a message and options for both the extended `LoginError` and the base error class. It also provides a static method `throw` that throws a `LoginError` with the provided message and options. This is a custom class that uses the status code 401 just like the `UnauthorizedError` class, but it is used to indicate that the user is not logged in.
+
+check the `error.class.ts` file for more details

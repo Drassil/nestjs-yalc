@@ -1,15 +1,15 @@
-import { GqlExceptionFilter, GqlArgumentsHost } from "@nestjs/graphql";
-import * as common from "@nestjs/common";
+import { GqlExceptionFilter, GqlArgumentsHost } from '@nestjs/graphql';
+import * as common from '@nestjs/common';
 import {
   LoginError,
   MissingArgumentsError,
-  UnauthorizedError
-} from "@nestjs-yalc/errors";
-import { ExceptionContextEnum } from "../errors.enum.js";
-import { EntityError } from "@nestjs-yalc/crud-gen/entity.error.js";
-import { FastifyReply as FResponse } from "fastify";
-import { GqlError } from "@nestjs-yalc/graphql/plugins/gql.error.js";
-import { BadRequestError } from "../input-validation.error.js";
+  UnauthorizedError,
+} from '@nestjs-yalc/errors';
+import { ExceptionContextEnum } from '../error.enum.js';
+import { EntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
+import { FastifyReply as FResponse } from 'fastify';
+import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
+import { BadRequestError } from '../index.js';
 
 type HttpErrorType =
   | common.HttpException
@@ -24,7 +24,7 @@ type HttpErrorType =
   MissingArgumentsError,
   UnauthorizedError,
   GqlError,
-  BadRequestError
+  BadRequestError,
 )
 export class HttpExceptionFilter implements GqlExceptionFilter {
   constructor(private logger: common.LoggerService) {}
@@ -43,7 +43,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
         this.logger.log(
           (<LoginError>error).systemMessage ?? error.message,
           error.stack,
-          ExceptionContextEnum.HTTP
+          ExceptionContextEnum.HTTP,
         );
         break;
       // Log original error message (for now only if is an EntityError)
@@ -53,7 +53,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
           entityError.originalError?.message
             ? entityError.originalError.message
             : error,
-          ExceptionContextEnum.HTTP
+          ExceptionContextEnum.HTTP,
         );
         break;
       case error instanceof GqlError:
@@ -66,7 +66,7 @@ export class HttpExceptionFilter implements GqlExceptionFilter {
         break;
     }
 
-    if (gqlHost.getType() === "http") {
+    if (gqlHost.getType() === 'http') {
       const ctx = host.switchToHttp();
       const response = ctx.getResponse<FResponse>();
       const status = (error as common.HttpException).getStatus();

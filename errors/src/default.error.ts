@@ -1,8 +1,8 @@
-import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
+import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
+import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import EventEmitter from 'events';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
@@ -23,7 +23,8 @@ export interface IDefaultErrorOptions {
    * This is the message that will be logged in the system but won't be thrown to the user.
    */
   systemMessage?: string;
-  eventEmitter?: EventEmitter2 | EventEmitter;
+  eventEmitter?: EventEmitter2;
+  eventName?: string | false;
 }
 
 /**
@@ -73,17 +74,21 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
         };
       }
 
-      if (options?.data)
-        this.data = maskDataInObject(options.data, options?.masks);
+      this.data = options?.masks
+        ? maskDataInObject(options.data, options?.masks)
+        : options?.data;
 
       if (options?.systemMessage) this.systemMessage = options?.systemMessage;
 
       if (options?.logger) {
+        let logger: ImprovedLoggerService | Console;
         if (options.logger === true) {
-          options.logger = console;
+          logger = console;
+        } else {
+          logger = options.logger;
         }
 
-        options.logger.error(this.systemMessage ?? message, this.stack, {
+        logger.error(this.systemMessage ?? message, this.stack, {
           data: {
             ...this.data,
             // This is the original message that was thrown.
@@ -92,8 +97,10 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
         });
       }
 
-      if (options?.eventEmitter) {
-        options.eventEmitter.emit(ON_DEFAULT_ERROR_EVENT, {
+      const eventEmitter = options?.eventEmitter ?? getGlobalEventEmitter();
+
+      if (options?.eventName !== false) {
+        eventEmitter.emit(options?.eventName ?? ON_DEFAULT_ERROR_EVENT, {
           data: this.data,
           systemMessage: this.systemMessage,
           message,
