@@ -2,10 +2,14 @@
 
 #### Overview
 
-This library is designed to facilitate flexible and configurable event logging in TypeScript. At the heart of it is the `event` function which can handle logging, event emitting, and error generation based on the options provided.
+This TypeScript library facilitates flexible and configurable event logging, aimed at making your event management seamless and effective.
+At the heart of it is the `event` function which can handle logging, event emitting, and error generation based on the options provided.
+It integrates seamlessly with external tools such as `EventEmitter2`.
 You can easily control the actions performed by the function through a detailed configuration object, making the library highly flexible to adapt to various needs.
 
-Here's how you can leverage the functionalities:
+Below, you will find detailed insights into its core functionalities along with usage examples.
+
+Also, it might be useful to read the [Event Service](./event-manager-service.md) that extends the `event` functions and provides a more convenient way to integrate errors, event logging and emitting in your NestJS application.
 
 #### Main Functions
 
@@ -21,15 +25,22 @@ function event<
 ): Promise<ReturnType<TOption>> | ReturnType<TOption>;
 ```
 
-The core function of the library, it takes the following parameters:
+Here's what the core function offers:
 
-- **eventName**: The name of the event being logged. It can be a formatted string or parameters for an EventNameFormatter.
-- **options**: A configuration object that dictates the behavior of the function. It can contain several properties including data, mask, trace, event, message, logger, and error to finely control the output.
+- **eventName**: Defines the event to be logged. It accepts a formatted string or parameters for an EventNameFormatter.
+- **options**: This optional parameter is a configuration object that dictates the function's behavior, allowing for a detailed control of the output through properties such as data, mask, trace, event, message, logger, and error.
+
+Defaults:
+
+- The function has preset behaviors for when optional parameters are not specified, providing ease of use in simpler scenarios.
+
+**Return Value**: Depending upon the configurations set, it returns a promise or the return type defined in TOption.
 
 ##### Usage Example:
 
 ```typescript
 import { event } from 'your-library-name';
+import { EventEmitter2 } from 'eventemitter2';
 
 event('USER_LOGIN', {
   data: { userId: 12345 },
@@ -44,8 +55,7 @@ event('USER_LOGIN', {
 
 #### Logger Functions
 
-We also offer a set of utility functions derived from the main `event` function but with preset logging levels to streamline the logging process.
-These functions accept the same parameters as the `event` function. The roster includes:
+Alongside the main `event` function, we offer a roster of utility functions preset with different logging levels to make the logging process streamlined. These functions accept the same parameters as the `event` function.
 
 - **eventLogAsync**
 - **eventLog**
@@ -58,7 +68,7 @@ These functions accept the same parameters as the `event` function. The roster i
 - **eventVerboseAsync**
 - **eventVerbose**
 
-Each of these utility functions sets a distinct logging level predefined in the options object, described as follows:
+Each function corresponds to a predefined logging level in the options object, simplifying the setting of logging levels:
 
 - `eventLogAsync` and `eventLog`: `LogLevelEnum.LOG`
 - `eventErrorAsync` and `eventError`: `LogLevelEnum.ERROR`
@@ -84,7 +94,7 @@ throw eventError('USER_CREATION_FAILED', {
 
 #### Utility Functions
 
-While it's mainly internal, you can also utilize the `applyAwaitOption` function to set the `await` option in the event options object to true by default.
+Primarily internal, the `applyAwaitOption` function allows you to set the `await` option in the event options object to true by default.
 
 ##### `applyAwaitOption`
 
@@ -93,3 +103,5 @@ function applyAwaitOption<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(options?: IEventOptions<TFormatter>): IEventOptions<TFormatter>;
 ```
+
+This function takes an optional parameter and returns an IEventOptions object with the `await` option set to true, providing a convenient way to apply asynchronous operations in your event handling logic.
