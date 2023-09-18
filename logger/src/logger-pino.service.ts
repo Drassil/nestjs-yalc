@@ -29,40 +29,45 @@ export class PinoLogger extends LoggerAbstractService {
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              trace: options?.trace,
             },
-            `${message} ${options?.trace}`,
+            message,
           ),
         error: (message, trace, options) =>
           logger.error(
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              trace,
             },
-            `${message} ${trace}`,
+            message,
           ),
         debug: (message, options) =>
           logger.debug(
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              trace: options?.trace,
             },
-            `${message} ${options?.trace}`,
+            message,
           ),
         warn: (message, options) =>
           logger.warn(
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              trace: options?.trace,
             },
-            `${message} ${options?.trace}`,
+            message,
           ),
         verbose: (message, options) =>
           logger.trace(
             {
               context: options?.context ?? context,
               data: maskDataInObject(options?.data, options?.masks),
+              trace: options?.trace,
             },
-            `${message} ${options?.trace}`,
+            message,
           ),
       },
       options,
