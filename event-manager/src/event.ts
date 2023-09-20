@@ -209,8 +209,8 @@ export function eventError<
   return event(eventName, {
     ...options,
     logger: {
-      ...getLoggerOption(options),
       level: LogLevelEnum.ERROR,
+      ...getLoggerOption(options),
     },
     error: options?.error !== false && {
       class:

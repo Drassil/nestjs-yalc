@@ -42,6 +42,12 @@ export const newDefaultError = <T extends ClassType<Error> = typeof Error>(
   return new (DefaultErrorMixin(base))(options, ...args);
 };
 
+export function isDefaultErrorMixin(
+  error: Error,
+): error is IAbstractDefaultError {
+  return (error as any).__DefaultErrorMixin !== undefined;
+}
+
 export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
   base?: T,
 ): new (
@@ -56,6 +62,8 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
   {
     data?: any;
     systemMessage?: string;
+
+    __DefaultErrorMixin = Object.freeze(true);
 
     constructor(
       options: IDefaultErrorOptions | string,

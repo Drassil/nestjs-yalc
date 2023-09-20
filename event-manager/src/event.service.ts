@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, LogLevel } from '@nestjs/common';
 import {
   eventLogAsync,
   eventDebugAsync,
@@ -13,7 +13,7 @@ import {
   eventWarn,
   applyAwaitOption,
 } from './event.js';
-import type { ImprovedLoggerService } from '@nestjs-yalc/logger';
+import { LogLevelEnum, type ImprovedLoggerService } from '@nestjs-yalc/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EventNameFormatter } from './emitter.js';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
@@ -142,7 +142,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: BadRequestError };
     return this.error(eventName, mergedOptions);
   }
@@ -154,7 +156,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: UnauthorizedError };
     return this.error(eventName, mergedOptions);
   }
@@ -166,7 +170,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: PaymentRequiredError };
     return this.error(eventName, mergedOptions);
   }
@@ -178,7 +184,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: ForbiddenError };
     return this.error(eventName, mergedOptions);
   }
@@ -190,7 +198,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: NotFoundError };
     return this.error(eventName, mergedOptions);
   }
@@ -202,7 +212,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: MethodNotAllowedError };
     return this.error(eventName, mergedOptions);
   }
@@ -214,7 +226,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: NotAcceptableError };
     return this.error(eventName, mergedOptions);
   }
@@ -226,7 +240,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: ConflictError };
     return this.error(eventName, mergedOptions);
   }
@@ -238,7 +254,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: GoneError };
     return this.error(eventName, mergedOptions);
   }
@@ -250,7 +268,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: UnsupportedMediaTypeError };
     return this.error(eventName, mergedOptions);
   }
@@ -262,7 +282,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelLog(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: UnprocessableEntityError };
     return this.error(eventName, mergedOptions);
   }
@@ -274,7 +296,9 @@ export class YalcEventService<
     eventName: Parameters<TFormatter> | string,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    const mergedOptions = applyAwaitOption(this.buildOptions(options));
+    const mergedOptions = this.applyLoggerLevelWarn(
+      applyAwaitOption(this.buildOptions(options)),
+    );
     mergedOptions.error = { class: TooManyRequestsError };
     return this.error(eventName, mergedOptions);
   }
@@ -337,6 +361,33 @@ export class YalcEventService<
     const mergedOptions = applyAwaitOption(this.buildOptions(options));
     mergedOptions.error = { class: GatewayTimeoutError };
     return this.error(eventName, mergedOptions);
+  }
+
+  protected applyLoggerLevel(
+    options: IEventOptions<TFormatter>,
+    level: LogLevel,
+  ): IEventOptions<TFormatter> {
+    if (options?.logger === false) return options;
+
+    return {
+      ...options,
+      logger: {
+        ...options?.logger,
+        level,
+      },
+    };
+  }
+
+  protected applyLoggerLevelWarn(
+    options: IEventOptions<TFormatter>,
+  ): IEventOptions<TFormatter> {
+    return this.applyLoggerLevel(options, LogLevelEnum.WARN);
+  }
+
+  protected applyLoggerLevelLog(
+    options: IEventOptions<TFormatter>,
+  ): IEventOptions<TFormatter> {
+    return this.applyLoggerLevel(options, LogLevelEnum.LOG);
   }
 
   /**

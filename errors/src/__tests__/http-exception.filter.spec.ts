@@ -3,16 +3,12 @@ import { expect, jest, describe, it, beforeEach } from '@jest/globals';
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { CreateEntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
 import { MissingArgumentsError } from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
-import {
-  ArgumentsHost,
-  LoggerService,
-  UnprocessableEntityException,
-} from '@nestjs/common';
+import { ArgumentsHost, LoggerService } from '@nestjs/common';
 import { GqlArgumentsHost } from '@nestjs/graphql';
 import { ExceptionContextEnum } from '../error.enum.js';
 import { HttpExceptionFilter } from '../filters/http-exception.filter.js';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
-import { LoginError } from '../index.js';
+import { DefaultError, LoginError } from '../index.js';
 jest.mock('@nestjs/graphql');
 
 describe('Http exceptions filter', () => {
@@ -42,8 +38,14 @@ describe('Http exceptions filter', () => {
     );
   });
 
-  it('should catch and log HttpException error', () => {
-    const exception = new UnprocessableEntityException();
+  it('should catch Default error', () => {
+    const exception = new DefaultError('test');
+
+    filter.catch(exception, mockArgumentsHost);
+  });
+
+  it('should catch and log System Error error', () => {
+    const exception = new Error('test');
 
     filter.catch(exception, mockArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
