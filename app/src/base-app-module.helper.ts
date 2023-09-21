@@ -8,6 +8,7 @@ import {
   APP_EVENT_SERVICE,
   APP_LOGGER_SERVICE,
   APP_OPTION_TOKEN,
+  MAIN_APP_CONFIG_SERVICE,
   MODULE_ALIAS_TOKEN,
   SYSTEM_EVENT_SERVICE,
   SYSTEM_LOGGER_SERVICE,
@@ -347,10 +348,10 @@ export class YalcDefaultAppModule {
             },
           }).useFactory(configService, eventEmitter);
         },
-        inject: ['MAIN_APP_CONFIG_SERVICE', EventEmitter2],
+        inject: [MAIN_APP_CONFIG_SERVICE, EventEmitter2],
       },
       {
-        provide: 'MAIN_APP_CONFIG_SERVICE',
+        provide: MAIN_APP_CONFIG_SERVICE,
         useFactory: (config: ConfigService) => {
           return new AppConfigService(config, appAlias);
         },
@@ -367,7 +368,7 @@ export class YalcDefaultAppModule {
       APP_ALIAS_TOKEN,
       SYSTEM_LOGGER_SERVICE,
       SYSTEM_EVENT_SERVICE,
-      'MAIN_APP_CONFIG_SERVICE',
+      MAIN_APP_CONFIG_SERVICE,
     ];
 
     return {

@@ -1,4 +1,3 @@
-
 /**
  * Exported by the app modules and used within the apps
  * NOTE: a system can run multiple apps at the same time
@@ -30,3 +29,5 @@ export const MODULE_OPTION_TOKEN = 'MODULE_OPTION_TOKEN';
  * Provider token to access the alias value of the current module
  */
 export const MODULE_ALIAS_TOKEN = 'MODULE_ALIAS_TOKEN';
+
+export const MAIN_APP_CONFIG_SERVICE = 'MAIN_APP_CONFIG_SERVICE';
