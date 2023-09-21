@@ -45,7 +45,6 @@ describe('Event Service', () => {
       },
       logger: {
         instance: logger,
-        level: 'log',
       },
       error: {
         class: Error,

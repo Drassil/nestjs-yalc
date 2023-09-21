@@ -1,4 +1,4 @@
-import { Injectable, LogLevel } from '@nestjs/common';
+import { HttpStatus, Injectable, LogLevel } from '@nestjs/common';
 import {
   eventLogAsync,
   eventDebugAsync,
@@ -135,6 +135,37 @@ export class YalcEventService<
   ): any {
     return eventVerbose(eventName, this.buildOptions(options));
   }
+
+  /**
+   * Use this method to throw an error with arbitrary status code. 500 by default.
+   */
+  public errorHttp(
+    eventName: Parameters<TFormatter> | string,
+    statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
+    options?: Omit<IEventOptions<TFormatter>, 'error'>,
+  ): any {
+    let loggerLevel: LogLevel;
+    switch (true) {
+      case statusCode >= HttpStatus.INTERNAL_SERVER_ERROR:
+        loggerLevel = LogLevelEnum.ERROR;
+        break;
+      case statusCode === HttpStatus.TOO_MANY_REQUESTS:
+        loggerLevel = LogLevelEnum.WARN;
+        break;
+      case statusCode >= HttpStatus.BAD_REQUEST:
+      default:
+        loggerLevel = LogLevelEnum.LOG;
+        break;
+    }
+
+    const mergedOptions = this.applyLoggerLevel(
+      applyAwaitOption(this.buildOptions(options)),
+      loggerLevel,
+    );
+    mergedOptions.error = { class: DefaultError, statusCode };
+    return this.error(eventName, mergedOptions);
+  }
+
   /**
    * Use this method to throw a 400 Bad Request error when the request could not be understood or was missing required parameters.
    */

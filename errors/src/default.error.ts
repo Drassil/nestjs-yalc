@@ -2,6 +2,11 @@ import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter
 import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
+import {
+  HttpException,
+  HttpExceptionOptions,
+  HttpStatus,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
@@ -25,6 +30,7 @@ export interface IDefaultErrorOptions {
   systemMessage?: string;
   eventEmitter?: EventEmitter2;
   eventName?: string | false;
+  statusCode?: HttpStatus | number;
 }
 
 /**
@@ -122,7 +128,9 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
 
 export type DefaultErrorMixin = Mixin<typeof DefaultErrorMixin>;
 
-export class DefaultError extends DefaultErrorMixin<typeof Error>(Error) {
+export class DefaultError extends DefaultErrorMixin<typeof HttpException>(
+  HttpException,
+) {
   constructor(
     message?: string,
     /**
@@ -132,8 +140,13 @@ export class DefaultError extends DefaultErrorMixin<typeof Error>(Error) {
     /**
      * This is used to pass options to the base error class.
      */
-    baseOptions?: ErrorOptions,
+    baseOptions?: HttpExceptionOptions,
   ) {
-    super(options ?? {}, message ?? 'An error occurred', baseOptions);
+    super(
+      options ?? {},
+      message ?? 'An error occurred',
+      options?.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
+      baseOptions,
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { LogLevel, Logger } from '@nestjs/common';
+import { HttpExceptionOptions, LogLevel, Logger } from '@nestjs/common';
 import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -7,6 +7,7 @@ import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getGlobalEventEmitter } from './global-emitter.js';
+import { HttpStatus } from 'aws-sdk/clients/lambda.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -29,7 +30,8 @@ export interface IEventOptions<
     | {
         class?: ClassType<DefaultError> | ClassType<Error>;
         systemMessage?: string;
-        baseOptions?: ErrorOptions;
+        baseOptions?: HttpExceptionOptions;
+        statusCode?: number | HttpStatus;
       }
     | boolean;
 }
@@ -82,7 +84,6 @@ export function event<
    */
   if (logger !== false) {
     const message = optionalMessage ?? formattedEventName;
-
     const loggerInstance = logger?.instance ?? Logger;
     const loggerLevel = logger?.level ?? 'log';
 
@@ -127,13 +128,14 @@ export function event<
    *
    */
   if (error !== false && error !== undefined) {
-    let errorClass, systemMessage, baseOptions;
+    let errorClass, systemMessage, baseOptions, statusCode;
     if (error === true) {
       errorClass = DefaultError;
     } else {
       errorClass = error.class ?? DefaultError;
       systemMessage = error.systemMessage;
       baseOptions = error.baseOptions;
+      statusCode = error.statusCode;
     }
 
     /**
@@ -147,6 +149,7 @@ export function event<
         data,
         systemMessage,
         eventName: false,
+        statusCode,
       },
       baseOptions,
     ) as ReturnType<TOption>;
@@ -155,8 +158,10 @@ export function event<
   return result as Promise<ReturnType<TOption>>;
 }
 
-function getLoggerOption(options?: IEventOptions) {
-  return options?.logger ?? {};
+function getLoggerOption(level: LogLevel, options?: IEventOptions) {
+  if (options?.logger === false) return false;
+
+  return { level, ...options?.logger };
 }
 
 export async function eventLogAsync<
@@ -168,10 +173,7 @@ export async function eventLogAsync<
   const _options = applyAwaitOption<TFormatter>(options);
   return event(eventName, {
     ..._options,
-    logger: {
-      ...getLoggerOption(_options),
-      level: LogLevelEnum.LOG,
-    },
+    logger: getLoggerOption(LogLevelEnum.LOG, _options),
   });
 }
 
@@ -183,10 +185,7 @@ export function eventLog<
 ): any {
   return event(eventName, {
     ...options,
-    logger: {
-      ...getLoggerOption(options),
-      level: LogLevelEnum.LOG,
-    },
+    logger: getLoggerOption(LogLevelEnum.LOG, options),
   });
 }
 
@@ -208,10 +207,7 @@ export function eventError<
 ): any {
   return event(eventName, {
     ...options,
-    logger: {
-      level: LogLevelEnum.ERROR,
-      ...getLoggerOption(options),
-    },
+    logger: getLoggerOption(LogLevelEnum.ERROR, options),
     error: options?.error !== false && {
       class:
         typeof options?.error === 'object' && options.error.class
@@ -230,10 +226,7 @@ export async function eventWarnAsync<
   const _options = applyAwaitOption<TFormatter>(options);
   return event(eventName, {
     ..._options,
-    logger: {
-      ...getLoggerOption(_options),
-      level: LogLevelEnum.WARN,
-    },
+    logger: getLoggerOption(LogLevelEnum.WARN, _options),
   });
 }
 
@@ -245,10 +238,7 @@ export function eventWarn<
 ): any {
   return event(eventName, {
     ...options,
-    logger: {
-      ...getLoggerOption(options),
-      level: LogLevelEnum.WARN,
-    },
+    logger: getLoggerOption(LogLevelEnum.WARN, options),
   });
 }
 
@@ -261,10 +251,7 @@ export async function eventDebugAsync<
   const _options = applyAwaitOption<TFormatter>(options);
   return event(eventName, {
     ..._options,
-    logger: {
-      ...getLoggerOption(_options),
-      level: LogLevelEnum.DEBUG,
-    },
+    logger: getLoggerOption(LogLevelEnum.DEBUG, _options),
   });
 }
 
@@ -276,10 +263,7 @@ export function eventDebug<
 ): any {
   return event(eventName, {
     ...options,
-    logger: {
-      ...getLoggerOption(options),
-      level: LogLevelEnum.DEBUG,
-    },
+    logger: getLoggerOption(LogLevelEnum.DEBUG, options),
   });
 }
 
@@ -292,10 +276,7 @@ export async function eventVerboseAsync<
   const _options = applyAwaitOption<TFormatter>(options);
   return event(eventName, {
     ..._options,
-    logger: {
-      ...getLoggerOption(_options),
-      level: LogLevelEnum.VERBOSE,
-    },
+    logger: getLoggerOption(LogLevelEnum.VERBOSE, _options),
   });
 }
 
@@ -307,9 +288,6 @@ export function eventVerbose<
 ): any {
   return event(eventName, {
     ...options,
-    logger: {
-      ...getLoggerOption(options),
-      level: LogLevelEnum.VERBOSE,
-    },
+    logger: getLoggerOption(LogLevelEnum.VERBOSE, options),
   });
 }

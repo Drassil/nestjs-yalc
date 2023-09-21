@@ -6,11 +6,11 @@ import {
   it,
   beforeAll,
 } from '@jest/globals';
-import { Test, TestingModule } from '@nestjs/testing';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { createMock } from '@golevelup/ts-jest';
 import type { YalcEventService as EventServiceType } from '../event.service.js';
+import { HttpStatus } from '@nestjs/common';
 
 jest.unstable_mockModule('../event.js', async () => {
   return {
@@ -57,30 +57,10 @@ describe('YalcEventService', () => {
 
     mockEventEmitter = createMock<EventEmitter2>(new EventEmitter2());
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        {
-          provide: YalcEventService,
-          useFactory: (
-            loggerService: ImprovedLoggerService,
-            eventEmitter: EventEmitter2,
-          ) => {
-            return new YalcEventService(loggerService, eventEmitter);
-          },
-          inject: ['INTERNAL_APP_LOGGER_SERVICE', EventEmitter2],
-        },
-        {
-          provide: 'INTERNAL_APP_LOGGER_SERVICE',
-          useValue: mockLoggerService,
-        },
-        {
-          provide: EventEmitter2,
-          useValue: mockEventEmitter,
-        },
-      ],
-    }).compile();
-
-    service = module.get<EventServiceType>(YalcEventService);
+    service = new YalcEventService(
+      mockLoggerService as ImprovedLoggerService,
+      mockEventEmitter as EventEmitter2,
+    );
   });
 
   it('should be defined', () => {
@@ -97,6 +77,16 @@ describe('YalcEventService', () => {
     it('should return event emitter', () => {
       expect(service.emitter).toBe(mockEventEmitter);
     });
+
+    it('should emit event with logging', () => {
+      service.log('testEvent with logging');
+      expect(eventLog).toHaveBeenCalled();
+    });
+
+    it('should emit event without logging', () => {
+      service.log('testEvent without logging', { logger: false });
+      expect(mockLoggerService.log).not.toHaveBeenCalled();
+    });
   });
 
   describe('logAsync', () => {
@@ -106,6 +96,25 @@ describe('YalcEventService', () => {
         'testEvent',
         expect.anything(),
       );
+    });
+  });
+
+  describe('errorHttp', () => {
+    it('should call errorHttp with logger disabled', () => {
+      service.errorHttp('testEvent', HttpStatus.INTERNAL_SERVER_ERROR, {
+        logger: false,
+      });
+      expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
+    });
+
+    it('should call errorHttp with special case', () => {
+      service.errorHttp('testEvent', HttpStatus.TOO_MANY_REQUESTS);
+      expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
+    });
+
+    it('should call errorHttp with >400 codes', () => {
+      service.errorHttp('testEvent', HttpStatus.BAD_REQUEST);
+      expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
     });
   });
 
