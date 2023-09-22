@@ -3,8 +3,12 @@ import { expect, jest, describe, it, beforeEach } from '@jest/globals';
 import { DeepMocked, createMock } from '@golevelup/ts-jest';
 import { CreateEntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
 import { MissingArgumentsError } from '@nestjs-yalc/crud-gen/missing-arguments.error.js';
-import { ArgumentsHost, LoggerService } from '@nestjs/common';
-import { GqlArgumentsHost } from '@nestjs/graphql';
+import {
+  ArgumentsHost,
+  BadRequestException,
+  InternalServerErrorException,
+  LoggerService,
+} from '@nestjs/common';
 import { ExceptionContextEnum } from '../error.enum.js';
 import { HttpExceptionFilter } from '../filters/http-exception.filter.js';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
@@ -98,12 +102,31 @@ describe('Http exceptions filter', () => {
 
   it('should catch and log Entity error with gqlHost type http', () => {
     const exception = new CreateEntityError();
-    GqlArgumentsHost.create = jest.fn().mockReturnValue({
-      getType: jest.fn().mockReturnValue('http'),
-    });
+    mockArgumentsHost.getType.mockReturnValue('http');
     filter.catch(exception, mockArgumentsHost as ArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
       exception,
+      ExceptionContextEnum.HTTP,
+    );
+  });
+
+  it('should catch and log Http error with host type http', () => {
+    const exception = new InternalServerErrorException();
+    mockArgumentsHost.getType.mockReturnValue('http');
+    filter.catch(exception, mockArgumentsHost as ArgumentsHost);
+    expect(loggerServiceMock.error).toBeCalledWith(
+      exception.message,
+      expect.anything(),
+      ExceptionContextEnum.HTTP,
+    );
+  });
+
+  it('should catch and log Http log with host type http', () => {
+    const exception = new BadRequestException();
+    mockArgumentsHost.getType.mockReturnValue('http');
+    filter.catch(exception, mockArgumentsHost as ArgumentsHost);
+    expect(loggerServiceMock.log).toBeCalledWith(
+      exception.message,
       ExceptionContextEnum.HTTP,
     );
   });

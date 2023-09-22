@@ -36,6 +36,7 @@ import {
   UnprocessableEntityError,
   UnsupportedMediaTypeError,
 } from '@nestjs-yalc/errors/error.class.js';
+import { getLogLevelByStatus } from './event.helper.js';
 
 export interface IEventServiceOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -144,23 +145,9 @@ export class YalcEventService<
     statusCode = HttpStatus.INTERNAL_SERVER_ERROR,
     options?: Omit<IEventOptions<TFormatter>, 'error'>,
   ): any {
-    let loggerLevel: LogLevel;
-    switch (true) {
-      case statusCode >= HttpStatus.INTERNAL_SERVER_ERROR:
-        loggerLevel = LogLevelEnum.ERROR;
-        break;
-      case statusCode === HttpStatus.TOO_MANY_REQUESTS:
-        loggerLevel = LogLevelEnum.WARN;
-        break;
-      case statusCode >= HttpStatus.BAD_REQUEST:
-      default:
-        loggerLevel = LogLevelEnum.LOG;
-        break;
-    }
-
     const mergedOptions = this.applyLoggerLevel(
       applyAwaitOption(this.buildOptions(options)),
-      loggerLevel,
+      getLogLevelByStatus(statusCode),
     );
     mergedOptions.error = { class: DefaultError, statusCode };
     return this.error(eventName, mergedOptions);
