@@ -4,6 +4,8 @@ const { isEmpty } = lodash;
 
 export function maskDataInObject(data?: any, paths?: string[], trace?: any) {
   if (!paths || !data || isEmpty(paths) || isEmpty(data)) {
+    if (trace) data.trace = trace;
+
     return data;
   }
 
@@ -11,5 +13,5 @@ export function maskDataInObject(data?: any, paths?: string[], trace?: any) {
     paths,
   });
 
-  return JSON.parse(redact({ ...data, trace }));
+  return { ...JSON.parse(redact(data)), trace };
 }

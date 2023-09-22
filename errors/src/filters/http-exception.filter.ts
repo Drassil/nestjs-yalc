@@ -12,6 +12,7 @@ import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { getLogLevelByStatus } from '../../../event-manager/src/event.helper.js';
 import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
+import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 
 type HttpErrorType =
   | common.HttpException
@@ -29,7 +30,7 @@ export class HttpExceptionFilter
   implements GqlExceptionFilter, common.ExceptionFilter
 {
   constructor(
-    protected logger: common.LoggerService,
+    protected logger: ImprovedLoggerService,
     applicationRef?: common.HttpServer,
   ) {
     super(applicationRef);
@@ -47,7 +48,9 @@ export class HttpExceptionFilter
       // Base logging for normal operation execution errors
       case error instanceof MissingArgumentsError:
       case error instanceof common.UnauthorizedException: // Thrown by NestJS Auth Guard
-        this.logger.log(error.message, error.stack, ExceptionContextEnum.HTTP);
+        this.logger.log(error.message, {
+          trace: error.stack,
+        });
         break;
 
       // Log original error message (for now only if is an EntityError)
@@ -70,24 +73,27 @@ export class HttpExceptionFilter
         break;
 
       case isHttpError:
-        const logLevel = getLogLevelByStatus(
-          (error as common.HttpException).getStatus(),
-        );
+        const httpError = error as common.HttpException;
+        const logLevel = getLogLevelByStatus(httpError.getStatus());
 
         if (logLevel === LogLevelEnum.ERROR) {
-          this.logger[logLevel](
-            error.message,
-            error.stack,
-            ExceptionContextEnum.HTTP,
-          );
+          this.logger[logLevel](error.message, error.stack, {
+            trace: httpError.stack,
+            data: httpError.getResponse(),
+          });
         } else {
-          this.logger[logLevel](error.message, ExceptionContextEnum.HTTP);
+          this.logger[logLevel](error.message, {
+            trace: error.stack,
+            data: httpError.getResponse(),
+          });
         }
         break;
 
       // Log critically any other error, as those are not expected
       default:
-        this.logger.error(error, error.stack, ExceptionContextEnum.HTTP);
+        this.logger.error(error.message, error.stack, {
+          trace: error.stack,
+        });
         break;
     }
 

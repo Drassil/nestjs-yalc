@@ -37,8 +37,7 @@ describe('Http exceptions filter', () => {
     filter.catch(error, mockArgumentsHost);
     expect(loggerServiceMock.log).toBeCalledWith(
       error.message,
-      error.stack,
-      ExceptionContextEnum.HTTP,
+      expect.anything(),
     );
   });
 
@@ -53,9 +52,9 @@ describe('Http exceptions filter', () => {
 
     filter.catch(exception, mockArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
-      exception,
+      exception.message,
       exception.stack,
-      ExceptionContextEnum.HTTP,
+      expect.anything(),
     );
   });
 
@@ -85,8 +84,7 @@ describe('Http exceptions filter', () => {
     filter.catch(fixedError, mockArgumentsHost);
     expect(loggerServiceMock.log).toBeCalledWith(
       fixedError.systemMessage,
-      fixedError.stack,
-      ExceptionContextEnum.HTTP,
+      expect.anything(),
     );
   });
 
@@ -116,8 +114,8 @@ describe('Http exceptions filter', () => {
     filter.catch(exception, mockArgumentsHost as ArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
       exception.message,
+      exception.stack,
       expect.anything(),
-      ExceptionContextEnum.HTTP,
     );
   });
 
@@ -127,7 +125,7 @@ describe('Http exceptions filter', () => {
     filter.catch(exception, mockArgumentsHost as ArgumentsHost);
     expect(loggerServiceMock.log).toBeCalledWith(
       exception.message,
-      ExceptionContextEnum.HTTP,
+      expect.anything(),
     );
   });
 });
