@@ -147,16 +147,19 @@ export function jestConfGenerator(
 
   const projectSets: { [key: string]: any } = createProjectSets(projects);
 
-  const selectedProj = process.env.npm_config_bcaproj || 'all';
-
-  projects = projectSets[selectedProj];
-
   // use argv to catch the path argument in any position
   const argv: any = yargs(process.argv.slice(2))
     .command('$0 [paths]', 'test paths', (yargs) => {
       return yargs
         .positional('path', {
           describe: 'test path',
+          type: 'string',
+          coerce: (arg: string): string[] => {
+            return arg.split(',');
+          },
+        })
+        .option('proj', {
+          describe: 'comma-separated project names',
           type: 'string',
           coerce: (arg: string): string[] => {
             return arg.split(',');
@@ -175,6 +178,9 @@ export function jestConfGenerator(
     .fail(() => {
       // nothing to do
     }).argv;
+
+  const selectedProj =
+    argv.proj || process.env.npm_config_projects?.split(',') || 'all';
 
   const paths = [];
 
@@ -228,7 +234,17 @@ export function jestConfGenerator(
 
   let selectedProjects: any[] = [];
   if (possiblePath === true) {
-    selectedProjects = projects;
+    if (Array.isArray(selectedProj)) {
+      selectedProjects.push(
+        ...projects.filter((p: any) =>
+          selectedProj.some((projName) =>
+            p.displayName.startsWith(`unit/${projName}`),
+          ),
+        ),
+      );
+    } else {
+      selectedProjects = projects;
+    }
   } else {
     const testPaths: string[] = Array.isArray(possiblePath)
       ? possiblePath
@@ -243,6 +259,16 @@ export function jestConfGenerator(
         v.rootDir.startsWith(`${rootPath}${subProjectPath}`),
       ),
     );
+
+    if (Array.isArray(selectedProj)) {
+      selectedProjects.push(
+        ...projects.filter((p: any) =>
+          selectedProj.some((projName) =>
+            p.displayName.startsWith(`unit/${projName}`),
+          ),
+        ),
+      );
+    }
 
     // eslint-disable-next-line no-console
     console.debug('Subproject path:', subProjectPathList ?? ['']);
