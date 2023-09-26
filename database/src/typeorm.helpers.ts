@@ -23,7 +23,7 @@ export const yalcTypeOrmPostgresOptions = (
   logger: ImprovedLoggerService,
   eventEmitter: EventEmitter2,
   appOptions?: IYalcBaseAppOptions,
-): TypeOrmModuleOptions => {
+): TypeOrmModuleOptions & { type: 'postgres' } => {
   return {
     name,
     type: 'postgres',
