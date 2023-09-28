@@ -128,4 +128,13 @@ describe('Http exceptions filter', () => {
       expect.anything(),
     );
   });
+
+  it('should catch an error with the logger itself', () => {
+    const exception = new InternalServerErrorException();
+    loggerServiceMock.error = null;
+    mockArgumentsHost.getType.mockReturnValue('http');
+    console.error = jest.fn();
+    filter.catch(exception, mockArgumentsHost as ArgumentsHost);
+    expect(console.error).toHaveBeenCalled();
+  });
 });
