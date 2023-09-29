@@ -105,6 +105,19 @@ describe('Event Service', () => {
     );
   });
 
+  it('should log error event synchronously without trace', () => {
+    eventError(eventName, { ...options, trace: undefined });
+    expect(logger.error).toHaveBeenCalledWith(
+      eventName,
+      expect.anything(),
+      expect.anything(),
+    );
+    expect(eventEmitter.emit).toHaveBeenCalledWith(
+      eventName,
+      expect.anything(),
+    );
+  });
+
   it('should log warning event asynchronously', async () => {
     await eventWarnAsync(eventName, options);
     expect(logger.warn).toHaveBeenCalledWith(eventName, expect.anything());

@@ -78,6 +78,40 @@ export function event<
 
   /**
    *
+   * ERROR
+   *
+   */
+  let errorInstance;
+  if (error !== false && error !== undefined) {
+    let errorClass, systemMessage, baseOptions, statusCode;
+    if (error === true) {
+      errorClass = DefaultError;
+    } else {
+      errorClass = error.class ?? DefaultError;
+      systemMessage = error.systemMessage;
+      baseOptions = error.baseOptions;
+      statusCode = error.statusCode;
+    }
+
+    /**
+     * We build the message here.
+     */
+    const message = optionalMessage ?? formattedEventName;
+
+    errorInstance = new errorClass(
+      message,
+      {
+        data,
+        systemMessage,
+        eventName: false,
+        statusCode,
+      },
+      baseOptions,
+    ) as ReturnType<TOption>;
+  }
+
+  /**
+   *
    * LOGGER
    *
    * We build the logger function here unless the logger is false
@@ -88,14 +122,16 @@ export function event<
     const loggerLevel = logger?.level ?? 'log';
 
     if (loggerLevel === 'error') {
-      loggerInstance.error(message, trace, {
+      loggerInstance.error(message, trace ?? errorInstance?.stack, {
         data,
         event: false,
+        trace: trace ?? errorInstance?.stack,
       });
     } else {
       loggerInstance[loggerLevel]?.(message, {
         data,
         event: false,
+        trace: trace ?? errorInstance?.stack,
       });
     }
   }
@@ -122,40 +158,7 @@ export function event<
     );
   }
 
-  /**
-   *
-   * ERROR
-   *
-   */
-  if (error !== false && error !== undefined) {
-    let errorClass, systemMessage, baseOptions, statusCode;
-    if (error === true) {
-      errorClass = DefaultError;
-    } else {
-      errorClass = error.class ?? DefaultError;
-      systemMessage = error.systemMessage;
-      baseOptions = error.baseOptions;
-      statusCode = error.statusCode;
-    }
-
-    /**
-     * We build the message here.
-     */
-    const message = optionalMessage ?? formattedEventName;
-
-    return new errorClass(
-      message,
-      {
-        data,
-        systemMessage,
-        eventName: false,
-        statusCode,
-      },
-      baseOptions,
-    ) as ReturnType<TOption>;
-  }
-
-  return result as Promise<ReturnType<TOption>>;
+  return errorInstance ?? (result as Promise<ReturnType<TOption>>);
 }
 
 function getLoggerOption(level: LogLevel, options?: IEventOptions) {
