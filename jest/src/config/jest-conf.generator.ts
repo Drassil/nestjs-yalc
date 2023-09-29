@@ -182,6 +182,8 @@ export function jestConfGenerator(
   const selectedProj =
     argv.proj || process.env.npm_config_projects?.split(',') || 'all';
 
+  projects = projectSets[selectedProj];
+
   const paths = [];
 
   if (argv.path) {
