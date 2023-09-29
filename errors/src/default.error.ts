@@ -14,6 +14,8 @@ export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 export interface IAbstractDefaultError extends Error {
   data?: any;
   systemMessage?: string;
+  logger?: ImprovedLoggerService | Console;
+  eventEmitter?: EventEmitter2;
 }
 
 export interface IDefaultErrorOptions {
@@ -71,6 +73,9 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
 
     __DefaultErrorMixin = Object.freeze(true);
 
+    public readonly logger?: ImprovedLoggerService | Console;
+    public readonly eventEmitter?: EventEmitter2;
+
     constructor(
       options: IDefaultErrorOptions | string,
       ...args: ConstructorParameters<T>
@@ -95,14 +100,13 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
       if (options?.systemMessage) this.systemMessage = options?.systemMessage;
 
       if (options?.logger) {
-        let logger: ImprovedLoggerService | Console;
         if (options.logger === true) {
-          logger = console;
+          this.logger = console;
         } else {
-          logger = options.logger;
+          this.logger = options.logger;
         }
 
-        logger.error(this.systemMessage ?? message, this.stack, {
+        this.logger.error(this.systemMessage ?? message, this.stack, {
           data: {
             ...this.data,
             // This is the original message that was thrown.
@@ -111,10 +115,10 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
         });
       }
 
-      const eventEmitter = options?.eventEmitter ?? getGlobalEventEmitter();
+      this.eventEmitter = options?.eventEmitter ?? getGlobalEventEmitter();
 
       if (options?.eventName !== false) {
-        eventEmitter.emit(options?.eventName ?? ON_DEFAULT_ERROR_EVENT, {
+        this.eventEmitter.emit(options?.eventName ?? ON_DEFAULT_ERROR_EVENT, {
           data: this.data,
           systemMessage: this.systemMessage,
           message,
