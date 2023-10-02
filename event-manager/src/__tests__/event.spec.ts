@@ -200,6 +200,16 @@ describe('Event Service', () => {
     expect(eventEmitter.emit).not.toHaveBeenCalled();
   });
 
+  it('should handle event with string data', () => {
+    eventLog(message, { ...options, data: 'test' });
+    expect(logger.log).toHaveBeenCalledWith(
+      message,
+      expect.objectContaining({
+        data: expect.objectContaining({ message: 'test' }),
+      }),
+    );
+  });
+
   it('should handle logger with false', () => {
     const _options: IEventOptions = {
       ...options,

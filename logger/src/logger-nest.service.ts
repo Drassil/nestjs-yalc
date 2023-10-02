@@ -22,7 +22,7 @@ export class ImprovedNestLogger
   }
 
   private getOptions(options: LogMethodOptions | any): LogMethodOptions {
-    return typeof options === 'string' ? {} : options;
+    return typeof options === 'string' ? { message: options } : options;
   }
 
   private composeMessage(message: any, options: LogMethodOptions) {

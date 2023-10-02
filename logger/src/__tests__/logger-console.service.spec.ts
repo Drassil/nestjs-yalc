@@ -58,7 +58,9 @@ describe('Console logger service test', () => {
     logger.error('error', 'trace', { data: 'test' });
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', 'test');
+    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', {
+      message: 'test',
+    });
   });
 
   it('Test error with options', async () => {

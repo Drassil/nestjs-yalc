@@ -57,19 +57,16 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  const {
-    data: receivedData,
-    error,
-    event,
-    logger,
-    mask,
-    trace,
-  } = options ?? {};
+  let { data: receivedData, error, event, logger, mask, trace } = options ?? {};
 
   const formattedEventName = formatName(
     eventName,
     options?.event ? options?.event?.formatter : undefined,
   );
+
+  if (typeof receivedData === 'string') {
+    receivedData = { message: receivedData };
+  }
 
   let data = { ...receivedData, eventName: formattedEventName };
   if (mask) data = maskDataInObject(data, mask);
