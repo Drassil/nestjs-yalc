@@ -138,7 +138,7 @@ export class AppBootstrap<
     this.getApp().useGlobalPipes(
       new ValidationPipe({
         transform: true,
-        transformOptions: { enableImplicitConversion: true },
+        transformOptions: { enableImplicitConversion: false },
         validateCustomDecorators: true,
         exceptionFactory: (errors) => {
           const errorMessages: { [key: string]: any } = {};
