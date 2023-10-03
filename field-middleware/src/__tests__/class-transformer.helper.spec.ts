@@ -61,4 +61,29 @@ describe('parseArray', () => {
     const result = parseArray('a,b,,c');
     expect(result).toEqual(['a', 'b', 'c']);
   });
+
+  it('should return empty array for empty string', () => {
+    const result = parseArray('');
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array for undefined', () => {
+    const result = parseArray(undefined);
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array for null', () => {
+    const result = parseArray(null);
+    expect(result).toEqual([]);
+  });
+
+  it('should return empty array for number', () => {
+    const result = parseArray(123);
+    expect(result).toEqual([123]);
+  });
+
+  it('should return array for array', () => {
+    const result = parseArray(['a', 'b', 'c']);
+    expect(result).toEqual(['a', 'b', 'c']);
+  });
 });
