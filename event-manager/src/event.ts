@@ -17,6 +17,14 @@ interface IEventEmitterOptions<
   await?: boolean;
 }
 
+export interface IDataInfo {
+  [key: string]: any;
+  /**
+   * We know that eventName is always added to the data object
+   */
+  eventName: string;
+}
+
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
@@ -68,7 +76,7 @@ export function event<
     receivedData = { message: receivedData };
   }
 
-  let data = { ...receivedData, eventName: formattedEventName };
+  let data: IDataInfo = { ...receivedData, eventName: formattedEventName };
   if (mask) data = maskDataInObject(data, mask);
 
   const optionalMessage = options?.logger ? options.message : undefined;
