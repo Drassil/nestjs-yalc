@@ -25,6 +25,11 @@ export interface IDataInfo {
   eventName: string;
 }
 
+export interface IEventPayload {
+  message?: string;
+  data?: IDataInfo;
+}
+
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
@@ -152,15 +157,12 @@ export function event<
     let eventEmitter = event?.emitter ?? getGlobalEventEmitter();
     let formatter = event?.formatter;
 
-    result = emitEvent<TFormatter>(
-      eventEmitter,
-      eventName,
-      { message: optionalMessage, data },
-      {
-        formatter,
-        await: event?.await,
-      },
-    );
+    const eventPayload: IEventPayload = { message: optionalMessage, data };
+
+    result = emitEvent<TFormatter>(eventEmitter, eventName, eventPayload, {
+      formatter,
+      await: event?.await,
+    });
   }
 
   return errorInstance ?? (result as Promise<ReturnType<TOption>>);
