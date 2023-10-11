@@ -30,5 +30,5 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}/${{ inputs.working-directory }}
       run: |
-        npm config set jestworkers=${{ inputs.jest-workers }}
+        export JEST_WORKERS=${{ inputs.jest-workers }}
         npm run test:cov
