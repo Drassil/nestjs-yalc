@@ -50,9 +50,10 @@ export interface IOptions {
 }
 
 // considering our heap consumption (~300-700mb), 5 workers will consume around 3GB of ram
-// if you want to increase/decrease this value, you can set the npm_config_jestworkers
-// with the `npm config set` command (more info: https://docs.npmjs.com/cli/v7/commands/npm-config)
-const maxWorkers = process.env.npm_config_jestworkers || 10;
+// if you want to increase/decrease this value, you can set the npm_config_jestworkers:
+// * npm < 9  -> with the `npm config set` command (more info: https://docs.npmjs.com/cli/v7/commands/npm-config)
+// * npm >= 9 -> with: export JEST_WORKERS=5
+const maxWorkers = process.env.npm_config_jestworkers || process.env.JEST_WORKERS || 10;
 
 // eslint-disable-next-line no-console
 console.log(`Max workers: ${maxWorkers}`);
