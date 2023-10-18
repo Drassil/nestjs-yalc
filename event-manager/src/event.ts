@@ -32,6 +32,7 @@ export interface IEventPayload {
   message?: string;
   data?: IDataInfo;
   eventName: string;
+  errorInfo?: IErrorPayload;
 }
 
 export interface IEventOptions<
@@ -182,6 +183,7 @@ export function event<
       message: optionalMessage,
       data,
       eventName: formattedEventName,
+      errorInfo: errorInstance,
     };
 
     result = emitEvent<TFormatter>(eventEmitter, eventName, eventPayload, {

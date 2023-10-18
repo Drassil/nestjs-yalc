@@ -12,6 +12,7 @@ import {
   LogLevel,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { isNativeError } from 'util/types';
 import { ErrorsEnum } from './error.enum.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
@@ -41,7 +42,7 @@ export interface IErrorPayload {
   /**
    * The original cause of the error.
    */
-  cause?: Error;
+  cause?: Error | unknown;
 }
 
 type loggerOptionType =
@@ -154,7 +155,8 @@ export const DefaultErrorMixin = <
 
       const cause = _options.cause;
       const message = this.message;
-      const stack = cause?.stack ?? this.stack;
+      const stack =
+        isNativeError(cause) && cause?.stack ? cause?.stack : this.stack;
       const eventName = _options.eventName ?? ON_DEFAULT_ERROR_EVENT;
       const response = _options.response ?? message;
       const errorCode = _options.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
@@ -228,7 +230,7 @@ export function DefaultErrorBase(base?: ClassType<HttpException>) {
     ) {
       super(
         { ...(options ?? {}), internalMessage },
-        internalMessage ?? ErrorsEnum.INTERNAL_SERVER_ERROR,
+        options?.response ?? ErrorsEnum.INTERNAL_SERVER_ERROR,
         options?.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
         options,
       );
