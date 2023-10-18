@@ -112,15 +112,8 @@ export const DefaultErrorMixin = <
 ) => IAbstractDefaultError => {
   const BaseClass: ClassType<HttpException> = base ?? HttpException;
 
-  const creator = (otherClasses: any, secondaryClass: any) =>
-    secondaryClass(otherClasses);
-  const extender = (
-    ...parts: any[]
-  ): typeof BaseClass & ClassType<HttpException> =>
-    parts.reduce(creator, BaseClass);
-
   class _AbstractDefaultError
-    extends extender(HttpException)
+    extends BaseClass
     implements IAbstractDefaultError
   {
     data?: any;
