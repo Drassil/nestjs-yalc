@@ -1,13 +1,16 @@
-import { HttpExceptionOptions, LogLevel, Logger } from '@nestjs/common';
+import { LogLevel } from '@nestjs/common';
 import { type ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { LogLevelEnum } from '@nestjs-yalc/logger/logger.enum.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
-import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import {
+  DefaultError,
+  IErrorPayload,
+} from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getGlobalEventEmitter } from './global-emitter.js';
-import { HttpStatus } from 'aws-sdk/clients/lambda.js';
+import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 
 interface IEventEmitterOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -28,6 +31,7 @@ export interface IDataInfo {
 export interface IEventPayload {
   message?: string;
   data?: IDataInfo;
+  eventName: string;
 }
 
 export interface IEventOptions<
@@ -35,42 +39,52 @@ export interface IEventOptions<
 > {
   data?: any;
   mask?: string[];
-  trace?: string;
   event?: IEventEmitterOptions<TFormatter> | false;
   message?: string;
+  trace?: string;
   logger?: { instance?: ImprovedLoggerService; level?: LogLevel } | false;
-  error?:
-    | {
-        class?: ClassType<DefaultError> | ClassType<Error>;
-        systemMessage?: string;
-        baseOptions?: HttpExceptionOptions;
-        statusCode?: number | HttpStatus;
-      }
-    | boolean;
+}
+
+export interface IErrorEventOptions<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+> extends IEventOptions<TFormatter>,
+    Omit<IErrorPayload, 'internalMessage' | 'data'> {
+  errorClass?: ClassType<DefaultError> | ClassType<Error> | boolean;
 }
 
 export function applyAwaitOption<
   TFormatter extends EventNameFormatter = EventNameFormatter,
->(options?: IEventOptions<TFormatter>): IEventOptions<TFormatter> {
+  TOpts extends
+    | IErrorEventOptions<TFormatter>
+    | IEventOptions<TFormatter> = IEventOptions<TFormatter>,
+>(options?: TOpts): TOpts {
   let event = options?.event;
   if (event !== false && event !== undefined) {
     event = { ...event, await: event.await ?? true };
   }
-  return { ...options, event };
+  return { ...options, event } as TOpts;
 }
 
 type ReturnType<T> = T extends { error: false }
   ? boolean | any[] | undefined
   : Error | DefaultError | undefined;
 
+export const isErrorOptions = (
+  options?: IEventOptions | IErrorEventOptions,
+): options is IErrorEventOptions => {
+  return (options as IErrorEventOptions)?.errorClass !== undefined;
+};
+
 export function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
-  TOption extends IEventOptions<TFormatter> = IEventOptions<TFormatter>,
+  TOption extends
+    | IEventOptions<TFormatter>
+    | IErrorEventOptions<TFormatter> = IEventOptions<TFormatter>,
 >(
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  let { data: receivedData, error, event, logger, mask, trace } = options ?? {};
+  let { data: receivedData, event, logger, mask, trace } = options ?? {};
 
   const formattedEventName = formatName(
     eventName,
@@ -81,8 +95,8 @@ export function event<
     receivedData = { message: receivedData };
   }
 
+  if (mask) receivedData = maskDataInObject(receivedData, mask);
   let data: IDataInfo = { ...receivedData, eventName: formattedEventName };
-  if (mask) data = maskDataInObject(data, mask);
 
   const optionalMessage = options?.logger ? options.message : undefined;
 
@@ -92,32 +106,31 @@ export function event<
    *
    */
   let errorInstance;
-  if (error !== false && error !== undefined) {
-    let errorClass, systemMessage, baseOptions, statusCode;
-    if (error === true) {
-      errorClass = DefaultError;
-    } else {
-      errorClass = error.class ?? DefaultError;
-      systemMessage = error.systemMessage;
-      baseOptions = error.baseOptions;
-      statusCode = error.statusCode;
+  if (isErrorOptions(options)) {
+    const error = options?.errorClass ?? true;
+
+    if (error !== false && error !== undefined) {
+      let errorClass;
+      let errorOptions = {};
+      if (error === true) {
+        errorClass = DefaultError;
+      } else {
+        const { errorClass: _class, ...rest } = options;
+        errorOptions = rest;
+        errorClass = error ?? DefaultError;
+      }
+
+      /**
+       * We build the message here.
+       */
+      const message = optionalMessage ?? formattedEventName;
+
+      errorInstance = new errorClass(message, {
+        data: receivedData,
+        eventName: formattedEventName,
+        ...errorOptions,
+      }) as ReturnType<TOption>;
     }
-
-    /**
-     * We build the message here.
-     */
-    const message = optionalMessage ?? formattedEventName;
-
-    errorInstance = new errorClass(
-      message,
-      {
-        data,
-        systemMessage,
-        eventName: false,
-        statusCode,
-      },
-      baseOptions,
-    ) as ReturnType<TOption>;
   }
 
   /**
@@ -127,18 +140,26 @@ export function event<
    * We build the logger function here unless the logger is false
    */
   if (logger !== false) {
-    const message = optionalMessage ?? formattedEventName;
-    const loggerInstance = logger?.instance ?? Logger;
-    const loggerLevel = logger?.level ?? 'log';
+    const loggerDefaults: {
+      instance: ImprovedLoggerService;
+      level: LogLevel;
+    } = {
+      instance: AppLoggerFactory('Event'),
+      level: 'log',
+    };
 
-    if (loggerLevel === 'error') {
-      loggerInstance.error(message, trace ?? errorInstance?.stack, {
+    const { level, instance } = { ...loggerDefaults, ...logger };
+
+    const message = optionalMessage ?? formattedEventName;
+
+    if (level === 'error') {
+      instance.error(message, trace ?? errorInstance?.stack, {
         data,
         event: false,
         trace: trace ?? errorInstance?.stack,
       });
     } else {
-      loggerInstance[loggerLevel]?.(message, {
+      instance[level]?.(message, {
         data,
         event: false,
         trace: trace ?? errorInstance?.stack,
@@ -157,7 +178,11 @@ export function event<
     let eventEmitter = event?.emitter ?? getGlobalEventEmitter();
     let formatter = event?.formatter;
 
-    const eventPayload: IEventPayload = { message: optionalMessage, data };
+    const eventPayload: IEventPayload = {
+      message: optionalMessage,
+      data,
+      eventName: formattedEventName,
+    };
 
     result = emitEvent<TFormatter>(eventEmitter, eventName, eventPayload, {
       formatter,
@@ -213,17 +238,12 @@ export function eventError<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 >(
   eventName: Parameters<TFormatter> | string,
-  options?: IEventOptions<TFormatter>,
+  options?: IErrorEventOptions<TFormatter>,
 ): any {
   return event(eventName, {
     ...options,
     logger: getLoggerOption(LogLevelEnum.ERROR, options),
-    error: options?.error !== false && {
-      class:
-        typeof options?.error === 'object' && options.error.class
-          ? options.error.class
-          : DefaultError,
-    },
+    errorClass: options?.errorClass ?? true,
   });
 }
 

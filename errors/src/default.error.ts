@@ -1,38 +1,81 @@
+import { IDataInfo } from '@nestjs-yalc/event-manager/event.js';
 import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
 import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
+import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import { ClassType, Mixin } from '@nestjs-yalc/types/globals.d.js';
+import { getHttpStatusDescription } from '@nestjs-yalc/utils/http.helper.js';
 import {
   HttpException,
   HttpExceptionOptions,
   HttpStatus,
+  LogLevel,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ErrorsEnum } from './error.enum.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
-export interface IAbstractDefaultError extends Error {
-  data?: any;
-  systemMessage?: string;
-  logger?: ImprovedLoggerService | Console;
-  eventEmitter?: EventEmitter2;
+export interface IErrorPayload {
+  /**
+   * The data that will be used internally. It can contain sensitive data.
+   */
+  data?: IDataInfo;
+  /**
+   * The message that will be used internally. It can contain sensitive data.
+   */
+  internalMessage?: string;
+  /**
+   * The response that can be sent to the client. It can be a string or an object (including an error object)
+   * It must not contain sensitive data.
+   */
+  response?: string | Record<string, any>;
+  /**
+   * Human readable description of the error code
+   */
+  description?: string;
+  /**
+   * Http status code or a custom error code
+   */
+  errorCode?: HttpStatus | number;
+  /**
+   * The original cause of the error.
+   */
+  cause?: Error;
 }
 
-export interface IDefaultErrorOptions {
-  data?: any;
+type loggerOptionType =
+  | { instance?: ImprovedLoggerService; level?: LogLevel }
+  | false;
+
+export interface IAbstractDefaultError
+  extends Omit<HttpException, 'cause'>,
+    Omit<IErrorPayload, 'response'> {
+  logger?: loggerOptionType;
+  eventEmitter?: EventEmitter2;
+  eventName?: string;
+}
+
+export interface IDefaultErrorOptions
+  extends Omit<HttpExceptionOptions, 'message' | 'cause'>,
+    IErrorPayload {
+  /**
+   * This is the list of keys that will be masked in the data object.
+   */
   masks?: string[];
+  eventName?: string;
   /**
    * This allow to log the error at the same time it is thrown.
    * If set to true, will use the default logger.
    */
-  logger?: ImprovedLoggerService | boolean;
+  logger?: loggerOptionType;
   /**
-   * This is the message that will be logged in the system but won't be thrown to the user.
+   * This allow to emit an event at the same time it is thrown.
+   * If set to true, will use the default event emitter.
+   * If set to false, will not emit any event.
+   * If set to an EventEmitter2 instance, will use that instance.
    */
-  systemMessage?: string;
-  eventEmitter?: EventEmitter2;
-  eventName?: string | false;
-  statusCode?: HttpStatus | number;
+  eventEmitter?: EventEmitter2 | boolean;
 }
 
 /**
@@ -42,7 +85,9 @@ export interface IDefaultErrorOptions {
  * @param args
  * @returns
  */
-export const newDefaultError = <T extends ClassType<Error> = typeof Error>(
+export const newDefaultError = <
+  T extends ClassType<HttpException> = typeof HttpException,
+>(
   base: T,
   options: IDefaultErrorOptions | string,
   ...args: ConstructorParameters<T>
@@ -51,29 +96,40 @@ export const newDefaultError = <T extends ClassType<Error> = typeof Error>(
 };
 
 export function isDefaultErrorMixin(
-  error: Error,
+  error: any,
 ): error is IAbstractDefaultError {
   return (error as any).__DefaultErrorMixin !== undefined;
 }
 
-export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
+export const DefaultErrorMixin = <
+  T extends ClassType<HttpException> = typeof HttpException,
+>(
   base?: T,
 ): new (
   options: IDefaultErrorOptions | string,
   ...args: ConstructorParameters<T>
 ) => IAbstractDefaultError => {
-  const baseClass: ClassType<Error> = base ?? Error;
+  const BaseClass: ClassType<HttpException> = base ?? HttpException;
+
+  const creator = (otherClasses: any, secondaryClass: any) =>
+    secondaryClass(otherClasses);
+  const extender = (
+    ...parts: any[]
+  ): typeof BaseClass & ClassType<HttpException> =>
+    parts.reduce(creator, BaseClass);
 
   class _AbstractDefaultError
-    extends baseClass
+    extends extender(HttpException)
     implements IAbstractDefaultError
   {
     data?: any;
-    systemMessage?: string;
+    description?: string;
+    internalMessage?: string;
+    eventName?: string;
 
     __DefaultErrorMixin = Object.freeze(true);
 
-    public readonly logger?: ImprovedLoggerService | Console;
+    public readonly logger?: Required<loggerOptionType>;
     public readonly eventEmitter?: EventEmitter2;
 
     constructor(
@@ -82,48 +138,77 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
     ) {
       super(...args);
 
-      const message = args[0] as string;
-
+      let _options: IDefaultErrorOptions = {};
       /**
        * If the options is a string, it means that it is the systemMessage.
        */
       if (typeof options === 'string') {
-        options = {
-          systemMessage: options,
+        _options = {
+          response: options,
         };
+      } else {
+        _options = options;
       }
 
-      this.data = options?.masks
-        ? maskDataInObject(options.data, options?.masks)
-        : options?.data;
+      this.internalMessage = _options.internalMessage;
 
-      if (options?.systemMessage) this.systemMessage = options?.systemMessage;
+      const cause = _options.cause;
+      const message = this.message;
+      const stack = cause?.stack ?? this.stack;
+      const eventName = _options.eventName ?? ON_DEFAULT_ERROR_EVENT;
+      const response = _options.response ?? message;
+      const errorCode = _options.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
 
-      if (options?.logger) {
-        if (options.logger === true) {
-          this.logger = console;
-        } else {
-          this.logger = options.logger;
-        }
+      this.description =
+        _options.description ?? getHttpStatusDescription(errorCode);
+      this.data = _options.masks
+        ? maskDataInObject(_options.data, _options.masks)
+        : _options.data;
 
-        this.logger.error(this.systemMessage ?? message, this.stack, {
-          data: {
-            ...this.data,
-            // This is the original message that was thrown.
-            _originalMessage: message,
-          },
+      const payload: IErrorPayload = {
+        response,
+        errorCode,
+        cause,
+        description: this.description,
+        // custom error properties
+        data: this.data,
+        internalMessage: this.internalMessage,
+      };
+
+      if (_options.logger) {
+        const defaults: Required<loggerOptionType> = {
+          instance: AppLoggerFactory('DefaultError'),
+          level: 'error',
+        };
+
+        this.logger = { ...defaults, ..._options.logger };
+
+        this.logger.instance?.[this.logger.level]?.(message, stack, {
+          data: payload,
         });
       }
 
-      this.eventEmitter = options?.eventEmitter ?? getGlobalEventEmitter();
+      const eventEmitter =
+        _options.eventEmitter === true || _options.eventEmitter === undefined
+          ? getGlobalEventEmitter()
+          : _options.eventEmitter;
 
-      if (options?.eventName !== false) {
-        this.eventEmitter.emit(options?.eventName ?? ON_DEFAULT_ERROR_EVENT, {
-          data: this.data,
-          systemMessage: this.systemMessage,
-          message,
+      if (eventName && eventEmitter !== false) {
+        this.eventName = eventName;
+        this.eventEmitter = eventEmitter;
+        this.eventEmitter.emit(eventName, {
+          ...payload,
+          eventName,
         });
       }
+    }
+
+    getInternalMessage(): string | undefined {
+      return this.internalMessage;
+    }
+
+    getDescription(): string | undefined {
+      return this.description;
     }
   }
 
@@ -132,25 +217,23 @@ export const DefaultErrorMixin = <T extends ClassType<Error> = typeof Error>(
 
 export type DefaultErrorMixin = Mixin<typeof DefaultErrorMixin>;
 
-export class DefaultError extends DefaultErrorMixin<typeof HttpException>(
-  HttpException,
-) {
-  constructor(
-    message?: string,
-    /**
-     * These are the DefaultError extended options.
-     */
-    options?: IDefaultErrorOptions,
-    /**
-     * This is used to pass options to the base error class.
-     */
-    baseOptions?: HttpExceptionOptions,
-  ) {
-    super(
-      options ?? {},
-      message ?? 'An error occurred',
-      options?.statusCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
-      baseOptions,
-    );
-  }
+export function DefaultErrorBase(base?: ClassType<HttpException>) {
+  return class extends DefaultErrorMixin(base ?? HttpException) {
+    constructor(
+      internalMessage?: string,
+      /**
+       * These are the DefaultError extended options.
+       */
+      options?: Omit<IDefaultErrorOptions, 'internalMessage'>,
+    ) {
+      super(
+        { ...(options ?? {}), internalMessage },
+        internalMessage ?? ErrorsEnum.INTERNAL_SERVER_ERROR,
+        options?.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
+        options,
+      );
+    }
+  };
 }
+
+export class DefaultError extends DefaultErrorBase() {}

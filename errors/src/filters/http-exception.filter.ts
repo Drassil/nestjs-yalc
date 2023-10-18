@@ -104,7 +104,7 @@ export class HttpExceptionFilter
           const response = ctx.getResponse<FResponse>();
           let status = common.HttpStatus.INTERNAL_SERVER_ERROR;
           if (isHttpError) status = (error as common.HttpException).getStatus();
-          return response.status(status).send((error as any).response);
+          return response.status(status).send(error.message);
         }
       }
     } catch (e) {

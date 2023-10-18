@@ -1,9 +1,12 @@
+import { HttpStatus } from '@nestjs/common';
+
 export enum ErrorsEnum {
   // 400 Client Errors
   BAD_REQUEST = 'Bad request', // 400
   INVALID_VALUE = 'Invalid value', // 400 (custom)
 
   UNAUTHORIZED = 'Unauthorized', // 401
+
   BAD_LOGIN = 'Bad login', // 401 (custom, usually used for unauthorized access with wrong credentials)
 
   PAYMENT_REQUIRED = 'Payment required', // 402
@@ -25,6 +28,14 @@ export enum ErrorsEnum {
   SERVICE_UNAVAILABLE = 'Service unavailable', // 503
   GATEWAY_TIMEOUT = 'Gateway timeout', // 504
 }
+
+export const getHttpStatusNameByCode = (code: number): string => {
+  const httpStatusEnumName = Object.entries(HttpStatus).find(
+    ([, value]) => value === code,
+  )?.[0];
+  const enumValue = ErrorsEnum[httpStatusEnumName as keyof typeof ErrorsEnum];
+  return enumValue ?? 'Unknown';
+};
 
 export enum ExceptionContextEnum {
   DATABASE = 'DatabaseException',
