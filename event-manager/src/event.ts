@@ -129,6 +129,7 @@ export function event<
       errorInstance = new errorClass(message, {
         data: receivedData,
         eventName: formattedEventName,
+        eventEmitter: false,
         ...errorOptions,
       }) as ReturnType<TOption>;
     }
