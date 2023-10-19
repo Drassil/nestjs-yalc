@@ -8,7 +8,7 @@ import {
   IErrorPayload,
 } from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
-import { ClassType } from '@nestjs-yalc/types/globals.d.js';
+import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
 import { getGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 
@@ -48,10 +48,17 @@ export interface IEventOptions<
 
 export interface IErrorEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
+  TErrorClass extends DefaultError = DefaultError,
 > extends IEventOptions<TFormatter>,
     Omit<IErrorPayload, 'internalMessage' | 'data'> {
-  errorClass?: ClassType<DefaultError> | ClassType<Error> | boolean;
+  errorClass?: ClassType<TErrorClass> | boolean;
 }
+
+export interface IErrorEventOptionsRequired<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+  TErrorClass extends DefaultError = DefaultError,
+> extends Omit<IErrorEventOptions<TFormatter, TErrorClass>, 'errorClass'>,
+    Required<Pick<IErrorEventOptions<TFormatter, TErrorClass>, 'errorClass'>> {}
 
 export function applyAwaitOption<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -66,9 +73,44 @@ export function applyAwaitOption<
   return { ...options, event } as TOpts;
 }
 
-type ReturnType<T> = T extends { error: false }
+type ReturnType<T> = T extends { errorClass: false }
   ? boolean | any[] | undefined
-  : Error | DefaultError | undefined;
+  : Error | DefaultError;
+
+type PickError<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+  TOpt extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>,
+> = NonNullable<
+  TOpt extends { errorClass: infer T }
+    ? T extends boolean
+      ? DefaultError
+      : InstanceType<T>
+    : never
+>;
+
+type eventErrorReturnType<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+  TOpt extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>,
+> = TOpt extends {
+  errorClass: false;
+}
+  ? TOpt extends { await: true }
+    ? Promise<boolean | any[] | undefined>
+    : boolean | any[] | undefined
+  : TOpt extends { await: true }
+  ? Promise<PickError<TFormatter, TOpt>>
+  : PickError<TFormatter, TOpt>;
+
+type eventErrorReturnTypeAsync<
+  TFormatter extends EventNameFormatter = EventNameFormatter,
+  TOpt extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>,
+> = Promise<
+  TOpt extends {
+    errorClass: false;
+  }
+    ? boolean | any | undefined
+    : PickError<TFormatter, TOpt>
+>;
 
 export const isErrorOptions = (
   options?: IEventOptions | IErrorEventOptions,
@@ -229,25 +271,34 @@ export function eventLog<
 
 export async function eventErrorAsync<
   TFormatter extends EventNameFormatter = EventNameFormatter,
+  TOption extends IErrorEventOptions<TFormatter> = IEventOptions<TFormatter>,
 >(
   eventName: Parameters<TFormatter> | string,
-  options?: Omit<IEventOptions<TFormatter>, 'error'>,
-): Promise<any> {
-  const _options = applyAwaitOption<TFormatter>(options);
-  return eventError(eventName, _options);
+  options?: TOption,
+): eventErrorReturnTypeAsync<TFormatter, TOption> {
+  const _options = applyAwaitOption<TFormatter, TOption>(options);
+  return eventError<TFormatter, TOption>(
+    eventName,
+    _options,
+  ) as unknown as eventErrorReturnTypeAsync<TFormatter, TOption>;
 }
 
 export function eventError<
   TFormatter extends EventNameFormatter = EventNameFormatter,
+  TOption extends IErrorEventOptions<TFormatter> = IErrorEventOptions<TFormatter>,
 >(
   eventName: Parameters<TFormatter> | string,
-  options?: IErrorEventOptions<TFormatter>,
-): any {
-  return event(eventName, {
-    ...options,
+  options?: TOption,
+): eventErrorReturnType<TFormatter, TOption> {
+  const _options: IErrorEventOptionsRequired<TFormatter> = {
+    ...(options ?? {}),
     logger: getLoggerOption(LogLevelEnum.ERROR, options),
     errorClass: options?.errorClass ?? true,
-  });
+  };
+  return event<TFormatter>(
+    eventName,
+    _options,
+  ) as unknown as eventErrorReturnType<TFormatter, TOption>;
 }
 
 export async function eventWarnAsync<

@@ -14,6 +14,7 @@ import {
   applyAwaitOption,
   IErrorEventOptions,
   isErrorOptions,
+  IErrorEventOptionsRequired,
 } from './event.js';
 import { LogLevelEnum, type ImprovedLoggerService } from '@nestjs-yalc/logger';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -70,11 +71,14 @@ export class YalcEventService<
    */
   emit = this.log;
 
-  public error(
+  public error<TOpts extends IErrorEventOptions<TFormatter>>(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): Error | DefaultError | undefined {
-    return eventError(eventName, this.buildOptions(options));
+    options?: TOpts,
+  ) {
+    return eventError<TFormatter, TOpts>(
+      eventName,
+      this.buildOptions<TOpts>(options),
+    );
   }
 
   public async logAsync(
@@ -84,11 +88,14 @@ export class YalcEventService<
     return eventLogAsync(eventName, this.buildOptions(options));
   }
 
-  public async errorAsync(
+  public async errorAsync<TOpts extends IErrorEventOptions<TFormatter>>(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): Promise<any> {
-    return eventErrorAsync(eventName, this.buildOptions(options));
+    options?: TOpts,
+  ) {
+    return eventErrorAsync<TFormatter, TOpts>(
+      eventName,
+      this.buildOptions<TOpts>(options),
+    );
   }
 
   public async warnAsync(
@@ -160,8 +167,8 @@ export class YalcEventService<
    */
   public errorBadRequest(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): BadRequestError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, BadRequestError)),
     );
@@ -173,8 +180,8 @@ export class YalcEventService<
    */
   public errorUnauthorized(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): UnauthorizedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, UnauthorizedError)),
     );
@@ -186,8 +193,8 @@ export class YalcEventService<
    */
   public errorPaymentRequired(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): PaymentRequiredError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, PaymentRequiredError)),
     );
@@ -199,8 +206,8 @@ export class YalcEventService<
    */
   public errorForbidden(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): ForbiddenError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ForbiddenError)),
     );
@@ -212,8 +219,8 @@ export class YalcEventService<
    */
   public errorNotFound(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): NotFoundError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotFoundError)),
     );
@@ -225,8 +232,8 @@ export class YalcEventService<
    */
   public errorMethodNotAllowed(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): MethodNotAllowedError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, MethodNotAllowedError)),
     );
@@ -238,8 +245,8 @@ export class YalcEventService<
    */
   public errorNotAcceptable(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): NotAcceptableError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, NotAcceptableError)),
     );
@@ -251,8 +258,8 @@ export class YalcEventService<
    */
   public errorConflict(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): ConflictError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, ConflictError)),
     );
@@ -264,8 +271,8 @@ export class YalcEventService<
    */
   public errorGone(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): GoneError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(this.buildErrorOptions(options, GoneError)),
     );
@@ -277,8 +284,8 @@ export class YalcEventService<
    */
   public errorUnsupportedMediaType(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): UnsupportedMediaTypeError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
         this.buildErrorOptions(options, UnsupportedMediaTypeError),
@@ -292,8 +299,8 @@ export class YalcEventService<
    */
   public errorUnprocessableEntity(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): UnprocessableEntityError {
     const mergedOptions = this.applyLoggerLevelLog(
       applyAwaitOption(
         this.buildErrorOptions(options, UnprocessableEntityError),
@@ -307,8 +314,8 @@ export class YalcEventService<
    */
   public errorTooManyRequests(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): TooManyRequestsError {
     const mergedOptions = this.applyLoggerLevelWarn(
       applyAwaitOption(this.buildErrorOptions(options, TooManyRequestsError)),
     );
@@ -320,8 +327,8 @@ export class YalcEventService<
    */
   public errorInternalServerError(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): InternalServerError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, InternalServerError),
     );
@@ -333,8 +340,8 @@ export class YalcEventService<
    */
   public errorNotImplemented(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): NotImplementedError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, NotImplementedError),
     );
@@ -346,8 +353,8 @@ export class YalcEventService<
    */
   public errorBadGateway(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): BadGatewayError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, BadGatewayError),
     );
@@ -359,8 +366,8 @@ export class YalcEventService<
    */
   public errorServiceUnavailable(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
-  ): any {
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
+  ): ServiceUnavailableError {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, ServiceUnavailableError),
     );
@@ -372,7 +379,7 @@ export class YalcEventService<
    */
   public errorGatewayTimeout(
     eventName: Parameters<TFormatter> | string,
-    options?: IErrorEventOptions<TFormatter>,
+    options?: Omit<IErrorEventOptions<TFormatter>, 'errorClass'>,
   ): any {
     const mergedOptions = applyAwaitOption(
       this.buildErrorOptions(options, GatewayTimeoutError),
@@ -394,15 +401,15 @@ export class YalcEventService<
     } as TOpt;
   }
 
-  protected applyLoggerLevelWarn(
-    options: IEventOptions<TFormatter>,
-  ): IEventOptions<TFormatter> {
+  protected applyLoggerLevelWarn<
+    TOpts extends IErrorEventOptions<TFormatter> | IEventOptions<TFormatter>,
+  >(options: TOpts): TOpts {
     return this.applyLoggerLevel(options, LogLevelEnum.WARN);
   }
 
-  protected applyLoggerLevelLog(
-    options: IEventOptions<TFormatter>,
-  ): IEventOptions<TFormatter> {
+  protected applyLoggerLevelLog<
+    TOpts extends IErrorEventOptions<TFormatter> | IEventOptions<TFormatter>,
+  >(options: TOpts): TOpts {
     return this.applyLoggerLevel(options, LogLevelEnum.LOG);
   }
 
@@ -446,11 +453,13 @@ export class YalcEventService<
     return res as TOpts;
   }
 
-  protected buildErrorOptions(
+  protected buildErrorOptions<TErrorClass extends DefaultError = DefaultError>(
     options: IErrorEventOptions<TFormatter> = {},
-    defaultClass: ClassType<DefaultError> | boolean = true,
-  ): IErrorEventOptions<TFormatter> {
+    defaultClass: ClassType<TErrorClass> | boolean = true,
+  ): IErrorEventOptionsRequired<TFormatter, TErrorClass> {
     options.errorClass ??= defaultClass;
-    return this.buildOptions(options);
+    return this.buildOptions<
+      IErrorEventOptionsRequired<TFormatter, TErrorClass>
+    >(options as IErrorEventOptionsRequired<TFormatter, TErrorClass>);
   }
 }
