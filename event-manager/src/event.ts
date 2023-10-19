@@ -5,7 +5,9 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
 import {
   DefaultError,
+  ILogErrorPayload,
   IErrorPayload,
+  isDefaultErrorMixin,
 } from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
@@ -149,6 +151,7 @@ export function event<
    *
    */
   let errorInstance;
+  let errorPayload: ILogErrorPayload = {};
   if (isErrorOptions(options)) {
     const error = options?.errorClass ?? true;
 
@@ -171,9 +174,19 @@ export function event<
       errorInstance = new errorClass(message, {
         data: receivedData,
         eventName: formattedEventName,
-        eventEmitter: false,
         ...errorOptions,
+        eventEmitter: false,
+        logger: false,
       }) as ReturnType<TOption>;
+
+      if (isDefaultErrorMixin(errorInstance)) {
+        errorPayload = errorInstance.getEventPayload();
+      } else {
+        errorPayload = {
+          ...errorInstance,
+          data: receivedData,
+        };
+      }
     }
   }
 
@@ -184,29 +197,27 @@ export function event<
    * We build the logger function here unless the logger is false
    */
   if (logger !== false) {
-    const loggerDefaults: {
-      instance: ImprovedLoggerService;
-      level: LogLevel;
-    } = {
-      instance: AppLoggerFactory('Event'),
-      level: 'log',
-    };
+    const { instance: _instance, level: _level, ...rest } = logger ?? {};
 
-    const { level, instance } = { ...loggerDefaults, ...logger };
+    const { level, instance } = {
+      instance: _instance ?? AppLoggerFactory('Event'),
+      level: _level ?? 'log',
+      ...rest,
+    };
 
     const message = optionalMessage ?? formattedEventName;
 
     if (level === 'error') {
-      instance.error(message, trace ?? errorInstance?.stack, {
-        data,
+      instance.error(message, trace ?? errorPayload?.trace, {
+        data: { data, ...errorPayload },
         event: false,
-        trace: trace ?? errorInstance?.stack,
+        trace: trace ?? errorPayload?.trace,
       });
     } else {
       instance[level]?.(message, {
-        data,
+        data: { data, ...errorPayload },
         event: false,
-        trace: trace ?? errorInstance?.stack,
+        trace: trace ?? errorPayload?.trace,
       });
     }
   }

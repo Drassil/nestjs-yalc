@@ -7,37 +7,45 @@ import type {
   IImprovedLoggerOptions,
   ImprovedLoggerService,
 } from './logger-abstract.service.js';
+import _ from 'lodash';
 
-export const AppLoggerFactory = (
-  context: string,
-  loggerLevels: LogLevel[] = LOG_LEVEL_DEFAULT,
-  loggerType?: string,
-  options?: IImprovedLoggerOptions,
-): ImprovedLoggerService => {
-  let logger: ImprovedLoggerService;
-  switch (loggerType) {
-    case LoggerTypeEnum.CONSOLE:
-      logger = new ConsoleLogger(context, loggerLevels, options);
-      break;
-    case LoggerTypeEnum.PINO:
-      logger = new PinoLogger(context, loggerLevels, options);
-      break;
-    case LoggerTypeEnum.NEST:
-    default:
-      logger = new ImprovedNestLogger(
-        context,
-        {
-          timestamp: true,
-        },
-        options,
-      );
-      // not available on default NEST logger
-      // ImprovedNestLogger.overrideLogger(loggerLevels);
-      logger.setLogLevels?.(loggerLevels);
-      break;
-  }
+export const AppLoggerFactory = _.memoize(
+  (
+    context: string,
+    loggerLevels: LogLevel[] = LOG_LEVEL_DEFAULT,
+    loggerType?: string,
+    options?: IImprovedLoggerOptions,
+  ): ImprovedLoggerService => {
+    let logger: ImprovedLoggerService;
+    switch (loggerType) {
+      case LoggerTypeEnum.CONSOLE:
+        logger = new ConsoleLogger(context, loggerLevels, options);
+        break;
+      case LoggerTypeEnum.PINO:
+        logger = new PinoLogger(context, loggerLevels, options);
+        break;
+      case LoggerTypeEnum.NEST:
+      default:
+        logger = new ImprovedNestLogger(
+          context,
+          {
+            timestamp: true,
+          },
+          options,
+        );
+        // not available on default NEST logger
+        // ImprovedNestLogger.overrideLogger(loggerLevels);
+        logger.setLogLevels?.(loggerLevels);
+        break;
+    }
 
-  logger.debug?.(`Using ${loggerType} logger`);
+    logger.debug?.(
+      `Use Logger: ${
+        loggerType ??
+        `not specified, fallback to default (${LoggerTypeEnum.NEST})`
+      }`,
+    );
 
-  return logger;
-};
+    return logger;
+  },
+);

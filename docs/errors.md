@@ -1,6 +1,6 @@
 # DefaultError Class
 
-This library provides an enhanced Error class that extends the built-in Error functionality with features like a system message (that can be used for logging but not returned back to the user in an API context),
+This library provides an enhanced Error class that extends the built-in Error functionality with features like an internal message (that can be used for logging but not returned back to the user in an API context),
 logging of the error at the moment it's thrown, event triggering for application reactivity during error occurrences,
 and defining a data object that can be logged with the message and masked.
 This mixin approach retains the original error class, allowing compatibility with NestJS exception filters and differentiation of errors by type.
@@ -15,14 +15,14 @@ Also, it might be useful to read the [Event](./event-manager-event.md) and [Logg
 
 The module exports two interfaces:
 
-- `IAbstractDefaultError`: Extends the `Error` class with additional properties `data` and `systemMessage`.
+- `IAbstractDefaultError`: Extends the `HttpException` class with additional properties `data` and `internalMessage`.
 
 - `IDefaultErrorOptions`: Specifies options for the default error class. It includes the following properties:
 
   - `data`: An optional property that can be of any type. This property is used to specify additional data related to the error that will be logged but not thrown back to the user.
   - `masks`: An optional array of strings. These strings represent keys in the data object that should be masked in the logs for privacy or security reasons.
   - `logger`: This property can either be an instance of the `ImprovedLoggerService` or a boolean. If set to true, the default logger (console) is used. If an instance of `ImprovedLoggerService` is provided, it will be used for logging.
-  - `systemMessage`: An optional string that represents a message that will be logged in the system but not returned to the user.
+  - `response`: An optional string or object that represents a message that will can be safely sent to the client.
   - `eventEmitter`: This can be an instance of either `EventEmitter2` or `EventEmitter`. It will be used to emit an event when an error occurs.
 
 ## Methods
@@ -46,7 +46,7 @@ const options: IDefaultErrorOptions = {
   data: { username: 'john', password: 'password' },
   masks: ['password'],
   logger: true,
-  systemMessage: 'System error',
+  response: 'Something happened',
   eventEmitter: myEventEmitter,
 };
 ```

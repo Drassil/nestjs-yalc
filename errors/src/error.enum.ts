@@ -19,6 +19,7 @@ export enum ErrorsEnum {
   GONE = 'Gone', // 410
   UNSUPPORTED_MEDIA_TYPE = 'Unsupported media type', // 415
   UNPROCESSABLE_ENTITY = 'Unprocessable entity', // 422
+  UNAVAILABLE_FOR_LEGAL_REASONS = 'Unavailable for legal reasons', // 451
   TOO_MANY_REQUESTS = 'Too many requests', // 429
 
   // 500 Server Errors
