@@ -72,7 +72,7 @@ export class YalcEventService<
 
   public error(
     eventName: Parameters<TFormatter> | string,
-    options?: IEventOptions<TFormatter>,
+    options?: IErrorEventOptions<TFormatter>,
   ): Error | DefaultError | undefined {
     return eventError(eventName, this.buildOptions(options));
   }
