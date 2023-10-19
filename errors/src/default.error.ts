@@ -55,6 +55,7 @@ export interface IAbstractDefaultError
   logger?: loggerOptionType;
   eventEmitter?: EventEmitter2;
   eventName?: string;
+  getResponse(): IBetterResponseInterface;
 }
 
 export interface IDefaultErrorOptions
@@ -158,7 +159,7 @@ export const DefaultErrorMixin = <
       const message = this.message;
       const stack =
         isNativeError(cause) && cause?.stack ? cause?.stack : this.stack;
-      const eventName = _options.eventName ?? ON_DEFAULT_ERROR_EVENT;
+      this.eventName = _options.eventName;
 
       this.errorCode =
         _options.errorCode ??
@@ -206,12 +207,12 @@ export const DefaultErrorMixin = <
           ? getGlobalEventEmitter()
           : _options.eventEmitter;
 
-      if (eventName && eventEmitter !== false) {
-        this.eventName = eventName;
+      if (eventEmitter !== false) {
+        this.eventName ??= ON_DEFAULT_ERROR_EVENT;
         this.eventEmitter = eventEmitter;
-        this.eventEmitter.emit(eventName, {
+        this.eventEmitter.emit(this.eventName, {
           ...payload,
-          eventName,
+          eventName: this.eventName,
         });
       }
     }
