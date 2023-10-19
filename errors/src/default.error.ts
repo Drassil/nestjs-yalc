@@ -1,4 +1,3 @@
-import { IDataInfo } from '@nestjs-yalc/event-manager/event.js';
 import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
 import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
@@ -13,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isNativeError } from 'util/types';
-import { ErrorsEnum, getHttpStatusNameByCode } from './error.enum.js';
+import { getHttpStatusNameByCode } from './error.enum.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
@@ -21,7 +20,7 @@ export interface IErrorPayload {
   /**
    * The data that will be used internally. It can contain sensitive data.
    */
-  data?: IDataInfo;
+  data?: any;
   /**
    * The message that will be used internally. It can contain sensitive data.
    */
@@ -276,7 +275,7 @@ export function DefaultErrorBase(base?: ClassType<HttpException>) {
     ) {
       super(
         { ...(options ?? {}), internalMessage },
-        options?.response ?? ErrorsEnum.INTERNAL_SERVER_ERROR,
+        options?.response,
         options?.errorCode,
         options,
       );
