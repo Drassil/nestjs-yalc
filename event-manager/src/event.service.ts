@@ -39,6 +39,7 @@ import {
   UnsupportedMediaTypeError,
 } from '@nestjs-yalc/errors/error.class.js';
 import { getLogLevelByStatus } from './event.helper.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 export interface IEventServiceOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -428,7 +429,6 @@ export class YalcEventService<
     if (isErrorOptions(_options)) {
       const errorOptions = _options as IErrorEventOptions;
       errorOptions.errorClass ??= DefaultError;
-      errorOptions.errorCode ??= HttpStatus.INTERNAL_SERVER_ERROR;
     }
 
     const res: IErrorEventOptions<TFormatter> = {
@@ -448,7 +448,7 @@ export class YalcEventService<
 
   protected buildErrorOptions(
     options: IErrorEventOptions<TFormatter> = {},
-    defaultClass = DefaultError,
+    defaultClass: ClassType<DefaultError> | boolean = true,
   ): IErrorEventOptions<TFormatter> {
     options.errorClass ??= defaultClass;
     return this.buildOptions(options);

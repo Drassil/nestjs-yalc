@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { isNativeError } from 'util/types';
-import { ErrorsEnum } from './error.enum.js';
+import { ErrorsEnum, getHttpStatusNameByCode } from './error.enum.js';
 
 export const ON_DEFAULT_ERROR_EVENT = 'onDefaultError';
 
@@ -79,6 +79,12 @@ export interface IDefaultErrorOptions
   eventEmitter?: EventEmitter2 | boolean;
 }
 
+export interface IBetterResponseInterface {
+  message: string;
+  statusCode: number;
+  error?: string;
+}
+
 /**
  * This is a convenience function to create a new DefaultError class instance that extends the provided base class.
  * @param base
@@ -120,6 +126,8 @@ export const DefaultErrorMixin = <
     description?: string;
     internalMessage?: string;
     eventName?: string;
+    errorCode?: HttpStatus | number;
+    betterResponse: IBetterResponseInterface;
 
     __DefaultErrorMixin = Object.freeze(true);
 
@@ -151,19 +159,29 @@ export const DefaultErrorMixin = <
       const stack =
         isNativeError(cause) && cause?.stack ? cause?.stack : this.stack;
       const eventName = _options.eventName ?? ON_DEFAULT_ERROR_EVENT;
-      const response = _options.response ?? message;
-      const errorCode = _options.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR;
+
+      this.errorCode =
+        _options.errorCode ??
+        this.getStatus() ??
+        HttpStatus.INTERNAL_SERVER_ERROR;
 
       this.description =
-        _options.description ?? getHttpStatusDescription(errorCode);
+        _options.description ?? getHttpStatusDescription(this.errorCode);
+
+      this.betterResponse = _AbstractDefaultError.buildResponse(
+        this.description,
+        this.errorCode,
+        _options.response,
+      );
+
       this.data = _options.masks
         ? maskDataInObject(_options.data, _options.masks)
         : _options.data;
 
       const payload: IErrorPayload = {
-        response,
-        errorCode,
+        response: this.betterResponse,
         cause,
+        errorCode: this.errorCode,
         description: this.description,
         // custom error properties
         data: this.data,
@@ -205,6 +223,40 @@ export const DefaultErrorMixin = <
     getDescription(): string | undefined {
       return this.description;
     }
+
+    getResponse(): IBetterResponseInterface {
+      return this.betterResponse;
+    }
+
+    static buildResponse(
+      description: string,
+      statusCode: number,
+      response?: string | Record<string, any>,
+    ): IBetterResponseInterface {
+      let message: string = description;
+      let responseObj: Record<string, any> = {};
+      if (typeof response === 'string' || response instanceof String) {
+        message = response as string;
+      } else {
+        responseObj = response ? (response as Record<string, any>) : {};
+      }
+
+      /**
+       * We know that passing a string as the first argument
+       * it returns an object with the message, error and the statusCode.
+       */
+      const baseBody = HttpException.createBody(
+        message,
+        getHttpStatusNameByCode(statusCode),
+        statusCode,
+      ) as { message: string; statusCode: number; error?: string };
+
+      return {
+        ...baseBody,
+        message,
+        ...responseObj,
+      };
+    }
   }
 
   return _AbstractDefaultError;
@@ -224,7 +276,7 @@ export function DefaultErrorBase(base?: ClassType<HttpException>) {
       super(
         { ...(options ?? {}), internalMessage },
         options?.response ?? ErrorsEnum.INTERNAL_SERVER_ERROR,
-        options?.errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
+        options?.errorCode,
         options,
       );
     }
