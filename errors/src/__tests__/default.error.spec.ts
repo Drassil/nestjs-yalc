@@ -7,28 +7,33 @@ import {
 } from '../default.error.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import EventEmitter from 'events';
+import { HttpException } from '@nestjs/common';
 
 describe('DefaultErrorMixin', () => {
   it('should create a class that extends Error when no base class is provided', () => {
-    const error = new (DefaultErrorMixin())({}, 'message');
+    const error = new (DefaultErrorMixin())({}, 'message', 500);
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('message');
   });
 
   it('should create a class that extends the provided base class', () => {
-    class CustomError extends Error {}
-    const error = new (DefaultErrorMixin(CustomError))({}, 'message');
+    class CustomError extends HttpException {}
+    const error = new (DefaultErrorMixin(CustomError))({}, 'message', 500);
     expect(error).toBeInstanceOf(CustomError);
     expect(error.message).toBe('message');
   });
 
-  it('should set systemMessage when options is a string', () => {
-    const error = new (DefaultErrorMixin())('systemMessage', {});
-    expect(error.systemMessage).toBe('systemMessage');
+  it('should set internalMessage when options is a string', () => {
+    const error = new (DefaultErrorMixin())(
+      { internalMessage: 'internalMessage' },
+      {},
+      500,
+    );
+    expect(error.internalMessage).toBe('internalMessage');
   });
 
   it('should set data when data option is provided', () => {
-    const error = new (DefaultErrorMixin())({ data: 'data' }, 'message');
+    const error = new (DefaultErrorMixin())({ data: 'data' }, 'message', 500);
     expect(error.data).toBe('data'); // Note: You might want to mock `maskDataInObject` to test this
   });
 
@@ -36,30 +41,36 @@ describe('DefaultErrorMixin', () => {
     const error = new (DefaultErrorMixin())(
       { data: { test: 'test' }, masks: ['test'] },
       'message',
+      500,
     );
     expect(error.data).toEqual({ test: '[REDACTED]' });
   });
 
-  it('should set systemMessage when systemMessage option is provided', () => {
+  it('should set internalMessage when internalMessage option is provided', () => {
     const error = new (DefaultErrorMixin())(
       {
-        systemMessage: 'systemMessage',
+        internalMessage: 'internalMessage',
       },
       'message',
+      500,
     );
-    expect(error.systemMessage).toBe('systemMessage');
+    expect(error.internalMessage).toBe('internalMessage');
   });
 
   it('should log error when logger option is provided', () => {
     const logger = { error: jest.fn() };
-    const error = new (DefaultErrorMixin())({ logger }, 'message');
+    const error = new (DefaultErrorMixin())(
+      { logger: { instance: logger, level: 'error' } },
+      'message',
+      500,
+    );
     expect(logger.error).toHaveBeenCalled();
   });
 
   it('should use console as logger when logger option is true', () => {
-    console.error = jest.fn();
-    const error = new (DefaultErrorMixin())({ logger: true }, 'message');
-    expect(console.error).toHaveBeenCalled();
+    const logger = { error: jest.fn() };
+    const error = new (DefaultErrorMixin())({ logger: {} }, 'message', 500);
+    expect(logger.error).toHaveBeenCalled();
   });
 
   it('should emit an event when eventEmitter option is provided', () => {
@@ -91,35 +102,35 @@ describe('newDefaultError', () => {
 describe('DefaultError', () => {
   it('should create an instance of Error', () => {
     const error = new DefaultError('message', {
-      systemMessage: 'mySystemMessage',
+      internalMessage: 'myinternalMessage',
     });
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('message');
-    expect(error.systemMessage).toBe('mySystemMessage');
+    expect(error.internalMessage).toBe('myinternalMessage');
   });
 
   it('should create an instance of Error with default message when message is not provided', () => {
     const error = new DefaultError();
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('An error occurred');
-    expect(error.systemMessage).toBeUndefined();
+    expect(error.internalMessage).toBeUndefined();
   });
 
   it('should create an instance of Error with default options when options are not provided', () => {
     const error = new DefaultError('message');
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('message');
-    expect(error.systemMessage).toBeUndefined();
+    expect(error.internalMessage).toBeUndefined();
     expect(error.data).toBeUndefined();
   });
 
   it('should create an instance of Error with default base options when base options are not provided', () => {
     const error = new DefaultError('message', {
-      systemMessage: 'mySystemMessage',
+      internalMessage: 'myinternalMessage',
     });
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe('message');
-    expect(error.systemMessage).toBe('mySystemMessage');
+    expect(error.internalMessage).toBe('myinternalMessage');
     // Assuming that the base Error class doesn't use baseOptions
     // Add your tests here depending on the actual implementation of your base Error class and the ErrorOptions type
   });

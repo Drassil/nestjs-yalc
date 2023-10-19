@@ -17,10 +17,10 @@ import { DefaultErrorBase, IDefaultErrorOptions } from './default.error.js';
  * Use when the request could not be understood or was missing required parameters.
  */
 export class BadRequestError extends DefaultErrorBase(BadRequestException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.BAD_REQUEST}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.BAD_REQUEST}: ${internalMessage}`
         : ErrorsEnum.BAD_REQUEST,
       { ...(options ?? {}), errorCode: HttpStatus.BAD_REQUEST },
     );
@@ -31,10 +31,10 @@ export class BadRequestError extends DefaultErrorBase(BadRequestException) {
  * Use when authentication failed or the user does not have permissions for the desired action.
  */
 export class UnauthorizedError extends DefaultErrorBase(UnauthorizedException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.UNAUTHORIZED}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.UNAUTHORIZED}: ${internalMessage}`
         : ErrorsEnum.UNAUTHORIZED,
       { ...(options ?? {}), errorCode: HttpStatus.UNAUTHORIZED },
     );
@@ -45,9 +45,11 @@ export class UnauthorizedError extends DefaultErrorBase(UnauthorizedException) {
  * Use when the authenticated user does not have access to the requested resource.
  */
 export class ForbiddenError extends DefaultErrorBase(ForbiddenException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message ? `${ErrorsEnum.FORBIDDEN}: ${message}` : ErrorsEnum.FORBIDDEN,
+      internalMessage
+        ? `${ErrorsEnum.FORBIDDEN}: ${internalMessage}`
+        : ErrorsEnum.FORBIDDEN,
       { ...(options ?? {}), errorCode: HttpStatus.FORBIDDEN },
     );
   }
@@ -57,9 +59,11 @@ export class ForbiddenError extends DefaultErrorBase(ForbiddenException) {
  * Use when the requested resource could not be found.
  */
 export class NotFoundError extends DefaultErrorBase(NotFoundException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message ? `${ErrorsEnum.NOT_FOUND}: ${message}` : ErrorsEnum.NOT_FOUND,
+      internalMessage
+        ? `${ErrorsEnum.NOT_FOUND}: ${internalMessage}`
+        : ErrorsEnum.NOT_FOUND,
       { ...(options ?? {}), errorCode: HttpStatus.NOT_FOUND },
     );
   }
@@ -69,9 +73,11 @@ export class NotFoundError extends DefaultErrorBase(NotFoundException) {
  * Use when the request could not be completed due to a conflict with the current state of the target resource.
  */
 export class ConflictError extends DefaultErrorBase(ConflictException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message ? `${ErrorsEnum.CONFLICT}: ${message}` : ErrorsEnum.CONFLICT,
+      internalMessage
+        ? `${ErrorsEnum.CONFLICT}: ${internalMessage}`
+        : ErrorsEnum.CONFLICT,
       { ...(options ?? {}), errorCode: HttpStatus.CONFLICT },
     );
   }
@@ -83,10 +89,10 @@ export class ConflictError extends DefaultErrorBase(ConflictException) {
 export class InternalServerError extends DefaultErrorBase(
   InternalServerErrorException,
 ) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.INTERNAL_SERVER_ERROR}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.INTERNAL_SERVER_ERROR}: ${internalMessage}`
         : ErrorsEnum.INTERNAL_SERVER_ERROR,
       { ...(options ?? {}), errorCode: HttpStatus.INTERNAL_SERVER_ERROR },
     );
@@ -99,10 +105,10 @@ export class InternalServerError extends DefaultErrorBase(
  * Reserved for future use; its utilization is not common.
  */
 export class PaymentRequiredError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.PAYMENT_REQUIRED}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.PAYMENT_REQUIRED}: ${internalMessage}`
         : ErrorsEnum.PAYMENT_REQUIRED,
       { ...(options ?? {}), errorCode: HttpStatus.PAYMENT_REQUIRED },
     );
@@ -113,10 +119,10 @@ export class PaymentRequiredError extends DefaultErrorBase(HttpException) {
  * Use when an unsupported HTTP method was used for the request.
  */
 export class MethodNotAllowedError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.METHOD_NOT_ALLOWED}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.METHOD_NOT_ALLOWED}: ${internalMessage}`
         : ErrorsEnum.METHOD_NOT_ALLOWED,
       { ...(options ?? {}), errorCode: HttpStatus.METHOD_NOT_ALLOWED },
     );
@@ -127,10 +133,10 @@ export class MethodNotAllowedError extends DefaultErrorBase(HttpException) {
  * Use when the server cannot produce a response matching the list of acceptable values defined in the request's headers.
  */
 export class NotAcceptableError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.NOT_ACCEPTABLE}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.NOT_ACCEPTABLE}: ${internalMessage}`
         : ErrorsEnum.NOT_ACCEPTABLE,
       { ...(options ?? {}), errorCode: HttpStatus.NOT_ACCEPTABLE },
     );
@@ -141,11 +147,16 @@ export class NotAcceptableError extends DefaultErrorBase(HttpException) {
  * Use when the requested resource has been permanently deleted and will not be available again.
  */
 export class GoneError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
-    super(message ? `${ErrorsEnum.GONE}: ${message}` : ErrorsEnum.GONE, {
-      ...(options ?? {}),
-      errorCode: HttpStatus.GONE,
-    });
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
+    super(
+      internalMessage
+        ? `${ErrorsEnum.GONE}: ${internalMessage}`
+        : ErrorsEnum.GONE,
+      {
+        ...(options ?? {}),
+        errorCode: HttpStatus.GONE,
+      },
+    );
   }
 }
 
@@ -153,10 +164,10 @@ export class GoneError extends DefaultErrorBase(HttpException) {
  * Use when the request entity has a media type which the server or resource does not support.
  */
 export class UnsupportedMediaTypeError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.UNSUPPORTED_MEDIA_TYPE}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.UNSUPPORTED_MEDIA_TYPE}: ${internalMessage}`
         : ErrorsEnum.UNSUPPORTED_MEDIA_TYPE,
       { ...(options ?? {}), errorCode: HttpStatus.UNSUPPORTED_MEDIA_TYPE },
     );
@@ -167,10 +178,10 @@ export class UnsupportedMediaTypeError extends DefaultErrorBase(HttpException) {
  * Use when the server understands the content type of the request entity, but was unable to process the contained instructions.
  */
 export class UnprocessableEntityError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.UNPROCESSABLE_ENTITY}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.UNPROCESSABLE_ENTITY}: ${internalMessage}`
         : ErrorsEnum.UNPROCESSABLE_ENTITY,
       { ...(options ?? {}), errorCode: HttpStatus.UNPROCESSABLE_ENTITY },
     );
@@ -181,10 +192,10 @@ export class UnprocessableEntityError extends DefaultErrorBase(HttpException) {
  * Use when the user has sent too many requests in a given amount of time ("rate limiting").
  */
 export class TooManyRequestsError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.TOO_MANY_REQUESTS}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.TOO_MANY_REQUESTS}: ${internalMessage}`
         : ErrorsEnum.TOO_MANY_REQUESTS,
       { ...(options ?? {}), errorCode: HttpStatus.TOO_MANY_REQUESTS },
     );
@@ -195,10 +206,10 @@ export class TooManyRequestsError extends DefaultErrorBase(HttpException) {
  * Use when the server does not support the functionality required to fulfill the request.
  */
 export class NotImplementedError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.NOT_IMPLEMENTED}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.NOT_IMPLEMENTED}: ${internalMessage}`
         : ErrorsEnum.NOT_IMPLEMENTED,
       { ...(options ?? {}), errorCode: HttpStatus.NOT_IMPLEMENTED },
     );
@@ -209,10 +220,10 @@ export class NotImplementedError extends DefaultErrorBase(HttpException) {
  * Use when the server, while acting as a gateway or proxy, received an invalid response from the upstream server.
  */
 export class BadGatewayError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.BAD_GATEWAY}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.BAD_GATEWAY}: ${internalMessage}`
         : ErrorsEnum.BAD_GATEWAY,
       { ...(options ?? {}), errorCode: HttpStatus.BAD_GATEWAY },
     );
@@ -223,10 +234,10 @@ export class BadGatewayError extends DefaultErrorBase(HttpException) {
  * Use when the server is currently unavailable (because it is overloaded or down for maintenance).
  */
 export class ServiceUnavailableError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.SERVICE_UNAVAILABLE}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.SERVICE_UNAVAILABLE}: ${internalMessage}`
         : ErrorsEnum.SERVICE_UNAVAILABLE,
       { ...(options ?? {}), errorCode: HttpStatus.SERVICE_UNAVAILABLE },
     );
@@ -237,10 +248,10 @@ export class ServiceUnavailableError extends DefaultErrorBase(HttpException) {
  * Use when the server, while acting as a gateway or proxy, did not receive a timely response from the upstream server or some other auxiliary server.
  */
 export class GatewayTimeoutError extends DefaultErrorBase(HttpException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `${ErrorsEnum.GATEWAY_TIMEOUT}: ${message}`
+      internalMessage
+        ? `${ErrorsEnum.GATEWAY_TIMEOUT}: ${internalMessage}`
         : ErrorsEnum.GATEWAY_TIMEOUT,
       { ...(options ?? {}), errorCode: HttpStatus.GATEWAY_TIMEOUT },
     );
@@ -254,10 +265,10 @@ export class GatewayTimeoutError extends DefaultErrorBase(HttpException) {
 export class AdditionalVerificationNeededException extends DefaultErrorBase(
   HttpException,
 ) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message
-        ? `Further verification is required for access: ${message}`
+      internalMessage
+        ? `Further verification is required for access: ${internalMessage}`
         : 'Further verification is required for access',
       { ...(options ?? {}), errorCode: HttpStatus.UNPROCESSABLE_ENTITY },
     );
@@ -265,9 +276,11 @@ export class AdditionalVerificationNeededException extends DefaultErrorBase(
 }
 
 export class LoginError extends DefaultErrorBase(UnauthorizedException) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
     super(
-      message ? `${ErrorsEnum.BAD_LOGIN}: ${message}` : ErrorsEnum.BAD_LOGIN,
+      internalMessage
+        ? `${ErrorsEnum.BAD_LOGIN}: ${internalMessage}`
+        : ErrorsEnum.BAD_LOGIN,
       { ...(options ?? {}), errorCode: HttpStatus.UNAUTHORIZED },
     );
   }
@@ -276,7 +289,10 @@ export class LoginError extends DefaultErrorBase(UnauthorizedException) {
 export class InputValidationError extends DefaultErrorBase(
   BadRequestException,
 ) {
-  constructor(message?: string, options?: IDefaultErrorOptions) {
-    super(message, { ...(options ?? {}), errorCode: HttpStatus.BAD_REQUEST });
+  constructor(internalMessage?: string, options?: IDefaultErrorOptions) {
+    super(internalMessage, {
+      ...(options ?? {}),
+      errorCode: HttpStatus.BAD_REQUEST,
+    });
   }
 }

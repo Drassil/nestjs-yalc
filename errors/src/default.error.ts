@@ -29,7 +29,7 @@ export interface IErrorPayload {
    * The response that can be sent to the client. It can be a string or an object (including an error object)
    * It must not contain sensitive data.
    */
-  response?: string | Record<string, any>;
+  response?: string | Partial<IBetterResponseInterface>;
   /**
    * Human readable description of the error code
    */
@@ -51,6 +51,10 @@ type loggerOptionType =
 export interface IAbstractDefaultError
   extends Omit<HttpException, 'cause'>,
     Omit<IErrorPayload, 'response'> {
+  /**
+   * This is the message used for the response object. It can be sent to the client
+   */
+  message: string;
   logger?: loggerOptionType;
   eventEmitter?: EventEmitter2;
   eventName?: string;
@@ -83,6 +87,7 @@ export interface IBetterResponseInterface {
   message: string;
   statusCode: number;
   error?: string;
+  [key: string]: any;
 }
 
 /**
@@ -127,10 +132,10 @@ export const DefaultErrorMixin = <
     internalMessage?: string;
     eventName?: string;
     errorCode?: HttpStatus | number;
-    betterResponse: IBetterResponseInterface;
 
     __DefaultErrorMixin = Object.freeze(true);
 
+    protected betterResponse: IBetterResponseInterface;
     public readonly logger?: Required<loggerOptionType>;
     public readonly eventEmitter?: EventEmitter2;
 
@@ -171,7 +176,7 @@ export const DefaultErrorMixin = <
       this.betterResponse = _AbstractDefaultError.buildResponse(
         this.description,
         this.errorCode,
-        _options.response,
+        _options.response ?? message,
       );
 
       this.data = _options.masks
