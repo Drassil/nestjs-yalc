@@ -153,7 +153,7 @@ export function event<
   let errorInstance;
   let errorPayload: ILogErrorPayload = {};
   if (isErrorOptions(options)) {
-    const error = options?.errorClass ?? true;
+    const error = options?.errorClass;
 
     if (error !== false && error !== undefined) {
       let errorClass;
@@ -163,7 +163,7 @@ export function event<
       } else {
         const { errorClass: _class, ...rest } = options;
         errorOptions = rest;
-        errorClass = error ?? DefaultError;
+        errorClass = error;
       }
 
       /**

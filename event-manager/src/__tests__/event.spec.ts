@@ -27,6 +27,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createMock } from '@golevelup/ts-jest';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 import { type ImprovedNestLogger } from '@nestjs-yalc/logger';
+import { HttpException } from '@nestjs/common';
 
 describe('Event Service', () => {
   let eventEmitter;
@@ -230,9 +231,10 @@ describe('Event Service', () => {
     );
   });
 
-  it('should handle logger with options', () => {
+  it('should handle logger with options and data as a string', () => {
     const _options: IEventOptions = {
       ...options,
+      data: 'data',
       logger: { instance: logger },
       message,
     };
@@ -257,9 +259,9 @@ describe('Event Service', () => {
   });
 
   it('should handle error with false', () => {
-    const _options = {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: false,
+      errorClass: false,
       message,
     };
     eventError(systemMessage, _options);
@@ -275,17 +277,32 @@ describe('Event Service', () => {
   });
 
   it('should handle error with true', () => {
-    const _options = {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: true,
+      errorClass: true,
       message,
     };
     const result = eventError(systemMessage, _options);
     expect(result).toBeInstanceOf(Error);
   });
 
-  it('should handle error with class', () => {
-    class CustomError extends DefaultError {}
+  it('should handle error with errorClass undefined', () => {
+    const _options: IErrorEventOptions = {
+      ...options,
+      errorClass: undefined,
+      message,
+    };
+    const result = eventError(systemMessage, _options);
+    expect(result).toBeInstanceOf(Error);
+  });
+
+  it('should handle error without options', () => {
+    const result = eventError(systemMessage);
+    expect(result).toBeInstanceOf(Error);
+  });
+
+  it('should handle error with class (should not happen)', () => {
+    class CustomError extends HttpException {}
     const _options: IErrorEventOptions = {
       ...options,
       errorClass: CustomError,
@@ -293,6 +310,7 @@ describe('Event Service', () => {
     };
     const result = eventError(systemMessage, _options);
     expect(result).toBeInstanceOf(CustomError);
+    expect(result.message).toBe(`${message}`);
   });
 
   it('should handle error with true', async () => {
