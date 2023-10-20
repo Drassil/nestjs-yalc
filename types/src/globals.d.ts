@@ -22,6 +22,9 @@ declare global {
   }
 }
 
+export type InstanceType<T> = T extends new (...args: any[]) => infer R
+  ? R
+  : never;
 export declare type ClassType<Class = any> = { new (...args: any[]): Class };
 
 export declare type AnyFunction<A = any, I = any> = (...input: I[]) => A;

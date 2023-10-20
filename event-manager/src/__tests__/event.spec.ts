@@ -20,17 +20,21 @@ import {
   eventVerbose,
   event,
   type IEventOptions,
+  IErrorEventOptions,
 } from '../index.js';
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { createMock } from '@golevelup/ts-jest';
 import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
 import { type ImprovedNestLogger } from '@nestjs-yalc/logger';
+import { HttpException } from '@nestjs/common';
 
 describe('Event Service', () => {
   let eventEmitter;
   let logger;
-  let options: IEventOptions;
+  let options: IErrorEventOptions;
+
+  const systemMessage = 'systemMessage';
 
   beforeEach(() => {
     eventEmitter = createMock<EventEmitter2>(new EventEmitter2());
@@ -46,11 +50,8 @@ describe('Event Service', () => {
       logger: {
         instance: logger,
       },
-      error: {
-        class: Error,
-        systemMessage: 'systemMessage',
-        baseOptions: {},
-      },
+      errorClass: DefaultError,
+      message: systemMessage,
     };
   });
 
@@ -62,112 +63,118 @@ describe('Event Service', () => {
   const eventName = 'testEvent';
 
   it('should log event asynchronously', async () => {
-    await eventLogAsync(eventName, options);
-    expect(logger.log).toHaveBeenCalledWith(eventName, expect.anything());
+    await eventLogAsync(systemMessage, options);
+    expect(logger.log).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log event synchronously', () => {
-    eventLog(eventName, options);
-    expect(logger.log).toHaveBeenCalledWith(eventName, expect.anything());
+    eventLog(systemMessage, options);
+    expect(logger.log).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log error event asynchronously', async () => {
-    await eventErrorAsync(eventName, options);
+    await eventErrorAsync(systemMessage, options);
     expect(logger.error).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       'trace',
       expect.anything(),
     );
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log error event synchronously', () => {
-    eventError(eventName, options);
+    eventError(systemMessage, options);
     expect(logger.error).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       'trace',
       expect.anything(),
     );
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log error event synchronously without trace', () => {
-    eventError(eventName, { ...options, trace: undefined });
+    eventError(systemMessage, { ...options, trace: undefined });
     expect(logger.error).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
       expect.anything(),
     );
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log warning event asynchronously', async () => {
-    await eventWarnAsync(eventName, options);
-    expect(logger.warn).toHaveBeenCalledWith(eventName, expect.anything());
+    await eventWarnAsync(systemMessage, options);
+    expect(logger.warn).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log warning event synchronously', () => {
-    eventWarn(eventName, options);
-    expect(logger.warn).toHaveBeenCalledWith(eventName, expect.anything());
+    eventWarn(systemMessage, options);
+    expect(logger.warn).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log debug event asynchronously', async () => {
-    await eventDebugAsync(eventName, options);
-    expect(logger.debug).toHaveBeenCalledWith(eventName, expect.anything());
+    await eventDebugAsync(systemMessage, options);
+    expect(logger.debug).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log debug event synchronously', () => {
-    eventDebug(eventName, options);
-    expect(logger.debug).toHaveBeenCalledWith(eventName, expect.anything());
+    eventDebug(systemMessage, options);
+    expect(logger.debug).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log verbose event asynchronously', async () => {
-    await eventVerboseAsync(eventName, options);
-    expect(logger.verbose).toHaveBeenCalledWith(eventName, expect.anything());
+    await eventVerboseAsync(systemMessage, options);
+    expect(logger.verbose).toHaveBeenCalledWith(
+      systemMessage,
+      expect.anything(),
+    );
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should log verbose event synchronously', () => {
-    eventVerbose(eventName, options);
-    expect(logger.verbose).toHaveBeenCalledWith(eventName, expect.anything());
+    eventVerbose(systemMessage, options);
+    expect(logger.verbose).toHaveBeenCalledWith(
+      systemMessage,
+      expect.anything(),
+    );
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
@@ -181,8 +188,8 @@ describe('Event Service', () => {
         await: true,
       },
     };
-    await eventLog(eventName, _options);
-    expect(logger.log).toHaveBeenCalledWith(eventName, expect.anything());
+    await eventLog(systemMessage, _options);
+    expect(logger.log).toHaveBeenCalledWith(systemMessage, expect.anything());
     expect(eventEmitter.emitAsync).toHaveBeenCalledWith(
       expect.anything(),
       expect.anything(),
@@ -201,11 +208,11 @@ describe('Event Service', () => {
   });
 
   it('should handle event with string data', () => {
-    eventLog(message, { ...options, data: 'test' });
+    eventLog(message, { ...options });
     expect(logger.log).toHaveBeenCalledWith(
-      message,
+      systemMessage,
       expect.objectContaining({
-        data: expect.objectContaining({ message: 'test' }),
+        data: expect.objectContaining({ errorName: 'DefaultError' }),
       }),
     );
   });
@@ -216,98 +223,103 @@ describe('Event Service', () => {
       logger: false,
       message,
     };
-    eventLog(eventName, _options);
+    eventLog(systemMessage, _options);
     expect(logger.log).not.toHaveBeenCalled();
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
-  it('should handle logger with options', () => {
+  it('should handle logger with options and data as a string', () => {
     const _options: IEventOptions = {
       ...options,
+      data: 'data',
       logger: { instance: logger },
       message,
     };
-    eventLog(eventName, _options);
+    eventLog(systemMessage, _options);
     expect(logger.log).toHaveBeenCalled();
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should handle logger without options', () => {
-    eventLog(eventName);
+    eventLog(systemMessage);
   });
 
   it('should handle event without options', () => {
-    event(eventName);
+    event(systemMessage);
   });
 
   it('should handle event with partial options', () => {
-    event(eventName, { logger: {} });
+    event(systemMessage, { logger: {} });
   });
 
   it('should handle error with false', () => {
-    const _options = {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: false,
+      errorClass: false,
       message,
     };
-    eventError(eventName, _options);
+    eventError(systemMessage, _options);
     expect(logger.error).toHaveBeenCalledWith(
       message,
       'trace',
       expect.anything(),
     );
     expect(eventEmitter.emit).toHaveBeenCalledWith(
-      eventName,
+      systemMessage,
       expect.anything(),
     );
   });
 
   it('should handle error with true', () => {
-    const _options = {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: true,
+      errorClass: true,
       message,
     };
-    const result = eventError(eventName, _options);
+    const result = eventError(systemMessage, _options);
     expect(result).toBeInstanceOf(Error);
   });
 
-  it('should handle error with class', () => {
-    class CustomError extends Error {}
-    const _options = {
+  it('should handle error with errorClass undefined', () => {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: { class: CustomError },
+      errorClass: undefined,
       message,
     };
-    const result = eventError(eventName, _options);
+    const result = eventError(systemMessage, _options);
+    expect(result).toBeInstanceOf(Error);
+  });
+
+  it('should handle error without options', () => {
+    const result = eventError(systemMessage);
+    expect(result).toBeInstanceOf(Error);
+  });
+
+  it('should handle error with class (should not happen)', () => {
+    class CustomError extends HttpException {}
+    const _options: IErrorEventOptions = {
+      ...options,
+      errorClass: CustomError,
+      message,
+    };
+    const result = eventError(systemMessage, _options);
     expect(result).toBeInstanceOf(CustomError);
+    expect(result.message).toBe(`${message}`);
   });
 
-  it('should handle error with true', () => {
-    const _options = {
+  it('should handle error with true', async () => {
+    const _options: IErrorEventOptions = {
       ...options,
-      error: true,
+      errorClass: true,
       message,
     };
-    const result = event(eventName, _options);
-    expect(result).toBeInstanceOf(DefaultError);
-  });
-
-  it('should handle error without class', () => {
-    const _options: IEventOptions = {
-      ...options,
-      error: {
-        systemMessage: 'test',
-      },
-      message,
-    };
-    const result = event(eventName, _options);
+    const result = event(systemMessage, _options);
     expect(result).toBeInstanceOf(DefaultError);
   });
 });

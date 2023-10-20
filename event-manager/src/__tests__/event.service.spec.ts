@@ -11,6 +11,8 @@ import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.servi
 import { createMock } from '@golevelup/ts-jest';
 import type { YalcEventService as EventServiceType } from '../event.service.js';
 import { HttpStatus } from '@nestjs/common';
+import { DefaultError } from '@nestjs-yalc/errors/default.error.js';
+import { BadGatewayError } from '@nestjs-yalc/errors/error.class.js';
 
 jest.unstable_mockModule('../event.js', async () => {
   return {
@@ -28,6 +30,7 @@ jest.unstable_mockModule('../event.js', async () => {
     event: jest.fn(),
     setGlobalEventEmitter: jest.fn(),
     getGlobalEventEmitter: jest.fn(),
+    isErrorOptions: jest.fn().mockReturnValue(true),
     applyAwaitOption: (options) => options, // stupid workaround because of jest limitations with mocking esm modules
   };
 });
@@ -43,7 +46,10 @@ const {
   eventLog,
   eventVerbose,
   eventWarn,
+  isErrorOptions,
 } = await import('../event.js');
+
+isErrorOptions;
 
 describe('YalcEventService', () => {
   let service: EventServiceType;
@@ -56,6 +62,8 @@ describe('YalcEventService', () => {
     mockLoggerService = createMock<ImprovedLoggerService>();
 
     mockEventEmitter = createMock<EventEmitter2>(new EventEmitter2());
+
+    jest.mocked(isErrorOptions).mockReturnValue(true);
 
     service = new YalcEventService(
       mockLoggerService as ImprovedLoggerService,
@@ -214,6 +222,10 @@ describe('YalcEventService', () => {
   });
 
   describe('buildOptions', () => {
+    beforeEach(() => {
+      jest.mocked(isErrorOptions).mockReturnValue(false);
+    });
+
     it('should correctly merge options', () => {
       const options = service['buildOptions']({ event: false });
       expect(options).toEqual({ event: false, logger: expect.anything() });

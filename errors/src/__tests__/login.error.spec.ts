@@ -10,12 +10,14 @@ describe('Login error', () => {
   });
 
   it('should have the correct message', () => {
-    expect(error.message).toEqual(ErrorsEnum.BAD_LOGIN);
+    expect(error.getInternalMessage()).toEqual(ErrorsEnum.BAD_LOGIN);
   });
 
   it('should set the custom message', () => {
     const customMessage = 'Something catastrophic happened!';
-    const customError = new LoginError(undefined, customMessage);
-    expect(customError.message).toEqual(customMessage);
+    const customError = new LoginError(customMessage);
+    expect(customError.getInternalMessage()).toEqual(
+      `${ErrorsEnum.BAD_LOGIN}: ${customMessage}`,
+    );
   });
 });

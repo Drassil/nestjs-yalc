@@ -10,8 +10,8 @@ export class ValidationExceptionFilter implements GqlExceptionFilter {
 
   catch(error: Error) {
     const newError = new InputValidationError(
-      error.message,
       (<CrudGenError>error).systemMessage,
+      { response: { message: error.message } },
     );
     newError.stack = error.stack; // we need the stack trace for dev
     this.logger.error(

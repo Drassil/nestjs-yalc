@@ -4,9 +4,12 @@ import {
   DefaultErrorMixin,
   MissingArgumentsError,
   isDefaultErrorMixin,
+  formatCause,
 } from '@nestjs-yalc/errors';
-import { ExceptionContextEnum } from '../error.enum.js';
-import { EntityError } from '@nestjs-yalc/crud-gen/entity.error.js';
+import {
+  EntityError,
+  isEntityError,
+} from '@nestjs-yalc/crud-gen/entity.error.js';
 import { FastifyReply as FResponse } from 'fastify';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
 import { BaseExceptionFilter } from '@nestjs/core';
@@ -48,29 +51,35 @@ export class HttpExceptionFilter
       switch (true) {
         // Base logging for normal operation execution errors
         case error instanceof MissingArgumentsError:
-        case error instanceof common.UnauthorizedException: // Thrown by NestJS Auth Guard
           this.logger.log(error.message, {
             trace: error.stack,
           });
           break;
 
-        // Log original error message (for now only if is an EntityError)
-        case error instanceof EntityError:
+        case isDefaultErrorMixin(error):
+          // no need to log, DefaultErrorMixin already logs
+          break;
+
+        /**
+         * Log original error message (for now only if is an EntityError)
+         * @todo refactor with the default error mixin
+         */
+        case isEntityError(error):
           const entityError = error as EntityError;
           this.logger.error(
             entityError.originalError?.message
               ? entityError.originalError.message
               : error,
-            ExceptionContextEnum.HTTP,
+            entityError.originalError?.stack,
+            {
+              trace: entityError.originalError?.stack,
+              data: {
+                response: entityError.getResponse(),
+                name: entityError.name,
+                cause: formatCause(entityError.cause),
+              },
+            },
           );
-          break;
-
-        case error instanceof GqlError:
-          this.logger.error((<GqlError>error).systemMessage ?? error.message);
-          break;
-
-        case isDefaultErrorMixin(error):
-          // no need to log, DefaultErrorMixin already logs
           break;
 
         case isHttpError:
@@ -80,20 +89,36 @@ export class HttpExceptionFilter
           if (logLevel === LogLevelEnum.ERROR) {
             this.logger[logLevel](error.message, error.stack, {
               trace: httpError.stack,
-              data: httpError.getResponse(),
+              data: {
+                response: httpError.getResponse(),
+                name: error.name,
+                cause: formatCause(error.cause),
+              },
             });
           } else {
             this.logger[logLevel](error.message, {
               trace: error.stack,
-              data: httpError.getResponse(),
+              data: {
+                response: httpError.getResponse(),
+                name: error.name,
+                cause: formatCause(error.cause),
+              },
             });
           }
+          break;
+
+        case error instanceof GqlError:
+          this.logger.error((<GqlError>error).systemMessage ?? error.message);
           break;
 
         // Log critically any other error, as those are not expected
         default:
           this.logger.error(error.message, error.stack, {
             trace: error.stack,
+            data: {
+              cause: formatCause(error.cause),
+              name: error.name,
+            },
           });
           break;
       }
@@ -104,7 +129,7 @@ export class HttpExceptionFilter
           const response = ctx.getResponse<FResponse>();
           let status = common.HttpStatus.INTERNAL_SERVER_ERROR;
           if (isHttpError) status = (error as common.HttpException).getStatus();
-          return response.status(status).send((error as any).response);
+          return response.status(status).send(error.message);
         }
       }
     } catch (e) {

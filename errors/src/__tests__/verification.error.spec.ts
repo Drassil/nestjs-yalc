@@ -1,14 +1,9 @@
+import { expect, describe, it } from '@jest/globals';
 import {
-  expect,
-  jest,
-  describe,
-  it,
-  beforeEach,
-  beforeAll,
-  afterAll,
-  afterEach,
-} from '@jest/globals';
-import { HttpException, HttpStatus } from '@nestjs/common';
+  getHttpStatusDescription,
+  HttpStatusCodes,
+} from '@nestjs-yalc/utils/http.helper.js';
+import { HttpException } from '@nestjs/common';
 import { AdditionalVerificationNeededException } from '../index.js';
 
 describe('Verification error', () => {
@@ -19,10 +14,12 @@ describe('Verification error', () => {
   });
 
   it('should have the correct message and code', () => {
-    expect(error.message).toEqual(
-      'Further verification is required for access.',
+    expect(error.description).toEqual(
+      getHttpStatusDescription(HttpStatusCodes.UnavailableForLegalReasons),
     );
-    expect(error.getStatus()).toEqual(HttpStatus.FORBIDDEN);
+    expect(error.getStatus()).toEqual(
+      HttpStatusCodes.UnavailableForLegalReasons,
+    );
   });
 
   it('should be an instance of HttpException', () => {

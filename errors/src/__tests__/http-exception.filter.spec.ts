@@ -9,10 +9,9 @@ import {
   InternalServerErrorException,
   LoggerService,
 } from '@nestjs/common';
-import { ExceptionContextEnum } from '../error.enum.js';
 import { HttpExceptionFilter } from '../filters/http-exception.filter.js';
 import { GqlError } from '@nestjs-yalc/graphql/plugins/gql.error.js';
-import { DefaultError, LoginError } from '../index.js';
+import { DefaultError } from '../index.js';
 jest.mock('@nestjs/graphql');
 
 describe('Http exceptions filter', () => {
@@ -64,7 +63,8 @@ describe('Http exceptions filter', () => {
     filter.catch(exception, mockArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
       exception,
-      ExceptionContextEnum.HTTP,
+      undefined,
+      expect.anything(),
     );
   });
 
@@ -75,16 +75,12 @@ describe('Http exceptions filter', () => {
     filter.catch(exception, mockArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(
       fixedError.message,
-      ExceptionContextEnum.HTTP,
-    );
-  });
-
-  it('should catch LoginError and the systemMessage', () => {
-    const fixedError: LoginError = new LoginError('systemMessage');
-    filter.catch(fixedError, mockArgumentsHost);
-    expect(loggerServiceMock.log).toBeCalledWith(
-      fixedError.systemMessage,
       expect.anything(),
+      expect.objectContaining({
+        data: expect.objectContaining({
+          name: 'CreateEntityError',
+        }),
+      }),
     );
   });
 
@@ -96,16 +92,6 @@ describe('Http exceptions filter', () => {
     exception.systemMessage = undefined;
     filter.catch(exception, mockArgumentsHost);
     expect(loggerServiceMock.error).toBeCalledWith(exception.message);
-  });
-
-  it('should catch and log Entity error with gqlHost type http', () => {
-    const exception = new CreateEntityError();
-    mockArgumentsHost.getType.mockReturnValue('http');
-    filter.catch(exception, mockArgumentsHost as ArgumentsHost);
-    expect(loggerServiceMock.error).toBeCalledWith(
-      exception,
-      ExceptionContextEnum.HTTP,
-    );
   });
 
   it('should catch and log Http error with host type http', () => {
