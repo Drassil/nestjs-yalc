@@ -22,22 +22,21 @@ describe('yalcTypeOrmPostgresOptions', () => {
   it('should return TypeOrmModuleOptions with appOptions', () => {
     const name = 'testName';
     const postgresConf = { host: 'localhost' };
-    const logger = jest.fn();
+    const eventService = jest.fn();
     const eventEmitter = jest.fn();
     const appOptions = { migrations: ['migration1'] };
 
     const result = yalcTypeOrmPostgresOptions(
       name,
       postgresConf,
-      logger,
-      eventEmitter,
+      eventService,
       appOptions,
     );
 
     expect(result).toEqual({
       name,
       type: 'postgres',
-      logger: new TypeORMLogger(logger, eventEmitter),
+      logger: new TypeORMLogger(eventService),
       migrations: appOptions.migrations,
       ...postgresConf,
     });
@@ -46,20 +45,14 @@ describe('yalcTypeOrmPostgresOptions', () => {
   it('should return TypeOrmModuleOptions without appOptions', () => {
     const name = 'testName';
     const postgresConf = { host: 'localhost' };
-    const logger = jest.fn();
-    const eventEmitter = jest.fn();
+    const eventService = jest.fn();
 
-    const result = yalcTypeOrmPostgresOptions(
-      name,
-      postgresConf,
-      logger,
-      eventEmitter,
-    );
+    const result = yalcTypeOrmPostgresOptions(name, postgresConf, eventService);
 
     expect(result).toEqual({
       name,
       type: 'postgres',
-      logger: new TypeORMLogger(logger, eventEmitter),
+      logger: new TypeORMLogger(eventService),
       migrations: global.TypeORM_Migration_classes?.[name],
       ...postgresConf,
     });

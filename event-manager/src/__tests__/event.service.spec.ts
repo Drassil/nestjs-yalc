@@ -28,6 +28,7 @@ jest.unstable_mockModule('../event.js', async () => {
     event: jest.fn(),
     setGlobalEventEmitter: jest.fn(),
     getGlobalEventEmitter: jest.fn(),
+    isErrorOptions: jest.fn(),
     applyAwaitOption: (options) => options, // stupid workaround because of jest limitations with mocking esm modules
   };
 });
@@ -43,7 +44,10 @@ const {
   eventLog,
   eventVerbose,
   eventWarn,
+  isErrorOptions,
 } = await import('../event.js');
+
+isErrorOptions;
 
 describe('YalcEventService', () => {
   let service: EventServiceType;

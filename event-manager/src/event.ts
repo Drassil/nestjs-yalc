@@ -114,11 +114,11 @@ type eventErrorReturnTypeAsync<
     : PickError<TFormatter, TOpt>
 >;
 
-export const isErrorOptions = (
+export function isErrorOptions(
   options?: IEventOptions | IErrorEventOptions,
-): options is IErrorEventOptions => {
+): options is IErrorEventOptions {
   return (options as IErrorEventOptions)?.errorClass !== undefined;
-};
+}
 
 export function event<
   TFormatter extends EventNameFormatter = EventNameFormatter,
