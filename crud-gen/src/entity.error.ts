@@ -6,6 +6,10 @@ export enum EntityErrorsEnum {
   DELETE_FAILED = 'Resource has not been deleted',
 }
 
+export function isEntityError(error: any): error is EntityError {
+  return (error as EntityError).originalError !== undefined;
+}
+
 export class EntityError extends BadRequestException {
   originalError: Error | undefined;
   constructor(message: string, error?: Error) {

@@ -1,11 +1,10 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { PostgresConnectionCredentialsOptions } from 'typeorm/driver/postgres/PostgresConnectionCredentialsOptions.js';
 import { TypeORMLogger } from '@nestjs-yalc/logger';
-import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { IYalcBaseAppOptions } from '@nestjs-yalc/app/base-app.interface.js';
 import { MigrationInterface } from 'typeorm';
 import { ClassType } from 'nestjs-yalc';
+import { YalcEventService } from '@nestjs-yalc/event-manager/event.service.js';
 
 export const setGlobalMigrationClasses = (
   connName: string,
@@ -20,14 +19,13 @@ export const setGlobalMigrationClasses = (
 export const yalcTypeOrmPostgresOptions = (
   name: string,
   postgresConf: PostgresConnectionCredentialsOptions,
-  logger: ImprovedLoggerService,
-  eventEmitter: EventEmitter2,
+  logger: YalcEventService,
   appOptions?: IYalcBaseAppOptions,
 ): TypeOrmModuleOptions & { type: 'postgres' } => {
   return {
     name,
     type: 'postgres',
-    logger: new TypeORMLogger(logger, eventEmitter),
+    logger: new TypeORMLogger(logger),
     migrations:
       appOptions?.migrations || global.TypeORM_Migration_classes?.[name],
     ...postgresConf,
