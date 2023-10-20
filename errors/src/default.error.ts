@@ -62,7 +62,7 @@ export interface IErrorPayload
   /**
    * The original cause of the error.
    */
-  cause?: Error | unknown;
+  cause?: IFormattedCause;
 
   /**
    * When the error is specified, it includes the error name
@@ -143,10 +143,28 @@ export interface IDefaultErrorOptions
     IHttpExceptionArguments {}
 
 export interface IBetterResponseInterface {
-  message: string;
-  statusCode: number;
+  /**
+   * This is the error name (ex: 'Bad Request' or custom error name)
+   */
   error?: string;
+  /**
+   * This is the error code (ex: 400 or custom error code)
+   */
+  statusCode: number;
+  /**
+   * Human readable description of the status code. Can be automatically generated from the statusCode or set manually.
+   */
   statusCodeDescription: string;
+  /**
+   * The message can be set manually or automatically generated from the error name.
+   * It should describe what happened.
+   * Note: the same statusCode can be used for different errors,
+   * so the message should be different while the description should remain the same for each statusCode.
+   */
+  message: string;
+  /**
+   * Other properties that can be added dynamically to the response object.
+   */
   [key: string]: any;
 }
 
@@ -173,14 +191,16 @@ export function isDefaultErrorMixin(
   return (error as any).__DefaultErrorMixin !== undefined;
 }
 
-export function formatCause(error?: Error | unknown):
-  | {
-      message?: string;
-      stack?: string;
-      parentCause: Error | unknown;
-      [key: string]: any;
-    }
-  | undefined {
+interface IFormattedCause {
+  message?: string;
+  stack?: string;
+  parentCause?: IFormattedCause;
+  [key: string]: any;
+}
+
+export function formatCause(
+  error?: Error | unknown,
+): IFormattedCause | undefined {
   if (!error) {
     return undefined;
   }
@@ -245,10 +265,7 @@ export const DefaultErrorMixin = <
         ? maskDataInObject(options.data, options.masks)
         : options.data;
 
-      let cause;
-      if (this.cause) {
-        cause = formatCause(this.cause);
-      }
+      let cause = formatCause(this.cause);
 
       const payload: ILogErrorPayload = {
         data: this.data,
@@ -406,7 +423,7 @@ export class DefaultError extends DefaultErrorBase(HttpException) {
       options ?? {};
     super(
       internalMessage,
-      { ...(defaultOptions ?? {}), description },
+      { ...defaultOptions, description },
       response ?? {},
       errorCode ?? HttpStatus.INTERNAL_SERVER_ERROR,
       {

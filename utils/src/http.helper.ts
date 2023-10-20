@@ -1,6 +1,16 @@
 import { HttpStatus } from '@nestjs/common';
+import { HttpStatusCode } from 'axios';
 
-const httpStatusDescriptions: { [key in HttpStatus]?: string } = {
+export const HttpStatusCodes = {
+  ...HttpStatus,
+  ...HttpStatusCode,
+};
+
+export type HttpStatusCodes = HttpStatusCode | HttpStatus;
+
+const httpStatusDescriptions: {
+  [key in HttpStatusCodes]?: string;
+} = {
   [HttpStatus.CONTINUE]: '100: Request received, server awaiting further info.',
   [HttpStatus.SWITCHING_PROTOCOLS]:
     '101: Client asked server to switch protocols.',
@@ -64,8 +74,8 @@ const httpStatusDescriptions: { [key in HttpStatus]?: string } = {
   [HttpStatus.PRECONDITION_REQUIRED]: '428: Precondition required for request.',
   [HttpStatus.TOO_MANY_REQUESTS]: '429: Too many requests from this client.',
   // [HttpStatus.REQUEST_HEADER_FIELDS_TOO_LARGE]: '431: Headers too long.',
-  // [HttpStatus.UNAVAILABLE_FOR_LEGAL_REASONS]:
-  //   '451: Unavailable due to legal reasons.',
+  [HttpStatusCode.UnavailableForLegalReasons]:
+    '451: Unavailable due to legal reasons.',
   [HttpStatus.INTERNAL_SERVER_ERROR]:
     "500: Server faced an error and can't provide response.",
   [HttpStatus.NOT_IMPLEMENTED]:
@@ -88,6 +98,6 @@ const httpStatusDescriptions: { [key in HttpStatus]?: string } = {
   //   '511: Client needs to authenticate for network access.',
 };
 
-export const getHttpStatusDescription = (status: HttpStatus): string => {
+export const getHttpStatusDescription = (status: HttpStatusCodes): string => {
   return httpStatusDescriptions[status] ?? 'Unknown status code';
 };

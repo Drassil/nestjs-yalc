@@ -7,7 +7,10 @@ export enum EntityErrorsEnum {
 }
 
 export function isEntityError(error: any): error is EntityError {
-  return (error as EntityError).originalError !== undefined;
+  return (
+    (error as EntityError).originalError !== undefined ||
+    error instanceof EntityError
+  );
 }
 
 export class EntityError extends BadRequestException {

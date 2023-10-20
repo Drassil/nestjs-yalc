@@ -49,6 +49,13 @@ export class HttpExceptionFilter
         this.isHttpError(error) || error instanceof common.HttpException;
       // TODO: Validate when monitoring is in place if we need an eventEmitter here instead of log
       switch (true) {
+        // Base logging for normal operation execution errors
+        case error instanceof MissingArgumentsError:
+          this.logger.log(error.message, {
+            trace: error.stack,
+          });
+          break;
+
         case isDefaultErrorMixin(error):
           // no need to log, DefaultErrorMixin already logs
           break;
@@ -102,14 +109,6 @@ export class HttpExceptionFilter
 
         case error instanceof GqlError:
           this.logger.error((<GqlError>error).systemMessage ?? error.message);
-          break;
-
-        // Base logging for normal operation execution errors
-        case error instanceof MissingArgumentsError:
-        case error instanceof common.UnauthorizedException: // Thrown by NestJS Auth Guard
-          this.logger.log(error.message, {
-            trace: error.stack,
-          });
           break;
 
         // Log critically any other error, as those are not expected

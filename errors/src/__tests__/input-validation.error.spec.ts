@@ -12,16 +12,15 @@ import { BadRequestError, InputValidationError } from '../error.class.js';
 import { ErrorsEnum } from '../error.enum.js';
 
 describe('InputValidationError', () => {
-  it('should set the custom message', () => {
-    const customMessage = 'INVALID_INPUT_MESSAGE';
-    const customError = new InputValidationError(customMessage);
-    expect(customError.message).toEqual(customMessage);
+  it('should have internal message without the custom message', () => {
+    const customError = new InputValidationError();
+    expect(customError.internalMessage).toEqual('Invalid value');
   });
 
   it('should set the custom message', () => {
     const customMessage = 'INVALID_INPUT_MESSAGE';
     const customError = new BadRequestError(customMessage);
-    expect(customError.message).toEqual(
+    expect(customError.internalMessage).toEqual(
       `${ErrorsEnum.BAD_REQUEST}: ${customMessage}`,
     );
   });
