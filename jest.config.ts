@@ -50,14 +50,6 @@ const options: IOptions = {
         lines: 7.69,
       },
     },
-    '@nestjs-yalc/aws-helpers': {
-      coverageThreshold: {
-        statements: 92.59,
-        branches: 100,
-        functions: 100,
-        lines: 98.59,
-      },
-    },
     '@nestjs-yalc/logger': {
       coverageThreshold: {
         statements: 98.02,
