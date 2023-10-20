@@ -183,7 +183,7 @@ export function event<
         errorPayload = errorInstance.getEventPayload();
       } else {
         errorPayload = {
-          ...errorInstance,
+          ...(errorInstance as any),
           data: receivedData,
         };
       }
@@ -237,7 +237,8 @@ export function event<
       message: optionalMessage,
       data,
       eventName: formattedEventName,
-      errorInfo: errorInstance,
+      errorInfo:
+        Object.keys(errorPayload).length > 0 ? errorPayload : undefined,
     };
 
     result = emitEvent<TFormatter>(eventEmitter, eventName, eventPayload, {
