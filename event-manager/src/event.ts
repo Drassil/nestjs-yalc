@@ -209,13 +209,13 @@ export function event<
 
     if (level === 'error') {
       instance.error(message, trace ?? errorPayload?.trace, {
-        data: { data, ...errorPayload },
+        data: { ...data, ...errorPayload },
         event: false,
         trace: trace ?? errorPayload?.trace,
       });
     } else {
       instance[level]?.(message, {
-        data: { data, ...errorPayload },
+        data: { ...data, ...errorPayload },
         event: false,
         trace: trace ?? errorPayload?.trace,
       });
