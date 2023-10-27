@@ -143,7 +143,7 @@ export const decryptSsmVariable = async (
 
   const ssm = new aws.SSM();
   try {
-    // Logger.debug('decryptSsmVariable getting...' + toDecrypt);
+    Logger.debug('decryptSsmVariable getting...' + toDecrypt);
 
     const dataPromise = ssm
       .getParameter({ Name: toDecrypt, WithDecryption: true })
