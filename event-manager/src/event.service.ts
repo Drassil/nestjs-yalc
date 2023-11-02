@@ -158,9 +158,8 @@ export class YalcEventService<
     options?: IErrorEventOptions<TFormatter>,
   ): any {
     const httpCode: HttpStatusCodes = errorCode;
-    const selectedError = httpStatusCodeToErrors[httpCode]
-      ? httpStatusCodeToErrors[httpCode]
-      : InternalServerError;
+    const selectedError =
+      httpStatusCodeToErrors[httpCode] ?? InternalServerError;
     const mergedOptions = this.applyLoggerLevel(
       applyAwaitOption(this.buildErrorOptions(options, selectedError)),
       getLogLevelByStatus(errorCode),
