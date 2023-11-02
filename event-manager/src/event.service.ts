@@ -40,7 +40,7 @@ import {
   UnsupportedMediaTypeError,
 } from '@nestjs-yalc/errors/error.class.js';
 import { getLogLevelByStatus } from './event.helper.js';
-import { ClassType } from '@nestjs-yalc/types/globals.d.js';
+import type { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { HttpStatusCodes } from '@nestjs-yalc/utils/http.helper.js';
 import { httpStatusCodeToErrors } from '@nestjs-yalc/errors/http-status-code-to-errors.js';
 
