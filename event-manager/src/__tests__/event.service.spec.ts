@@ -124,6 +124,13 @@ describe('YalcEventService', () => {
       service.errorHttp('testEvent', HttpStatus.BAD_REQUEST);
       expect(eventError).toHaveBeenCalledWith('testEvent', expect.anything());
     });
+    it('should call buildErrorOptions without passing in defaultClass', () => {
+      expect(() => {
+        service.buildErrorOptions({
+          data: { response: { thisError: 'this error' } },
+        });
+      }).not.toThrow();
+    });
   });
 
   describe('errorAsync', () => {
