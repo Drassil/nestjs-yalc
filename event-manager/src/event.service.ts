@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable, LogLevel } from '@nestjs/common';
+import { Injectable, LogLevel } from '@nestjs/common';
 import {
   eventLogAsync,
   eventDebugAsync,
@@ -41,6 +41,8 @@ import {
 } from '@nestjs-yalc/errors/error.class.js';
 import { getLogLevelByStatus } from './event.helper.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
+import { httpStatusCodeToErrors } from '@nestjs-yalc/errors/error.enum.js';
+import { HttpStatusCodes } from '@nestjs-yalc/utils/http.helper.js';
 
 export interface IEventServiceOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
@@ -152,11 +154,15 @@ export class YalcEventService<
    */
   public errorHttp(
     eventName: Parameters<TFormatter> | string,
-    errorCode = HttpStatus.INTERNAL_SERVER_ERROR,
+    errorCode: number,
     options?: IErrorEventOptions<TFormatter>,
   ): any {
+    const httpCode: HttpStatusCodes = errorCode;
+    const selectedError = httpStatusCodeToErrors[httpCode]
+      ? httpStatusCodeToErrors[httpCode]
+      : InternalServerError;
     const mergedOptions = this.applyLoggerLevel(
-      applyAwaitOption(this.buildErrorOptions(options)),
+      applyAwaitOption(this.buildErrorOptions(options, selectedError)),
       getLogLevelByStatus(errorCode),
     );
     return this.error(eventName, mergedOptions);
