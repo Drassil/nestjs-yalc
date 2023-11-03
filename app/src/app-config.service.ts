@@ -51,3 +51,11 @@ export function createAppConfigProvider(appAlias: string): Provider {
 export function getAppConfigToken(appAlias: string): string {
   return `${appAlias}Config`;
 }
+
+export function getAppEventToken(appAlias: string): string {
+  return `${appAlias}Event`;
+}
+
+export function getAppLoggerToken(appAlias: string): string {
+  return `${appAlias}Logger`;
+}

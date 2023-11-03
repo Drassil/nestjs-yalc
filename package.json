@@ -55,7 +55,8 @@
     "@nestjs/platform-fastify": "^9.2.1",
     "@nestjs/swagger": "^6.1.4",
     "@nestjs/typeorm": "^9.0.1",
-    "axios": "^1.4.0"
+    "axios": "^1.4.0",
+    "nestjs-cls": "^3.6.0"
   },
   "dependencies": {
     "@apollo/federation": "^0.38.1",
