@@ -20,6 +20,8 @@ import {
   AppConfigService,
   createAppConfigProvider,
   getAppConfigToken,
+  getAppEventToken,
+  getAppLoggerToken,
 } from './app-config.service.js';
 import { AppContextModule } from './app-context.module.js';
 import { NODE_ENV } from '@nestjs-yalc/types/global.enum.js';
@@ -29,6 +31,8 @@ import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definiti
 import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { YalcClsModule } from './cls.module.js';
+import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -110,6 +114,10 @@ export function yalcBaseAppModuleMetadataFactory(
       provide: APP_EVENT_SERVICE,
       useExisting: 'INTERNAL_APP_EVENT_SERVICE',
     },
+    {
+      provide: getAppEventToken(appAlias),
+      useExisting: 'INTERNAL_APP_EVENT_SERVICE',
+    },
   ];
 
   if (options?.logger) {
@@ -120,6 +128,11 @@ export function yalcBaseAppModuleMetadataFactory(
         appAlias,
       ),
     );
+
+    _providers.push({
+      provide: getAppLoggerToken(appAlias),
+      useExisting: APP_LOGGER_SERVICE,
+    });
   }
 
   const hasConfig = _options.extraConfigs || _options.configFactory;
@@ -164,7 +177,7 @@ export function yalcBaseAppModuleMetadataFactory(
       EventModule.forRootAsync({
         loggerProvider: {
           provide: 'INTERNAL_APP_LOGGER_SERVICE',
-          useExisting: APP_LOGGER_SERVICE,
+          useExisting: getAppLoggerToken(appAlias),
         },
         eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
         eventEmitter: {
@@ -206,6 +219,7 @@ export function yalcBaseAppModuleMetadataFactory(
          */
         isGlobal: true,
       }),
+      YalcClsModule,
     );
   }
 
@@ -213,10 +227,10 @@ export function yalcBaseAppModuleMetadataFactory(
     _imports.push(...imports);
   }
 
-  const _exports: DynamicModule['exports'] = [APP_EVENT_SERVICE];
+  const _exports: DynamicModule['exports'] = [getAppEventToken(appAlias)];
 
   if (options?.logger) {
-    _exports.push(APP_LOGGER_SERVICE);
+    _exports.push(getAppLoggerToken(appAlias));
   }
 
   if (hasConfig) {
@@ -230,7 +244,12 @@ export function yalcBaseAppModuleMetadataFactory(
   const _controllers: DynamicModule['controllers'] = [];
 
   if (controllers) {
-    _controllers.push(...controllers);
+    _controllers.push(
+      ...controllers.map((c) => {
+        (c as unknown as IYalcControllerStaticInterface)._appAlias = appAlias;
+        return c;
+      }),
+    );
   }
 
   const config = {
@@ -322,6 +341,7 @@ export class YalcDefaultAppModule {
         eventEmitter: { wildcard: true, global: true },
       }),
       AppContextModule,
+      YalcClsModule,
       ...imports,
     ];
 

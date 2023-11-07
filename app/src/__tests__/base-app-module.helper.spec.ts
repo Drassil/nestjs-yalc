@@ -180,7 +180,6 @@ describe('base-app', () => {
 
     it('should create base app module metadata with options', () => {
       const metadata = yalcBaseAppModuleMetadataFactory({}, 'appAlias', {
-        isStandalone: true,
         envPath: ['./.env.test'],
         extraConfigs: [],
         providers: [],
@@ -193,21 +192,22 @@ describe('base-app', () => {
     });
 
     it('should create base app module metadata with options and controllers', () => {
+      class TestController {}
+
       const metadata = yalcBaseAppModuleMetadataFactory(
         DummyStaticModule1,
         'appAlias',
         {
-          isStandalone: false,
           envPath: ['./.env.test'],
           extraConfigs: [],
           providers: [],
           imports: [],
           exports: [],
-          controllers: ['TestController'],
+          controllers: [TestController],
         },
       );
       expect(metadata).toBeDefined();
-      expect(metadata.controllers).toEqual(['TestController']);
+      expect(metadata.controllers).toEqual([TestController]);
     });
   });
 });

@@ -7,6 +7,8 @@ import {
   PluginSystem,
   WithPluginSystem,
 } from '@nestjs-yalc/utils/plugin.helper.js';
+import { YalcGlobalClsService } from '../../app/src/cls.module.js';
+
 export interface LogMethodOptions {
   data?: any;
   masks?: string[];
@@ -26,9 +28,13 @@ export type LogMethodError = (
   options?: LogMethodOptions,
 ) => void;
 
-export interface ILoggerPluginMethods
+export interface ILoggerPluginMethods<TClsService = any>
   extends Record<string, { (...args: any[]): void } | undefined> {
-  onBeforeLogging?: (message: any, options: LogMethodOptions) => void;
+  onBeforeLogging?: (
+    message: any,
+    options: LogMethodOptions,
+    clsService: TClsService,
+  ) => void;
 }
 
 export interface ImprovedLoggerService
@@ -56,6 +62,7 @@ export interface IImprovedLoggerOptions {
         useFallbackEvent?: boolean;
       }
     | false;
+  clsService?: YalcGlobalClsService;
 }
 
 export abstract class LoggerAbstractService
@@ -143,7 +150,12 @@ export abstract class LoggerAbstractService
 
   beforeLogging(message: any, options: LogMethodOptions) {
     this.options.event = this.options.event ?? {};
-    this.invokePlugins('onBeforeLogging', message, options);
+    this.invokePlugins(
+      'onBeforeLogging',
+      message,
+      options,
+      this.options.clsService,
+    );
     return beforeLogging(message, options);
   }
 }

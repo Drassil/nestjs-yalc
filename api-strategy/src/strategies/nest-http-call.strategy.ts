@@ -6,10 +6,12 @@ import {
   HttpOptions,
 } from './http-abstract-call.strategy.js';
 import { AxiosRequestConfig } from 'axios';
+import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
+    protected readonly clsService: YalcGlobalClsService,
     private baseUrl = '',
   ) {
     super();
@@ -19,7 +21,9 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     path: string,
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
+    const clsHeaders = this.clsService.get('headers');
     const headers = {
+      ...clsHeaders,
       ...options?.headers,
     };
     /**
@@ -70,14 +74,18 @@ export const NestHttpCallStrategyProvider = (
   options: NestHttpCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (httpAdapter: HttpService) => {
+  useFactory: (httpAdapter: HttpService, clsService: YalcGlobalClsService) => {
     const _options = {
       baseUrl: '',
       NestHttpStrategy: NestHttpCallStrategy,
       ...options,
     };
 
-    return new _options.NestHttpStrategy(httpAdapter, _options.baseUrl);
+    return new _options.NestHttpStrategy(
+      httpAdapter,
+      clsService,
+      _options.baseUrl,
+    );
   },
-  inject: [HttpService],
+  inject: [HttpService, YalcGlobalClsService],
 });
