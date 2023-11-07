@@ -31,7 +31,8 @@ import { MODULE_OPTIONS_TOKEN } from '@nestjs/common/cache/cache.module-definiti
 import { IGlobalOptions } from './app-bootstrap.helper.js';
 import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ClsModule } from 'nestjs-cls';
+import { YalcClsModule } from './cls.module.js';
+import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -218,6 +219,7 @@ export function yalcBaseAppModuleMetadataFactory(
          */
         isGlobal: true,
       }),
+      YalcClsModule,
     );
   }
 
@@ -242,7 +244,12 @@ export function yalcBaseAppModuleMetadataFactory(
   const _controllers: DynamicModule['controllers'] = [];
 
   if (controllers) {
-    _controllers.push(...controllers);
+    _controllers.push(
+      ...controllers.map((c) => {
+        (c as unknown as IYalcControllerStaticInterface)._appAlias = appAlias;
+        return c;
+      }),
+    );
   }
 
   const config = {
@@ -334,18 +341,7 @@ export class YalcDefaultAppModule {
         eventEmitter: { wildcard: true, global: true },
       }),
       AppContextModule,
-      ClsModule.forRoot({
-        middleware: {
-          // automatically mount the
-          // ClsMiddleware for all routes
-          mount: true,
-          // and use the setup method to
-          // provide default store values.
-          setup: (cls, req) => {
-            cls.set('userId', req.headers['x-user-id']);
-          },
-        },
-      }),
+      YalcClsModule,
       ...imports,
     ];
 

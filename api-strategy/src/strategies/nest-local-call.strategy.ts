@@ -7,9 +7,14 @@ import {
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
+import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
-  constructor(private adapterHost: HttpAdapterHost, private baseUrl = '') {
+  constructor(
+    protected readonly adapterHost: HttpAdapterHost,
+    protected readonly clsService: YalcGlobalClsService,
+    private baseUrl = '',
+  ) {
     super();
   }
 
@@ -22,7 +27,9 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
+    const clsHeaders = this.clsService.get('headers');
     const headers = {
+      ...clsHeaders,
       ...options?.headers,
     };
     /**
@@ -84,14 +91,21 @@ export const NestLocalCallStrategyProvider = (
   options: NestLocalCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (httpAdapter: HttpAdapterHost) => {
+  useFactory: (
+    httpAdapter: HttpAdapterHost,
+    clsService: YalcGlobalClsService,
+  ) => {
     const _options = {
       baseUrl: '',
       NestLocalStrategy: NestLocalCallStrategy,
       ...options,
     };
 
-    return new _options.NestLocalStrategy(httpAdapter, _options.baseUrl);
+    return new _options.NestLocalStrategy(
+      httpAdapter,
+      clsService,
+      _options.baseUrl,
+    );
   },
-  inject: [HttpAdapterHost],
+  inject: [HttpAdapterHost, YalcGlobalClsService],
 });

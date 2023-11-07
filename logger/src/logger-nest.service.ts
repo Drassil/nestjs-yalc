@@ -130,7 +130,12 @@ export class ImprovedNestLogger
 
   beforeLogging(message: any, options: LogMethodOptions) {
     this.options.event = this.options.event ?? {};
-    this.invokePlugins('onBeforeLogging', message, options);
+    this.invokePlugins(
+      'onBeforeLogging',
+      message,
+      options,
+      this._options.clsService,
+    );
     void beforeLogging(message, options);
   }
 }
