@@ -4,15 +4,18 @@ import {
   HttpAbstractStrategy,
   IHttpCallStrategyResponse,
   HttpOptions,
+  IHttpCallStrategyOptions,
 } from './http-abstract-call.strategy.js';
 import { AxiosRequestConfig } from 'axios';
 import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
+import { filterHeaders } from '../header-whitelist.helper.js';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
     protected readonly clsService: YalcGlobalClsService,
     private baseUrl = '',
+    protected readonly options: IHttpCallStrategyOptions = {},
   ) {
     super();
   }
@@ -21,7 +24,10 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     path: string,
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
-    const clsHeaders = this.clsService.get('headers');
+    const clsHeaders = filterHeaders(
+      this.clsService.get('headers'),
+      this.options.headersWhitelist,
+    );
     const headers = {
       ...clsHeaders,
       ...options?.headers,
@@ -46,7 +52,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     }
 
     const { data, ...res } = await this.httpService.axiosRef.request({
-      headers: options?.headers,
+      headers: _options?.headers as any,
       method: _options?.method,
       signal: _options?.signal,
       data: _options?.data,

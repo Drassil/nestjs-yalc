@@ -2,18 +2,21 @@ import { HttpAdapterHost } from '@nestjs/core';
 import {
   HttpAbstractStrategy,
   HttpOptions,
+  IHttpCallStrategyOptions,
   IHttpCallStrategyResponse,
 } from './http-abstract-call.strategy.js';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
 import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
+import { filterHeaders } from '../header-whitelist.helper.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly adapterHost: HttpAdapterHost,
     protected readonly clsService: YalcGlobalClsService,
     private baseUrl = '',
+    protected readonly options: IHttpCallStrategyOptions = {},
   ) {
     super();
   }
@@ -27,7 +30,10 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
-    const clsHeaders = this.clsService.get('headers');
+    const clsHeaders = filterHeaders(
+      this.clsService.get('headers'),
+      this.options.headersWhitelist,
+    );
     const headers = {
       ...clsHeaders,
       ...options?.headers,
