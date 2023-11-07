@@ -24,7 +24,7 @@ declare global {
 
 type StaticInterface<
   TClass extends IStaticInterface & {
-    new (...args: any[]);
+    new (...args: any[]): TClass;
   },
   IStaticInterface,
 > = InstanceType<TClass>;
