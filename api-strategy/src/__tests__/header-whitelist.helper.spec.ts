@@ -20,4 +20,11 @@ describe('whitelistHeaders', () => {
       'x-header-2': 'x-header-2',
     });
   });
+
+  it('should return undefined if headers are undefined', () => {
+    const headers = undefined;
+    const whitelist = ['x-header', 'x-header-2'];
+    const filteredHeaders = filterHeaders(headers, whitelist);
+    expect(filteredHeaders).toBeUndefined();
+  });
 });
