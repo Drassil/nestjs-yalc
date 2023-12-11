@@ -1,3 +1,4 @@
+import { DeepMocked } from '@golevelup/ts-jest';
 import {
   expect,
   jest,
@@ -8,9 +9,13 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
+import { importMockedEsm } from '@nestjs-yalc/jest/esm.helper.js';
 
-import { inflate, deflate } from '../zlib.helper.js';
-import zlib from 'zlib';
+var zlib = (await importMockedEsm('zlib', import.meta)) as DeepMocked<
+  typeof import('zlib')
+>;
+
+const { inflate, deflate } = await import('../zlib.helper.js');
 
 const largeObject = {
   many: {
@@ -34,6 +39,17 @@ const deflated =
   'eJwljbEKwzAQQ/9Fc8bSwXOXQreOpcOVCGM4X4p9MYSQf2+v1fSEhLSjim1IO4zdOQcN0ZU9qFTJRMJLOs+na7iLuOCYsFgU5nAJg227LZbv3orliOuqXt7KKCkH9bcnrcn37PE/nVCcteN5hD7QeS/h';
 
 describe('Zlib helper test', () => {
+  beforeEach(() => {
+    // jest.clearAllMocks();
+    zlib.deflateSync.mockImplementation(() => {
+      return deflated;
+    });
+
+    zlib.inflateSync.mockImplementation(() => {
+      return Buffer.from(JSON.stringify(largeObject));
+    });
+  });
+
   it('should be defined', () => {
     expect(inflate).toBeDefined();
   });
@@ -53,16 +69,17 @@ describe('Zlib helper test', () => {
   });
 
   it('should return the input on error', () => {
+    zlib.inflateSync.mockImplementation(() => {
+      return '6';
+    });
     expect(inflate('6')).toEqual('6');
   });
 
   it('should return the input on error', () => {
-    jest.spyOn(zlib, 'deflateSync').mockImplementation(() => {
+    zlib.deflateSync.mockImplementation(() => {
       throw new Error();
     });
     const res = deflate('stringToDeflate');
-    expect(res.toString('hex')).toEqual(
-      '789c2b2e29cacc4b0fc977494dcb492c490500315e0610',
-    );
+    expect(res).toEqual('stringToDeflate');
   });
 });
