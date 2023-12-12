@@ -1,6 +1,8 @@
 /* istanbul ignore file */
 
 import * as path from 'path';
+import os from 'os';
+
 import type { JestConfigWithTsJest } from 'ts-jest';
 import defaultConf, {
   coveragePathIgnorePatterns,
@@ -53,7 +55,11 @@ export interface IOptions {
 // if you want to increase/decrease this value, you can set the npm_config_jestworkers:
 // * npm < 9  -> with the `npm config set` command (more info: https://docs.npmjs.com/cli/v7/commands/npm-config)
 // * npm >= 9 -> with: export JEST_WORKERS=5
-const maxWorkers = process.env.npm_config_jestworkers || process.env.JEST_WORKERS || 10;
+const maxWorkers =
+  process.env.npm_config_jestworkers ||
+  process.env.JEST_WORKERS ||
+  os.cpus().length ||
+  10;
 
 // eslint-disable-next-line no-console
 console.log(`Max workers: ${maxWorkers}`);
