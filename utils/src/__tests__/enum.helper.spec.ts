@@ -39,12 +39,10 @@ test('mergeEnums should merge 2 enums', () => {
 
 test('getEnumValueByEnumKey should return value of enum 1 by key of enum 2', () => {
   const result = getEnumValueByEnumKey(TestEnum1, Object.keys(TestEnum2)[0]);
-  console.log(Object.keys(TestEnum2)[0]);
   expect(result).toBe('test2');
 });
 
 test('getEnumValueByEnumKey should return null when no undefined key is provided ', () => {
   const result = getEnumValueByEnumKey(TestEnum1, undefined);
-  console.log(Object.keys(TestEnum2)[0]);
   expect(result).toBe(undefined);
 });
