@@ -8,7 +8,11 @@ import {
   test,
 } from '@jest/globals';
 
-import { belongsToEnum, mergeEnums } from '../enum.helper.js';
+import {
+  belongsToEnum,
+  mergeEnums,
+  getEnumValueByEnumKey,
+} from '../enum.helper.js';
 import { TestEnum1, TestEnum2 } from '../__mocks__/enum.mock.js';
 
 test('belongsToEnum should check if a value belongs to a specific Enum', () => {
@@ -31,4 +35,16 @@ test('mergeEnums should merge 2 enums', () => {
   };
 
   expect(result).toMatchObject(compareWith);
+});
+
+test('getEnumValueByEnumKey should return value of enum 1 by key of enum 2', () => {
+  const result = getEnumValueByEnumKey(TestEnum1, Object.keys(TestEnum2)[0]);
+  console.log(Object.keys(TestEnum2)[0]);
+  expect(result).toBe('test2');
+});
+
+test('getEnumValueByEnumKey should return null when no undefined key is provided ', () => {
+  const result = getEnumValueByEnumKey(TestEnum1, undefined);
+  console.log(Object.keys(TestEnum2)[0]);
+  expect(result).toBe(undefined);
 });

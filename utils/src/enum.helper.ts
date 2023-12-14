@@ -26,9 +26,9 @@ export const mergeEnums = <T extends any[]>(...enums: T) => {
 
 export const getEnumValueByEnumKey = <T extends { [index: string]: string }>(
   myEnum: T,
-  enumKey: string | void,
+  enumKey: string | undefined,
 ): any | null => {
-  if (!enumKey) return null;
+  if (!enumKey) return undefined;
   let idx = Object.keys(myEnum).find((x) => x === enumKey);
-  return idx ? myEnum[idx] : null;
+  return idx ? myEnum[idx] : undefined;
 };
