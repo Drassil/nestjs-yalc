@@ -42,7 +42,12 @@ test('getEnumValueByEnumKey should return value of enum 1 by key of enum 2', () 
   expect(result).toBe('test2');
 });
 
+test('getEnumValueByEnumKey should return value of enum 1 by key of enum 2', () => {
+  const result = getEnumValueByEnumKey(TestEnum1, Object.keys(TestEnum2)[1]);
+  expect(result).toBeUndefined();
+});
+
 test('getEnumValueByEnumKey should return null when no undefined key is provided ', () => {
   const result = getEnumValueByEnumKey(TestEnum1, undefined);
-  expect(result).toBe(undefined);
+  expect(result).toBeUndefined();
 });
