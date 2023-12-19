@@ -161,7 +161,9 @@ export const decryptSsmVariable = async (
 
     return data.Parameter?.Value ?? '';
   } catch (err) {
-    Logger.error(`Error while decrypting ssm variable ${toDecrypt}`, err);
+    Logger.error(
+      `Error while decrypting ssm variable ${toDecrypt} ${JSON.stringify(err)}`,
+    );
     return '';
   }
 };
