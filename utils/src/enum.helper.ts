@@ -23,3 +23,12 @@ export const mergeEnums = <T extends any[]>(...enums: T) => {
   enums.forEach((e) => (merged = { ...merged, ...e }));
   return merged as any as Merge<T>;
 };
+
+export const getEnumValueByEnumKey = <T extends { [index: string]: string }>(
+  myEnum: T,
+  enumKey: string | undefined,
+): any | null => {
+  if (!enumKey) return undefined;
+  let idx = Object.keys(myEnum).find((x) => x === enumKey);
+  return idx ? myEnum[idx] : undefined;
+};

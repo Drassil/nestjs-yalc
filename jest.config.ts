@@ -48,34 +48,26 @@ const options: IOptions = {
   confOverrides: {
     '@nestjs-yalc/app': {
       coverageThreshold: {
-        statements: 8.19,
-        branches: 0,
-        functions: 10.71,
-        lines: 7.69,
-      },
-    },
-    '@nestjs-yalc/aws-helpers': {
-      coverageThreshold: {
-        branches: 100,
-        functions: 95.23,
-        lines: 91.66,
-        statements: 92.59,
+        statements: 60.83,
+        branches: 48.19,
+        functions: 52.38,
+        lines: 60.51,
       },
     },
     '@nestjs-yalc/logger': {
       coverageThreshold: {
-        branches: 60.13,
+        statements: 98.02,
+        branches: 94.4,
         functions: 83.87,
         lines: 88.7,
-        statements: 89.31,
       },
     },
     '@nestjs-yalc/utils': {
       coverageThreshold: {
-        branches: 88.33,
-        functions: 86.95,
-        lines: 83.69,
-        statements: 84.46,
+        statements: 93.44,
+        branches: 92.85,
+        functions: 87.17,
+        lines: 93.83,
       },
     },
   },

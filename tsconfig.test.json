@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.dev.json",
   "compilerOptions": {
-    "strict": false,
+    "strict": true,
     "strictFunctionTypes": false,
     "noImplicitAny": false
   }

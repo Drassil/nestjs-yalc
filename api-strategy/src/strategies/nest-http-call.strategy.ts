@@ -4,13 +4,18 @@ import {
   HttpAbstractStrategy,
   IHttpCallStrategyResponse,
   HttpOptions,
+  IHttpCallStrategyOptions,
 } from './http-abstract-call.strategy.js';
 import { AxiosRequestConfig } from 'axios';
+import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
+import { filterHeaders } from '../header-whitelist.helper.js';
 
 export class NestHttpCallStrategy extends HttpAbstractStrategy {
   constructor(
     protected readonly httpService: HttpService,
+    protected readonly clsService: YalcGlobalClsService,
     private baseUrl = '',
+    protected readonly options: IHttpCallStrategyOptions = {},
   ) {
     super();
   }
@@ -19,6 +24,14 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     path: string,
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
+    const clsHeaders = filterHeaders(
+      this.clsService.get('headers'),
+      this.options.headersWhitelist,
+    );
+    const headers = {
+      ...clsHeaders,
+      ...options?.headers,
+    };
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to AxiosRequestConfig
@@ -28,7 +41,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
           [k: string | number | symbol]: never;
         }
       | AxiosRequestConfig = {
-      headers: options?.headers,
+      headers,
       method: options?.method,
       signal: options?.signal,
       data: options?.data,
@@ -39,7 +52,7 @@ export class NestHttpCallStrategy extends HttpAbstractStrategy {
     }
 
     const { data, ...res } = await this.httpService.axiosRef.request({
-      headers: options?.headers,
+      headers: _options?.headers as any,
       method: _options?.method,
       signal: _options?.signal,
       data: _options?.data,
@@ -67,14 +80,18 @@ export const NestHttpCallStrategyProvider = (
   options: NestHttpCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (httpAdapter: HttpService) => {
+  useFactory: (httpAdapter: HttpService, clsService: YalcGlobalClsService) => {
     const _options = {
       baseUrl: '',
       NestHttpStrategy: NestHttpCallStrategy,
       ...options,
     };
 
-    return new _options.NestHttpStrategy(httpAdapter, _options.baseUrl);
+    return new _options.NestHttpStrategy(
+      httpAdapter,
+      clsService,
+      _options.baseUrl,
+    );
   },
-  inject: [HttpService],
+  inject: [HttpService, YalcGlobalClsService],
 });

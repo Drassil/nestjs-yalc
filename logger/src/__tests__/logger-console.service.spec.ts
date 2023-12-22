@@ -9,7 +9,17 @@ import {
   afterEach,
 } from '@jest/globals';
 
-import { ConsoleLogger } from '../logger-console.service.js';
+/**
+ * Not sure why this is needed, but it is. Jest has reference errors when try to import the logger-console.service.js file
+ * probably still caused by the ESM
+ */
+jest.unstable_mockModule('@nestjs-yalc/logger/logger.factory.js', async () => {
+  return {
+    AppLoggerFactory: jest.fn(),
+  };
+});
+
+const { ConsoleLogger } = await import('../logger-console.service.js');
 import { LOG_LEVEL_ALL } from '../logger.enum.js';
 
 const logOptions = {
@@ -58,7 +68,9 @@ describe('Console logger service test', () => {
     logger.error('error', 'trace', { data: 'test' });
 
     expect(method).toHaveBeenCalled();
-    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', 'test');
+    expect(method).toHaveBeenCalledWith('[test]', 'error', 'trace', {
+      message: 'test',
+    });
   });
 
   it('Test error with options', async () => {

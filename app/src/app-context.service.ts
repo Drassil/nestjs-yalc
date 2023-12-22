@@ -3,6 +3,7 @@ import { GraphQLSchema } from 'graphql';
 
 @Injectable()
 export class AppContextService {
+  public initializedApps = new Set<string>();
   private graphQLSchema!: GraphQLSchema;
 
   public setSchema(schema: GraphQLSchema) {

@@ -72,6 +72,8 @@ export class GenericTypeORMRepository<
 
     let queryBuilder = qb ?? this.createQueryBuilder(extra?._aliasType);
 
+    const connection = queryBuilder.connection;
+
     const rawSelection: string[] = [];
     const joinSelection: string[] = [];
     const customSel = extra?._keysMeta;
@@ -85,14 +87,14 @@ export class GenericTypeORMRepository<
         const isDerived = _mapper?.mode === 'derived';
 
         if (meta && isDerived) {
+          const selPart = `${meta.rawSelect} AS ${connection.driver.escape(
+            `${queryBuilder.alias}_${meta.fieldMapper._propertyName}`,
+          )}`;
+
           if (isNested) {
-            joinSelection.push(
-              `${meta.rawSelect} AS \`${queryBuilder.alias}_${meta.fieldMapper._propertyName}\``,
-            );
+            joinSelection.push(selPart);
           } else {
-            rawSelection.push(
-              `${meta.rawSelect} AS \`${queryBuilder.alias}_${meta.fieldMapper._propertyName}\``,
-            );
+            rawSelection.push(selPart);
           }
         }
       });

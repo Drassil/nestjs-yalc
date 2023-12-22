@@ -1,13 +1,10 @@
+import { describe, expect, it } from '@jest/globals';
 import {
-  describe,
-  expect,
-  it,
-  jest,
-  beforeAll,
-  beforeEach,
-  test,
-} from '@jest/globals';
-import { deepMerge, objectSetProp } from '../object.helper.js';
+  deepMerge,
+  objectSetProp,
+  isObject,
+  isObjectStrict,
+} from '../object.helper.js';
 
 describe('test object.helper.ts', () => {
   it('should set a property correctly', () => {
@@ -60,5 +57,42 @@ describe('test object.helper.ts', () => {
         test2: 2,
       },
     });
+  });
+
+  it('should isObjectStrict return true', () => {
+    expect(isObjectStrict({})).toBe(true);
+    expect(isObjectStrict({ test: 1 })).toBe(true);
+    expect(isObjectStrict({ test: 1, sub: { test2: 2 } })).toBe(true);
+    expect(isObjectStrict(new Object('something'))).toBe(true);
+  });
+
+  it('should isObjectStrict return false', () => {
+    expect(isObjectStrict(null)).toBe(false);
+    expect(isObjectStrict(undefined)).toBe(false);
+    expect(isObjectStrict(1)).toBe(false);
+    expect(isObjectStrict('string')).toBe(false);
+    expect(isObjectStrict(true)).toBe(false);
+    expect(isObjectStrict(false)).toBe(false);
+    expect(isObjectStrict([1, 2, 3])).toBe(false);
+    expect(isObjectStrict(new Date())).toBe(false);
+    expect(isObjectStrict(() => {})).toBe(false);
+  });
+
+  it('should isObject return true', () => {
+    expect(isObject({})).toBe(true);
+    expect(isObject({ test: 1 })).toBe(true);
+    expect(isObject({ test: 1, sub: { test2: 2 } })).toBe(true);
+    expect(isObject(new Object('something'))).toBe(true);
+    expect(isObject(null)).toBe(false);
+    expect(isObject(() => {})).toBe(true);
+  });
+
+  it('should isObject return false', () => {
+    expect(isObject(undefined)).toBe(false);
+    expect(isObject(1)).toBe(false);
+    expect(isObject('string')).toBe(false);
+    expect(isObject(true)).toBe(false);
+    expect(isObject(false)).toBe(false);
+    expect(isObject([1, 2, 3])).toBe(false);
   });
 });

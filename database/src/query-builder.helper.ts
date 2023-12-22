@@ -310,7 +310,10 @@ export class QueryBuilderHelper {
       parent: IFieldMapper;
       joined: IFieldMapper | { [key: string]: IFieldMapper };
     },
+    options?: { escapeCharacter?: string },
   ): string {
+    const { escapeCharacter = '' } = options || {};
+
     /**
      * Do not apply alias for JSON fields
      * @todo: improve logic
@@ -332,6 +335,8 @@ export class QueryBuilderHelper {
         key = splitted[1];
       }
     }
-    return alias ? `\`${alias}\`.\`${key}\`` : key;
+    return alias
+      ? `${escapeCharacter}${alias}${escapeCharacter}.${escapeCharacter}${key}${escapeCharacter}`
+      : key;
   }
 }

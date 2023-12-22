@@ -54,7 +54,7 @@ import { ExtraArgsStrategy } from '../crud-gen.enum.js';
 import { ICrudGenParams } from '../crud-gen.args.js';
 import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
 import { isClass } from '@nestjs-yalc/utils/class.helper.js';
-import { GetContext } from '@nestjs-yalc/utils/nest.decorator.js';
+import { GetContext } from '@nestjs-yalc/utils/nestjs/nest.decorator.js';
 export interface IGenericResolver {
   [index: string]: any; //index signature
 }

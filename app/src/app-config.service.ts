@@ -7,33 +7,55 @@ import { ConfigService } from '@nestjs/config';
  * without specifying the app alias.
  */
 export class AppConfigService<T = any> {
-  protected config: T;
+  protected _config: T;
 
   constructor(
-    protected readonly configService: ConfigService,
+    public readonly service: ConfigService,
     protected readonly appAlias: string,
   ) {
-    const config = this.configService.get<T>(this.appAlias);
+    const config = this.service.get<T>(this.appAlias);
     if (!config) {
       throw new Error(
         `AppConfigService: No config found for app alias '${this.appAlias}'`,
       );
     }
 
-    this.config = config;
+    this._config = config;
   }
 
+  /**
+   * Type-safe access to the app config values of the current app.
+   */
+  get values(): T {
+    return this._config;
+  }
+
+  /**
+   * @deprecated - use .values instead
+   */
   get(): T {
-    return this.config;
+    return this.values;
   }
 }
 
 export function createAppConfigProvider(appAlias: string): Provider {
   return {
-    provide: AppConfigService,
+    provide: `${appAlias}Config`,
     useFactory: (config: ConfigService): AppConfigService => {
       return new AppConfigService(config, appAlias);
     },
     inject: [ConfigService],
   };
+}
+
+export function getAppConfigToken(appAlias: string): string {
+  return `${appAlias}Config`;
+}
+
+export function getAppEventToken(appAlias: string): string {
+  return `${appAlias}Event`;
+}
+
+export function getAppLoggerToken(appAlias: string): string {
+  return `${appAlias}Logger`;
 }

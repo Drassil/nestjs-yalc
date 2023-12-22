@@ -9,7 +9,13 @@ import { GqlComplexityHelper } from './gql-complexity.helper.js';
 export class GqlComplexityPlugin implements ApolloServerPlugin {
   async requestDidStart(): Promise<GraphQLRequestListener> {
     return {
-      async didResolveOperation({ document, schema }) {
+      async didResolveOperation({
+        document,
+        schema,
+      }: {
+        document: any;
+        schema: any;
+      }) {
         GqlComplexityHelper.processDocumentAST(document, schema);
       },
     };

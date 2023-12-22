@@ -2,14 +2,22 @@ import { HttpAdapterHost } from '@nestjs/core';
 import {
   HttpAbstractStrategy,
   HttpOptions,
+  IHttpCallStrategyOptions,
   IHttpCallStrategyResponse,
 } from './http-abstract-call.strategy.js';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { InjectOptions } from 'fastify';
+import { YalcGlobalClsService } from '@nestjs-yalc/app/cls.module.js';
+import { filterHeaders } from '../header-whitelist.helper.js';
 
 export class NestLocalCallStrategy extends HttpAbstractStrategy {
-  constructor(private adapterHost: HttpAdapterHost, private baseUrl = '') {
+  constructor(
+    protected readonly adapterHost: HttpAdapterHost,
+    protected readonly clsService: YalcGlobalClsService,
+    private baseUrl = '',
+    protected readonly options: IHttpCallStrategyOptions = {},
+  ) {
     super();
   }
 
@@ -22,18 +30,24 @@ export class NestLocalCallStrategy extends HttpAbstractStrategy {
     options?: HttpOptions<TOptData, TParams>,
   ): Promise<IHttpCallStrategyResponse<TResData>> {
     const instance: FastifyAdapter = this.adapterHost.httpAdapter.getInstance();
-
+    const clsHeaders = filterHeaders(
+      this.clsService.get('headers'),
+      this.options.headersWhitelist,
+    );
+    const headers = {
+      ...clsHeaders,
+      ...options?.headers,
+    };
     /**
      * We need this to do a type check on the options and
      * implement the mapping from HttpOptions to InjectOptions;
      */
-
     const _options:
       | {
           [k: string | number | symbol]: never;
         }
       | InjectOptions = {
-      headers: options?.headers,
+      headers,
       method: options?.method,
       /**@todo investigate where to set thi */
       // signal: options?.signal,
@@ -83,14 +97,21 @@ export const NestLocalCallStrategyProvider = (
   options: NestLocalCallStrategyProviderOptions = {},
 ) => ({
   provide,
-  useFactory: (httpAdapter: HttpAdapterHost) => {
+  useFactory: (
+    httpAdapter: HttpAdapterHost,
+    clsService: YalcGlobalClsService,
+  ) => {
     const _options = {
       baseUrl: '',
       NestLocalStrategy: NestLocalCallStrategy,
       ...options,
     };
 
-    return new _options.NestLocalStrategy(httpAdapter, _options.baseUrl);
+    return new _options.NestLocalStrategy(
+      httpAdapter,
+      clsService,
+      _options.baseUrl,
+    );
   },
-  inject: [HttpAdapterHost],
+  inject: [HttpAdapterHost, YalcGlobalClsService],
 });

@@ -8,22 +8,26 @@ import {
   afterAll,
   afterEach,
 } from '@jest/globals';
-import { createMock } from '@golevelup/ts-jest';
+import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { HttpService } from '@nestjs/axios';
 import { AxiosInstance } from 'axios';
 import {
   NestHttpCallStrategy,
   NestHttpCallStrategyProvider,
 } from '../strategies/nest-http-call.strategy.js';
+import { YalcGlobalClsService } from '../../../app/src/cls.module.js';
 
 describe('NestHttpCallStrategy', () => {
   let httpService: HttpService;
+  let clsService: DeepMocked<YalcGlobalClsService>;
 
   beforeEach(() => {
     const axiosRef = createMock<AxiosInstance>();
     httpService = createMock<HttpService>({
       axiosRef,
     });
+
+    clsService = createMock<YalcGlobalClsService>();
   });
 
   it('should be defined', () => {
@@ -31,12 +35,12 @@ describe('NestHttpCallStrategy', () => {
   });
 
   it('should be instantiable', () => {
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     expect(instance).toBeDefined();
   });
 
   it('should be able to execute the call method', async () => {
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     const result = await instance.call('http://localhost:3000', {
       method: 'GET',
     });
@@ -44,13 +48,13 @@ describe('NestHttpCallStrategy', () => {
   });
 
   it('should be able to execute the get method', async () => {
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     const result = await instance.get('http://localhost:3000');
     expect(result).toBeDefined();
   });
 
   it('should be able to execute the post method', async () => {
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     const result = await instance.post('http://localhost:3000', {});
     expect(result).toBeDefined();
   });
@@ -62,7 +66,7 @@ describe('NestHttpCallStrategy', () => {
 
   it('should create a provider and execute the useFactory method', () => {
     const provider = NestHttpCallStrategyProvider('test');
-    expect(provider.useFactory(httpService)).toBeDefined();
+    expect(provider.useFactory(httpService, clsService)).toBeDefined();
   });
 
   it('should be able to execute the call method and return a json', async () => {
@@ -73,7 +77,7 @@ describe('NestHttpCallStrategy', () => {
       axiosRef,
     });
 
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     const result = await instance.call('http://localhost:3000', {
       method: 'GET',
     });
@@ -81,7 +85,7 @@ describe('NestHttpCallStrategy', () => {
   });
 
   it('should be able to execute the call method with parameters', async () => {
-    const instance = new NestHttpCallStrategy(httpService);
+    const instance = new NestHttpCallStrategy(httpService, clsService);
     const result = await instance.call('http://localhost:3000', {
       method: 'GET',
       parameters: {

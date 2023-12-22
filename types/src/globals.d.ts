@@ -1,9 +1,13 @@
 /* eslint-disable no-var */
 import { LogLevel } from '@nestjs/common';
+import { MigrationInterface } from 'typeorm';
 
 declare global {
   var __JEST_DISABLE_DB: boolean;
   var TypeORM_Seeding_Connection: any;
+  var TypeORM_Migration_classes:
+    | { [connName: string]: ClassType<MigrationInterface>[] | undefined }
+    | undefined;
 
   namespace NodeJS {
     interface ProcessEnv {
@@ -18,9 +22,22 @@ declare global {
   }
 }
 
-export declare type ClassType<Class = any> = { new (...args: any[]): Class };
+type StaticInterface<
+  TClass extends IStaticInterface & {
+    new (...args: any[]): TClass;
+  },
+  IStaticInterface,
+> = InstanceType<TClass>;
 
-export declare type AnyFunction<A = any, I = any> = (...input: I[]) => A;
+export type InstanceType<T> = T extends new (...args: any[]) => infer R
+  ? R
+  : never;
+
+export declare type ClassType<Class = any> = {
+  new (...args: any[]): Class;
+};
+
+export declare type AnyFunction<A = any> = (...input: any[]) => A;
 export declare type AnyConstructor<A = Record<string, unknown>> = new (
   ...input: any[]
 ) => A;

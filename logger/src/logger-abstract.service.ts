@@ -1,10 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { LoggerService, LogLevel } from '@nestjs/common';
 import { LogLevelEnum } from './logger.enum.js';
+import { type EventEmitter2 } from '@nestjs/event-emitter';
+import { event } from '@nestjs-yalc/event-manager/event.js';
+import {
+  PluginSystem,
+  WithPluginSystem,
+} from '@nestjs-yalc/utils/plugin.helper.js';
+import { YalcGlobalClsService } from '../../app/src/cls.module.js';
+
 export interface LogMethodOptions {
   data?: any;
   masks?: string[];
   context?: string;
+  trace?: string;
+  /**
+   * If false, it will not trigger an event.
+   * If string, it will trigger an event with the string as the event name instead of the default event name.
+   */
+  event?: string | false;
 }
 
 export type LogMethod = (message: any, options?: LogMethodOptions) => void;
@@ -14,7 +28,20 @@ export type LogMethodError = (
   options?: LogMethodOptions,
 ) => void;
 
-export interface ImprovedLoggerService extends LoggerService {
+export interface ILoggerPluginMethods<TClsService = any>
+  extends Record<string, { (...args: any[]): void } | undefined> {
+  onBeforeLogging?: (
+    message: any,
+    options: LogMethodOptions,
+    clsService: TClsService,
+  ) => void;
+}
+
+export interface ImprovedLoggerService
+  extends ImprovedLoggerServiceMethods,
+    PluginSystem<ILoggerPluginMethods> {}
+
+export interface ImprovedLoggerServiceMethods extends LoggerService {
   log: LogMethod;
   error: LogMethodError;
   warn: LogMethod;
@@ -22,7 +49,26 @@ export interface ImprovedLoggerService extends LoggerService {
   verbose?: LogMethod;
 }
 
-export abstract class LoggerAbstractService implements ImprovedLoggerService {
+export const EVENT_LOG_DEFAULT = 'EVENT_LOG_DEFAULT';
+
+export interface IImprovedLoggerOptions {
+  event?:
+    | {
+        eventEmitter?: EventEmitter2 | false;
+        /**
+         * if set to true, it trigger an event with the name of EVENT_LOG_DEFAULT even
+         * if we didn't specified the event name
+         */
+        useFallbackEvent?: boolean;
+      }
+    | false;
+  clsService?: YalcGlobalClsService;
+}
+
+export abstract class LoggerAbstractService
+  extends WithPluginSystem<ILoggerPluginMethods>()
+  implements ImprovedLoggerService
+{
   /**
    * This constructor override its empty method based on passed
    * logLevels and this.methods
@@ -33,8 +79,11 @@ export abstract class LoggerAbstractService implements ImprovedLoggerService {
   constructor(
     protected context: string,
     protected logLevels: LogLevel[] | undefined,
-    protected methods: ImprovedLoggerService,
+    protected methods: ImprovedLoggerServiceMethods,
+    protected options: IImprovedLoggerOptions = {},
   ) {
+    super();
+
     const enabledLevels: { [key: string]: boolean } = {};
     this.logLevels?.forEach((level) => {
       if (!(level.toUpperCase() in LogLevelEnum))
@@ -43,34 +92,54 @@ export abstract class LoggerAbstractService implements ImprovedLoggerService {
       enabledLevels[level] = true;
     });
 
-    this.log =
-      enabledLevels[LogLevelEnum.LOG] === true && this.methods[LogLevelEnum.LOG]
+    this.log = (message: any, options: LogMethodOptions = {}) => {
+      void this.beforeLogging(message, options);
+      (enabledLevels[LogLevelEnum.LOG] === true &&
+        this.methods[LogLevelEnum.LOG]
         ? this.methods[LogLevelEnum.LOG]
-        : () => {}; // else void
+        : () => {})(message, options);
+    };
 
-    this.error =
-      enabledLevels[LogLevelEnum.ERROR] === true &&
-      this.methods[LogLevelEnum.ERROR]
+    this.error = (
+      message: any,
+      trace?: string,
+      options: LogMethodOptions = {},
+    ) => {
+      options.trace = trace;
+      void this.beforeLogging(message, options);
+
+      (enabledLevels[LogLevelEnum.ERROR] === true &&
+        this.methods[LogLevelEnum.ERROR]
         ? this.methods[LogLevelEnum.ERROR]
-        : () => {}; // else void
+        : () => {})(message, trace, options);
+    };
 
-    this.warn =
-      enabledLevels[LogLevelEnum.WARN] === true &&
-      this.methods[LogLevelEnum.WARN]
+    this.warn = (message: any, options: LogMethodOptions = {}) => {
+      void this.beforeLogging(message, options);
+
+      (enabledLevels[LogLevelEnum.WARN] === true &&
+        this.methods[LogLevelEnum.WARN]
         ? this.methods[LogLevelEnum.WARN]
-        : () => {}; // else void
+        : () => {})(message, options);
+    };
 
     if (
       enabledLevels[LogLevelEnum.DEBUG] === true &&
       this.methods[LogLevelEnum.DEBUG]
     )
-      this.debug = this.methods[LogLevelEnum.DEBUG];
+      this.debug = (message: any, options: LogMethodOptions = {}) => {
+        void this.beforeLogging(message, options);
+        this.methods[LogLevelEnum.DEBUG]!(message, options);
+      };
 
     if (
       enabledLevels[LogLevelEnum.VERBOSE] === true &&
       this.methods[LogLevelEnum.VERBOSE]
     )
-      this.verbose = this.methods[LogLevelEnum.VERBOSE];
+      this.verbose = (message: any, options: LogMethodOptions = {}) => {
+        void this.beforeLogging(message, options);
+        this.methods[LogLevelEnum.VERBOSE]!(message, options);
+      };
   }
 
   log: LogMethod;
@@ -78,4 +147,38 @@ export abstract class LoggerAbstractService implements ImprovedLoggerService {
   warn: LogMethod;
   debug?: LogMethod | undefined;
   verbose?: LogMethod;
+
+  beforeLogging(message: any, options: LogMethodOptions) {
+    this.options.event = this.options.event ?? {};
+    this.invokePlugins(
+      'onBeforeLogging',
+      message,
+      options,
+      this.options.clsService,
+    );
+    return beforeLogging(message, options);
+  }
+}
+
+export async function beforeLogging(
+  message: any,
+  options: LogMethodOptions & IImprovedLoggerOptions['event'] = {},
+) {
+  const emitter = options && options.eventEmitter;
+  if (!emitter) return;
+
+  const useFallbackEvent = (options && options.useFallbackEvent) ?? false;
+  const defaultEventName = useFallbackEvent ? EVENT_LOG_DEFAULT : false;
+  const eventName = options.event ?? defaultEventName;
+
+  if (!eventName) return;
+
+  await event(eventName, {
+    event: { emitter },
+    data: options?.data,
+    masks: options?.masks,
+    message,
+    logger: false,
+    trace: options?.trace,
+  });
 }

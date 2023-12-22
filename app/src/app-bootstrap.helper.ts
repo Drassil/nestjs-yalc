@@ -19,28 +19,38 @@ import { envIsTrue } from '@nestjs-yalc/utils/env.helper.js';
 import { useContainer } from 'class-validator';
 import clc from 'cli-color';
 import { BaseAppBootstrap } from './app-bootstrap-base.helper.js';
+import { EventModule } from '@nestjs-yalc/event-manager/event.module.js';
+import { LoggerServiceFactory } from '@nestjs-yalc/logger/logger.service.js';
 
-export interface IGlobalOptions {
+export interface ICreateOptions {
+  abortOnError?: boolean;
+  enableSwagger?: boolean;
+  filters?: ExceptionFilter[];
+  validationPipeOptions?: ValidationPipeOptions;
   /**
    * On some cases we do want to manually override the apiPrefix of the service conf
    */
   apiPrefix?: string;
-  filters?: ExceptionFilter[];
-  abortOnError?: boolean;
-  enableSwagger?: boolean;
-  validationPipeOptions?: ValidationPipeOptions;
 }
 
-export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
+export interface IGlobalOptions {
+  extraImports?: NonNullable<DynamicModule['imports']>;
+  eventModuleClass?: typeof EventModule;
+  logger?: typeof LoggerServiceFactory;
+}
+
+export class AppBootstrap<
+  TGlobalOptions extends IGlobalOptions = IGlobalOptions,
+> extends BaseAppBootstrap<NestFastifyApplication> {
   private fastifyInstance?: FastifyInstance;
   protected isSwaggerEnabled: boolean = false;
 
-  constructor(appAlias: string, readonly module: DynamicModule) {
-    super(appAlias, module);
+  constructor(appAlias: string, module: any, options?: TGlobalOptions) {
+    super(appAlias, module, { globalsOptions: options });
   }
 
   async startServer(options?: {
-    globalsOptions?: IGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
@@ -58,22 +68,25 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }
 
   async initApp(options?: {
-    globalsOptions?: IGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
       fastifyInstance: this.fastifyInstance,
-      globalsOptions: options?.globalsOptions,
+      createOptions: options?.createOptions,
     });
 
-    return this.initSetup(options);
+    return this.initSetup({
+      fastifyInstance: this.fastifyInstance,
+      createOptions: options?.createOptions,
+    });
   }
 
   async initSetup(options?: {
-    globalsOptions?: IGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
-    await this.applyBootstrapGlobals(options?.globalsOptions);
+    await this.applyBootstrapGlobals(options?.createOptions);
 
     await this.getApp().init();
 
@@ -87,7 +100,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
   }
 
   async createApp(options?: {
-    globalsOptions?: IGlobalOptions;
+    createOptions?: ICreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     this.fastifyInstance = options?.fastifyInstance ?? fastify();
@@ -99,7 +112,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
         new FastifyAdapter(this.fastifyInstance as any),
         {
           bufferLogs: false,
-          abortOnError: options?.globalsOptions?.abortOnError ?? false,
+          abortOnError: options?.createOptions?.abortOnError ?? false,
         },
       );
     } catch (err) {
@@ -119,15 +132,13 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
     this.isSwaggerEnabled = enabled;
   }
 
-  async applyBootstrapGlobals(options?: IGlobalOptions) {
+  async applyBootstrapGlobals(options?: ICreateOptions) {
     await super.applyBootstrapGlobals(options);
-
-    useContainer(this.getApp().select(this.module), { fallbackOnErrors: true });
 
     this.getApp().useGlobalPipes(
       new ValidationPipe({
         transform: true,
-        transformOptions: { enableImplicitConversion: true },
+        transformOptions: { enableImplicitConversion: false },
         validateCustomDecorators: true,
         exceptionFactory: (errors) => {
           const errorMessages: { [key: string]: any } = {};
@@ -164,6 +175,10 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
       SwaggerModule.setup('api', this.getApp(), document);
     }
 
+    useContainer(this.getApp().select(this.getModule()), {
+      fallbackOnErrors: true,
+    });
+
     return this;
   }
 
@@ -181,7 +196,7 @@ export class AppBootstrap extends BaseAppBootstrap<NestFastifyApplication> {
     let apiPrefix = this.getConf()?.apiPrefix;
     apiPrefix = apiPrefix ? `/${apiPrefix}` : '';
     const domain = this.getConf()?.domain || 'localhost';
-    await this.getApp().listen(port, host, (_err, address) => {
+    await this.getApp().listen(port, host, async (_err, address) => {
       // eslint-disable-next-line no-console
       console.debug(`Server ${this.appAlias} listening on
         http://localhost:${port}${apiPrefix}/

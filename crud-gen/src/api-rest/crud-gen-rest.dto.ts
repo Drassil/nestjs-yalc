@@ -12,18 +12,12 @@ import {
   ISortModelStrict,
 } from '../api-graphql/crud-gen-gql.interface.js';
 import { IPageDataCrudGen } from '../crud-gen.interface.js';
+import { Exclude, Expose } from 'class-transformer';
+import { ParseInt } from '@nestjs-yalc/field-middleware/class-transformer.helper.js';
 
-export class CGQueryDto<T = any> implements ICrudGenBaseParams<T> {
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  startRow?: number;
-
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  endRow?: number;
-}
+export class CGQueryDto<T = any>
+  extends PaginationDTOMixin()
+  implements ICrudGenBaseParams<T> {}
 
 /**
  * @deprecated use sortModelRestFactory instead
@@ -101,24 +95,54 @@ export function crudGenRestParamsNoPaginationFactory(
   return typeMap.get(CrudGenParams);
 }
 
+@Exclude()
 export class PageData implements IPageDataCrudGen {
+  @Expose()
   public count!: number;
 
+  @Expose()
   public startRow!: number;
 
+  @Expose()
   public endRow!: number;
 }
 
-export class CGRestQueryArgs<T = any> implements ICrudGenSimpleParams<T> {
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  startRow?: number = RowDefaultValues.START_ROW;
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  endRow?: number = RowDefaultValues.END_ROW;
+@Exclude()
+export class PaginatedResultDto<T> {
+  @Expose()
+  list: T[];
+
+  @Expose()
+  pageData: PageData;
+
+  constructor(list: T[], pageData: PageData) {
+    this.list = list;
+    this.pageData = pageData;
+  }
+}
+
+export class CGRestQueryArgs<T = any>
+  extends PaginationDTOMixin()
+  implements ICrudGenSimpleParams<T> {
   /**
    * @todo implements other properties (where, select, sort, etc.)
    */
+}
+
+export function PaginationDTOMixin(base: ClassType = class {}) {
+  class PaginationDTO extends base {
+    @IsOptional()
+    @IsInt()
+    @ParseInt()
+    @Min(0)
+    startRow?: number = RowDefaultValues.START_ROW;
+
+    @IsOptional()
+    @IsInt()
+    @ParseInt()
+    @Min(0)
+    endRow?: number = RowDefaultValues.END_ROW;
+  }
+
+  return PaginationDTO;
 }

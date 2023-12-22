@@ -636,7 +636,12 @@ describe('QueryBuilderHelper', () => {
   });
 
   it('should return the key prefixed with the alias', async () => {
-    const result = QueryBuilderHelper.addAlias(fixedKey, fixedAlias);
+    const result = QueryBuilderHelper.addAlias(
+      fixedKey,
+      fixedAlias,
+      undefined,
+      { escapeCharacter: '`' },
+    );
 
     expect(result).toBe(fixedKeyPrefixed);
   });
@@ -649,6 +654,8 @@ describe('QueryBuilderHelper', () => {
     const result = QueryBuilderHelper.addAlias(
       `joined.${fixedKey}`,
       fixedAlias,
+      undefined,
+      { escapeCharacter: '`' },
     );
 
     expect(result).toBe(`\`joined\`.\`${fixedKey}\``);
@@ -672,7 +679,7 @@ describe('QueryBuilderHelper', () => {
       },
     );
 
-    expect(result).toBe(`\`joined\`.\`${fixedKey}\``);
+    expect(result).toBe(`joined.${fixedKey}`);
   });
 
   it('should return the correct field mapper', async () => {
