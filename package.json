@@ -33,7 +33,6 @@
     "data-loader",
     "database",
     "errors",
-    "eslint-config-nestjs-yalc",
     "event-manager",
     "field-middleware",
     "graphql",

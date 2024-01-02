@@ -1,9 +1,11 @@
 {
-  "extends": "@nestjs-yalc/toolkit-config/src/tsconfig.json",
+  "extends": "./toolkit-config/src/tsconfig.json",
   "compilerOptions": {
     "outDir": "var/dist"
   },
-  "include": ["./**/src/**/*.ts"],
+  "include": [
+    "./**/src/**/*.ts"
+  ],
   "exclude": [
     "**/node_modules",
     "kafka",
@@ -13,11 +15,4 @@
     "**/*.test.ts",
     "var"
   ],
-  "ts-node": {
-    "transpileOnly": true,
-    "experimentalSpecifierResolution": "node",
-    "files": true,
-    "esm": true,
-    "swc": true
-  }
 }
