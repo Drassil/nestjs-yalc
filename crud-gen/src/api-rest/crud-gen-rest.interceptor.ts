@@ -16,6 +16,7 @@ import { ObjectMapperType } from '@nestjs-yalc/utils/object-mapper.helper.js';
 import { buildSimpleMapperInterceptor } from '@nestjs-yalc/utils/simple-mapper.interceptor.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { Observable } from 'rxjs';
+import { plainToInstance } from 'class-transformer';
 
 export function crudGenRestPaginationInterceptorWorker<T>(
   startRow?: number,
@@ -101,7 +102,7 @@ export function buildPaginatedResultDto<T>(
   class NewPaginatedResultDto extends PaginatedResultDto<T> {
     constructor(data: T[], pageData: PageData) {
       super(
-        data.map((item) => new dto(item)),
+        data.map((item) => plainToInstance<T, any>(dto, item)),
         pageData,
       );
     }
@@ -153,7 +154,7 @@ export function buildDTOInterceptor<T>(
     intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
       return next.handle().pipe(
         map((data) => {
-          return new dto(data);
+          return plainToInstance<T, any>(dto, data);
         }),
       );
     }
