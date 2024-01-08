@@ -175,6 +175,7 @@ export function yalcBaseAppModuleMetadataFactory(
 
     _imports.push(
       EventModule.forRootAsync({
+        imports: [module],
         loggerProvider: {
           provide: 'INTERNAL_APP_LOGGER_SERVICE',
           useExisting: getAppLoggerToken(appAlias),
