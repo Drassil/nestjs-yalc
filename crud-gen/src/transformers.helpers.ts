@@ -1,4 +1,4 @@
-import { ClassType } from '@nestjs-yalc/types/globals.js';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { deepMerge, objectSetProp } from '@nestjs-yalc/utils/object.helper.js';
 import { plainToInstance } from 'class-transformer';
 
