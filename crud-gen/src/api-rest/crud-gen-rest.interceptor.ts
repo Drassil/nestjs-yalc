@@ -16,7 +16,6 @@ import { ObjectMapperType } from '@nestjs-yalc/utils/object-mapper.helper.js';
 import { buildSimpleMapperInterceptor } from '@nestjs-yalc/utils/simple-mapper.interceptor.js';
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { Observable } from 'rxjs';
-import { plainToInstance } from 'class-transformer';
 import { yalcPlainToInstance } from '../transformers.helpers.js';
 
 export function crudGenRestPaginationInterceptorWorker<T>(
