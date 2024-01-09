@@ -19,7 +19,7 @@ export function isYalcTransformerGuard<TSrc>(
   return obj?.onAfterTransform !== undefined;
 }
 
-export function yalcPlainToInstance<TSrc, TDest>(
+export function yalcPlainToInstance<TDest, TSrc = TDest>(
   cls: ClassType<TDest | IYalcTransformer<TSrc>>,
   plain: TSrc,
 ): TDest {
@@ -30,4 +30,18 @@ export function yalcPlainToInstance<TSrc, TDest>(
   }
 
   return instance as TDest;
+}
+
+/**
+ * Just a shortcut for the yalcPlainToInstance
+ * with cls and plain as the same type
+ * This method is useful when you want to instantiate any class
+ * without specifying the constructor, and still be able to use the
+ * transformer hooks
+ */
+export function yalcNew<T>(
+  cls: ClassType<T | IYalcTransformer<T>>,
+  plain: T,
+): T {
+  return yalcPlainToInstance(cls, plain);
 }

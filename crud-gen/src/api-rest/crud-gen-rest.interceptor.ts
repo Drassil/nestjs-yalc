@@ -103,7 +103,7 @@ export function buildPaginatedResultDto<TDto>(
     constructor(data: any[], pageData: PageData) {
       super(
         data.map((item) => {
-          return yalcPlainToInstance<any, TDto>(dto, item);
+          return yalcPlainToInstance<TDto, any>(dto, item);
         }),
         pageData,
       );
@@ -156,7 +156,7 @@ export function buildDTOInterceptor<TDto, TSrc extends any>(
     intercept(_context: ExecutionContext, next: CallHandler): Observable<any> {
       return next.handle().pipe(
         map((data) => {
-          return yalcPlainToInstance<TSrc, TDto>(dto, data);
+          return yalcPlainToInstance<TDto, TSrc>(dto, data);
         }),
       );
     }
