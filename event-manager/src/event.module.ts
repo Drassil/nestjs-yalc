@@ -51,6 +51,7 @@ export interface IEventModuleOptions<
     options?: IEventModuleOptions<TFormatter>,
   ) => YalcEventService;
   eventServiceToken?: string;
+  imports?: any[];
 }
 
 export const OPTION_PROVIDER = 'OPTION_PROVIDER';
@@ -81,7 +82,7 @@ export class EventModule {
 
     const eventProviderName = options?.eventServiceToken ?? YalcEventService;
 
-    let imports: any[] = [];
+    let imports: any[] = options?.imports ?? [];
     let providers: Provider[] = [
       {
         provide: eventProviderName,
