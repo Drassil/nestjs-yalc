@@ -10,7 +10,7 @@ export function JsonTransformer(field: string, propertyPath: string) {
 }
 
 export interface IYalcTransformer<TSrc> {
-  onAfterTransform?: { (srcObj: TSrc): void };
+  onAfterTransform?: { (srcObj: TSrc | any): void };
 }
 
 export function isYalcTransformerGuard<TSrc>(
@@ -19,11 +19,18 @@ export function isYalcTransformerGuard<TSrc>(
   return obj?.onAfterTransform !== undefined;
 }
 
+/**
+ * Extended version of the plainToInstance
+ * It support the IYalcTransformer interface to be able to
+ * hook into the transformation process and trigger extra events for more complex
+ * transformations. It also avoid unwanted behaviours when the plain value is not
+ * an object.
+ */
 export function yalcPlainToInstance<TDest, TSrc = TDest>(
   cls: ClassType<TDest | IYalcTransformer<TSrc>>,
   plain: TSrc,
 ): TDest {
-  const instance = plainToInstance(cls, plain);
+  const instance = plainToInstance(cls, typeof plain === 'object' ? plain : {});
   if (isYalcTransformerGuard<TSrc>(instance)) {
     instance.onAfterTransform?.(plain);
     delete instance.onAfterTransform;
