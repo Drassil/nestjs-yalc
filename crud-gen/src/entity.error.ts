@@ -1,9 +1,16 @@
 import { BadRequestException } from '@nestjs/common';
+import { EntityNotFoundError } from 'typeorm';
 
 export enum EntityErrorsEnum {
   CREATION_FAILED = 'Resource has not been created',
   UPDATE_FAILED = 'Resource has not been updated',
   DELETE_FAILED = 'Resource has not been deleted',
+}
+
+export function isEntityNotFoundError(
+  error: any,
+): error is EntityNotFoundError {
+  return (error as EntityNotFoundError).name === 'EntityNotFoundError';
 }
 
 export function isEntityError(error: any): error is EntityError {
