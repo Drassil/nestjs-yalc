@@ -194,7 +194,15 @@ export function jestConfGenerator(
   const selectedProj =
     argv.proj || process.env.npm_config_projects?.split(',') || 'all';
 
-  projects = projectSets[selectedProj];
+  projects = Array.isArray(selectedProj)
+    ? Object.values(projectSets)
+        .flat()
+        .filter((value) => {
+          return selectedProj.some((projName) => {
+            return value.displayName.startsWith(`unit/${projName}`);
+          });
+        })
+    : projectSets[selectedProj];
 
   const paths = [];
 

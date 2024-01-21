@@ -68,6 +68,8 @@ type Spread<L, R> = Id<
     SpreadProperties<L, R, OptionalPropertyNames<R> & keyof L>
 >;
 
+type NotVoid<T extends Function> = (() => void) extends T ? never : T;
+
 type HTTPMethods =
   | 'DELETE'
   | 'delete'
