@@ -1,5 +1,5 @@
 import { getLogLevelByStatus } from '@nestjs-yalc/event-manager/event.helper.js';
-import { getGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
+import { getYalcGlobalEventEmitter } from '@nestjs-yalc/event-manager/global-emitter.js';
 import type { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 import { maskDataInObject } from '@nestjs-yalc/logger/logger.helper.js';
@@ -306,7 +306,7 @@ export const DefaultErrorMixin = <
 
       const eventEmitter =
         options.eventEmitter === true || options.eventEmitter === undefined
-          ? getGlobalEventEmitter()
+          ? getYalcGlobalEventEmitter()
           : options.eventEmitter;
 
       if (eventEmitter !== false) {
