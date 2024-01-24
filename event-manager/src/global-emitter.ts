@@ -12,9 +12,22 @@ export function getYalcGlobalEventEmitter() {
   return eventEmitter;
 }
 
-/**
- * Do not use this function unless you know what you are doing.
- */
-export function setYalcGlobalEventEmitter(_eventEmitter: EventEmitter2) {
+export function setYalcGlobalEventEmitter(
+  _eventEmitter: EventEmitter2,
+  { skipTransfer = false } = {},
+) {
+  if (!skipTransfer) {
+    transferListeners(eventEmitter, _eventEmitter);
+  }
+
   eventEmitter = _eventEmitter;
+}
+
+export function transferListeners(from: EventEmitter2, to: EventEmitter2) {
+  from.eventNames().forEach((eventName) => {
+    from.listeners(eventName).forEach((listener) => {
+      to.on(eventName, listener);
+      from.off(eventName, listener);
+    });
+  });
 }

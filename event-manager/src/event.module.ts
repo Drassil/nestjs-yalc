@@ -1,4 +1,4 @@
-import { DynamicModule, Module, Provider } from '@nestjs/common';
+import { DynamicModule, Logger, Module, Provider } from '@nestjs/common';
 import { YalcEventService, IEventServiceOptions } from './event.service.js';
 import { ImprovedLoggerService } from '@nestjs-yalc/logger/logger-abstract.service.js';
 import { EventEmitter2, EventEmitterModule } from '@nestjs/event-emitter';
@@ -7,6 +7,7 @@ import { ConstructorOptions } from 'eventemitter2';
 import { EventNameFormatter } from './emitter.js';
 import { isProviderObject } from '@nestjs-yalc/utils/nestjs/nest.helper.js';
 import { EventEmitterModuleOptions } from '@nestjs/event-emitter/dist/interfaces/index.js';
+import { setYalcGlobalEventEmitter } from './global-emitter.js';
 
 export const EVENT_LOGGER = 'EVENT_LOGGER';
 export const EVENT_EMITTER = 'EVENT_EMITTER';
@@ -86,6 +87,9 @@ export class EventModule {
       {
         provide: eventProviderName,
         useFactory: (logger: ImprovedLoggerService, emitter: EventEmitter2) => {
+          Logger.debug(`Setting global event emitter`);
+          setYalcGlobalEventEmitter(emitter);
+
           return (
             options?.eventService?.(logger, emitter, options) ??
             new YalcEventService(logger, emitter, options)
