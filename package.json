@@ -63,12 +63,19 @@
     "axios": "^1.4.0",
     "nestjs-cls": "^3.6.0"
   },
+  "peerDependenciesMeta": {
+    "@nestjs/apollo": {
+      "optional": true
+    },
+    "@nestjs/graphql": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@apollo/federation": "^0.38.1",
     "@apollo/subgraph": "^2.3.2",
     "@fastify/cookie": "^8.3.0",
     "@jorgebodega/typeorm-seeding": "^6.0.1",
-    "@nestjs-yalc/newName": "file:var/test-api-client/test-api-client",
     "@types/node-fetch": "^2.6.2",
     "apollo-server-plugin-base": "^3.7.1",
     "aws-lambda-fastify": "^2.2.0",
