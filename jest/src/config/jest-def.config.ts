@@ -113,9 +113,10 @@ const defaultConf = (dirname: string) => {
     transform: {
       '^.+\\.(t|j)s$': 'ts-jest',
     },
-    moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
-      prefix: dirname,
-    }),
+    moduleNameMapper: {
+      ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: dirname, }),  
+      '^axios$': require.resolve('axios'),
+    },
     errorOnDeprecated: true,
   };
 };

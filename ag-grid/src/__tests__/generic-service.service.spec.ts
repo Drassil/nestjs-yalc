@@ -6,12 +6,13 @@ import {
 import {
   BaseEntity,
   Connection,
-  Repository,
-  getConnection,
-  QueryFailedError,
-  InsertResult,
-  UpdateResult,
+  ConnectionNotFoundError,
   DeleteResult,
+  getConnection,
+  InsertResult,
+  QueryFailedError,
+  Repository,
+  UpdateResult,
 } from 'typeorm';
 import {
   baseEntityRepository as _baseEntityRepository,
@@ -22,7 +23,6 @@ import {
 import { getConnectionName } from '@nestjs-yalc/database/conn.helper';
 import { createMock } from '@golevelup/ts-jest';
 import { AgGridRepository } from '@nestjs-yalc/ag-grid/ag-grid.repository';
-import { ConnectionNotFoundError } from 'typeorm';
 import { FactoryProvider } from '@nestjs/common';
 import {
   CreateEntityError,
@@ -30,10 +30,11 @@ import {
   UpdateEntityError,
 } from '../entity.error';
 import {
-  NoResultsFoundError,
   ConditionsTooBroadError,
+  NoResultsFoundError,
 } from '../conditions.error';
 import * as ClassHelper from '@nestjs-yalc/utils/class.helper';
+
 jest.mock('typeorm');
 
 describe('GenericService', () => {
@@ -295,7 +296,7 @@ describe('GenericService', () => {
 
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
     baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
-    expect(service.createEntity({})).resolves.toBe(mockedEntity);
+    await expect(service.createEntity({})).resolves.toBe(mockedEntity);
   });
 
   it('Should insert an entity correctly with true', async () => {
@@ -322,6 +323,51 @@ describe('GenericService', () => {
     baseEntityRepository.insert.mockResolvedValueOnce(insertResult);
     baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
     const result = await service.createEntity({});
+    expect(result).toBe(mockedEntity);
+    mockedIsClass.mockRestore();
+  });
+
+  it('Should upsert an entity correctly', async () => {
+    const mockedEntity = new BaseEntity();
+    const insertResult = new InsertResult();
+    insertResult.identifiers = [{ id: '123' }];
+
+    baseEntityRepository.upsert.mockResolvedValueOnce(insertResult);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    await expect(
+      service.upsertEntity({}, { conflictPaths: ['id'] }),
+    ).resolves.toBe(mockedEntity);
+  });
+
+  it('Should upsert an entity correctly with true', async () => {
+    const mockedEntity = new BaseEntity();
+    const insertResult = new InsertResult();
+    insertResult.identifiers = [{ id: '123' }];
+
+    baseEntityRepository.upsert.mockResolvedValueOnce(insertResult);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    const result = await service.upsertEntity(
+      {},
+      { conflictPaths: ['id'] },
+      {},
+      false,
+    );
+    expect(result).toBe(true);
+    baseEntityRepository.upsert.mockRestore();
+    baseEntityRepository.getOneAgGrid.mockRestore();
+  });
+
+  it('Should upsert an entity correctly when entity isClass', async () => {
+    const mockedEntity = new BaseEntity();
+    const insertResult = new InsertResult();
+    insertResult.identifiers = [{ id: '123' }];
+    const mockedIsClass = jest
+      .spyOn(ClassHelper, 'isClass')
+      .mockReturnValue(true);
+
+    baseEntityRepository.upsert.mockResolvedValueOnce(insertResult);
+    baseEntityRepository.getOneAgGrid.mockResolvedValueOnce(mockedEntity);
+    const result = await service.upsertEntity({}, { conflictPaths: ['id'] });
     expect(result).toBe(mockedEntity);
     mockedIsClass.mockRestore();
   });
@@ -422,6 +468,27 @@ describe('GenericService', () => {
 
     const result = await service.deleteEntity({});
     expect(result).toBeTruthy();
+  });
+
+  it('should delete entities correctly', async () => {
+    const deleteResult = new DeleteResult();
+    deleteResult.affected = 2;
+
+    baseEntityRepository.delete.mockResolvedValueOnce(deleteResult);
+
+    const result = await service.deleteEntities({});
+    expect(result).toBe(2);
+    expect(baseEntityRepository.delete).toHaveBeenCalled();
+  });
+
+  it('should return 0 when delete entities did not affect any rows', async () => {
+    const deleteResult = new DeleteResult();
+
+    baseEntityRepository.delete.mockResolvedValueOnce(deleteResult);
+
+    const result = await service.deleteEntities({});
+    expect(result).toBe(0);
+    expect(baseEntityRepository.delete).toHaveBeenCalled();
   });
 
   it('should handle an insertion error', async () => {
