@@ -11,7 +11,7 @@ import {
 } from '@nestjs-yalc/errors/default.error.js';
 import { EventNameFormatter, emitEvent, formatName } from './emitter.js';
 import { ClassType, InstanceType } from '@nestjs-yalc/types/globals.d.js';
-import { getGlobalEventEmitter } from './global-emitter.js';
+import { getYalcGlobalEventEmitter } from './global-emitter.js';
 import { AppLoggerFactory } from '@nestjs-yalc/logger/logger.factory.js';
 
 interface IEventEmitterOptions<
@@ -230,7 +230,7 @@ export function event<
    */
   let result;
   if (event !== false) {
-    let eventEmitter = event?.emitter ?? getGlobalEventEmitter();
+    let eventEmitter = event?.emitter ?? getYalcGlobalEventEmitter();
     let formatter = event?.formatter;
 
     const eventPayload: IEventPayload = {
