@@ -35,7 +35,7 @@
     "start:prod": "node dist/apps/sk-app/main"
   },
   "dependencies": {
-    "@nestjs-yalc/framework": "https://github.com/drassil/nestjs-yalc",
+    "@nestjs-yalc/framework": "https://github.com/drassil/nestjs-yalc#refactor-starter-kit",
     "@nestjs-yalc/pk-module-user": "file:libs/module-user",
     "@nestjs/common": "^10.3.1",
     "@nestjs/core": "^10.3.1",
