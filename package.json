@@ -43,6 +43,7 @@
     "types",
     "toolkit-config",
     "platform-kit",
+    "platform-modules",
     "utils"
   ],
   "peerDependencies": {

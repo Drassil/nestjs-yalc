@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['nestjs-yalc'],
+  extends: ['../toolkit-config/src/eslintrc.cjs'],
 };

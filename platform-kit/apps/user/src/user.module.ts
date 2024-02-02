@@ -4,13 +4,13 @@ import { skeletonUserProvidersFactory } from './user.resolver.js';
 import { skeletonPhoneProvidersFactory } from './user-phone.resolver.js';
 
 @Module({})
-export class SkeletonModule {
+export class UserModule {
   static register(dbConnection: string): DynamicModule {
     const skeletonPhoneProviders = skeletonPhoneProvidersFactory(dbConnection);
     const skeletonUserProviders = skeletonUserProvidersFactory(dbConnection);
 
     return {
-      module: SkeletonModule,
+      module: UserModule,
       imports: [
         TypeOrmModule.forFeature(
           [skeletonPhoneProviders.repository, skeletonUserProviders.repository],
