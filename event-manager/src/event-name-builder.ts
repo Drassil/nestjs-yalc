@@ -24,7 +24,9 @@ export abstract class EventNameBuilder {
     domain: string,
     actions: Actions,
   ): Events<Actions> {
-    const baseEvent = `${this.version.base}.${domain}`;
+    const baseEvent = `${
+      this.version?.base ? this.version?.base + '.' : ''
+    }${domain}`;
 
     const actionsWithBaseEvent: Record<string, any> = {};
     for (const [actionKey, actionValue] of Object.entries(actions)) {
