@@ -1,5 +1,5 @@
 {
-  "extends": "../toolkit-config/src/tsconfig.json",
+  "extends": "@nestjs-yalc/framework/toolkit-config/typescript/tsconfig.json",
   "include": ["apps/**/src/**/*.ts", "libs/**/src/**/*.ts"],
   "exclude": [
     "node_modules",

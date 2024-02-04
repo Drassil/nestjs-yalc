@@ -3,6 +3,10 @@
   "type": "module",
   "version": "1.3.2",
   "description": "NestJS - Yet Another Library Collection",
+  "exports": {
+    "./app": "./app/src/index.ts",
+    "./app/*.js": "./app/src/*.ts"
+  },
   "scripts": {
     "ci:checks": "npm run lint && npm run build && npm run test:cov",
     "build": "tsc --noEmit --project ./tsconfig.json",
@@ -87,6 +91,7 @@
     "csurf": "^1.11.0",
     "dataloader": "^2.2.1",
     "decimal.js": "^10.4.3",
+    "eslint-config-yalc": "file:toolkit-config/eslint-config-yalc",
     "faker": "^6.6.6",
     "google-libphonenumber": "^3.2.32",
     "joi": "^17.9.2",

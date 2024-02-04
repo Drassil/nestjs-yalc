@@ -1,3 +1,3 @@
 module.exports = {
-  extends: ['../toolkit-config/src/eslintrc.cjs'],
+  extends: ['eslint-config-yalc'],
 };
