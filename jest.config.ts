@@ -7,23 +7,27 @@ import {
 
 console.log('=================== LOADING JEST OPTIONS ================');
 
-import tsProjects from './tsconfig.json';
+import packageJson from './package.json';
 
 const appProjectsSettings: { [key: string]: IAppProjSetting } = {};
 
 const projectList: { [key: string]: IProjectInfo } = {};
 
-const paths: Record<string, string[]> = tsProjects.compilerOptions.paths;
-Object.keys(paths).map((k: string) => {
-  const path: string = paths[k][0];
+const paths: string[] = packageJson.workspaces;
+paths.map((path: string) => {
+  const _packageJson = require(`./${path}/package.json`);
 
-  if (!k.endsWith('*')) {
-    projectList[k] = {
-      path: path.replace('/src', '').replace('./', ''),
-      sourcePath: path.replace('./', ''),
-      type: 'library',
-    };
-  }
+  if (_packageJson.custom?.jest === false) return;
+
+  const type = _packageJson.custom?.nest?.type ?? 'library';
+
+  if (!['library', 'application'].includes(type)) return;
+
+  projectList[_packageJson.name] = {
+    path: path,
+    sourcePath: `${path}/src`,
+    type,
+  };
 });
 
 const options: IOptions = {

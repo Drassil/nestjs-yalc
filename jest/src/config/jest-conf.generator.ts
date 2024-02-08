@@ -92,6 +92,11 @@ export function jestConfGenerator(
 
   let projects = [];
 
+  const typesMap: Record<string, string> = {
+    library: 'lib',
+    application: 'app',
+  };
+
   const confFactory = (
     projName: string,
     proj: IProjectInfo,
@@ -102,8 +107,8 @@ export function jestConfGenerator(
       options.defaultConfOptions,
       tsJestConfig(
         options.tsConfigPath?.(proj) ??
-          `${rootPath}/${proj.path}/tsconfig.${
-            proj.type === 'library' ? 'lib' : 'app'
+          `${rootPath}/${proj.path}/tsconfig${
+            typesMap[proj.type] ? `.${typesMap[proj.type]}` : ''
           }.json`,
         options.tsJestConfig,
       ),

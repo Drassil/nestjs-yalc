@@ -25,7 +25,7 @@ import {
   ApiOkResponse,
   getSchemaPath,
 } from '@nestjs/swagger';
-import { ClassType } from 'nestjs-yalc';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { IConnection } from '../crud-gen.interface.js';
 
 export function mapCrudGenRestParams<Entity extends ObjectLiteral>(
