@@ -78,7 +78,7 @@ export function envFilePathList(dirname: string = '.') {
   return envFilePath;
 }
 
-export const buildEnvFilePath = _.memoize(
+const _buildEnvFilePath = _.memoize(
   (envDir?: string, envPath?: string | string[]) => {
     const envFilePath: string[] = [];
 
@@ -101,6 +101,12 @@ export const buildEnvFilePath = _.memoize(
     return `${envDir}-${Array.isArray(envPath) ? envPath.join(',') : envPath}`;
   },
 );
+
+/**
+ * For some strange reason, the memoize doesn't work well with exporting the const at the same time
+ * and re-use it in the same file
+ */
+export const buildEnvFilePath = _buildEnvFilePath;
 
 /**
  * Used for applications with controller/resolver support
@@ -188,7 +194,7 @@ export function yalcBaseAppModuleMetadataFactory(
   let _imports: DynamicModule['imports'] = [];
 
   if (hasConfig) {
-    const envFilePath: string[] = buildEnvFilePath(
+    const envFilePath: string[] = _buildEnvFilePath(
       options?.envDir,
       options?.envPath,
     );
