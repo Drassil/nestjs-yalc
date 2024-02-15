@@ -18,7 +18,7 @@ import {
 import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { getProviderToken } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import { EventCrudGen } from '@nestjs-yalc/crud-gen/event.enum.js';
-import { EventEmitter2 } from 'eventemitter2';
+import eventemitter2, { type EventEmitter2 } from 'eventemitter2';
 
 export type SearchKeyType<E, T = string> = [keyof E, T] | T | undefined;
 
@@ -292,7 +292,10 @@ export function DataLoaderFactory<Entity extends Record<string, any>>(
         eventEmitter,
       );
     },
-    inject: [serviceToken ?? getServiceToken(entity), EventEmitter2],
+    inject: [
+      serviceToken ?? getServiceToken(entity),
+      eventemitter2.EventEmitter2,
+    ],
     scope: Scope.REQUEST,
   };
 }
