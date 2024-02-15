@@ -53,6 +53,11 @@ export interface IErrorEventOptions<
   TErrorClass extends DefaultError = DefaultError,
 > extends IEventOptions<TFormatter>,
     Omit<IErrorPayload, 'internalMessage' | 'data'> {
+  /**
+   * If set to false or undefined, the error will not be thrown.
+   * If set to true, the error will be thrown with the default error class.
+   * If set to a class, the error will be thrown with the provided class.
+   */
   errorClass?: ClassType<TErrorClass> | boolean;
 }
 
@@ -153,17 +158,15 @@ export function event<
   let errorInstance;
   let errorPayload: ILogErrorPayload = {};
   if (isErrorOptions(options)) {
-    const error = options?.errorClass;
+    const { errorClass: _class, ...rest } = options;
 
-    if (error !== false && error !== undefined) {
-      let errorClass;
-      let errorOptions = {};
-      if (error === true) {
-        errorClass = DefaultError;
+    if (_class !== false && _class !== undefined) {
+      let _errorClass: ClassType<DefaultError>;
+      let errorOptions = rest;
+      if (_class === true) {
+        _errorClass = DefaultError;
       } else {
-        const { errorClass: _class, ...rest } = options;
-        errorOptions = rest;
-        errorClass = error;
+        _errorClass = _class;
       }
 
       /**
@@ -171,7 +174,7 @@ export function event<
        */
       const message = optionalMessage ?? formattedEventName;
 
-      errorInstance = new errorClass(message, {
+      errorInstance = new _errorClass(message, {
         data: receivedData,
         eventName: formattedEventName,
         ...errorOptions,
