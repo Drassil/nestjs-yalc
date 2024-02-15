@@ -33,6 +33,7 @@ import { EventModule } from '@nestjs-yalc/event-manager/index.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { YalcClsModule } from './cls.module.js';
 import { IYalcControllerStaticInterface } from './yalc-controller.interface.js';
+import _ from 'lodash';
 
 const singletonDynamicModules = new Map<any, any>();
 
@@ -76,6 +77,30 @@ export function envFilePathList(dirname: string = '.') {
 
   return envFilePath;
 }
+
+export const buildEnvFilePath = _.memoize(
+  (envDir?: string, envPath?: string | string[]) => {
+    const envFilePath: string[] = [];
+
+    if (!envPath) {
+      Logger.debug(
+        `Loading env from: ${envDir}, NODE_ENV: ${process.env.NODE_ENV}`,
+      );
+
+      envFilePath.push(...envFilePathList(envDir));
+    } else {
+      envFilePath.push(...(Array.isArray(envPath) ? envPath : [envPath]));
+    }
+
+    Logger.debug(`Using env file paths: ${envFilePath}`);
+
+    return envFilePath;
+  },
+  // Since memoize use the first argument as the key, we need to generate a unique key based on both arguments
+  (envDir = '', envPath = '') => {
+    return `${envDir}-${Array.isArray(envPath) ? envPath.join(',') : envPath}`;
+  },
+);
 
 /**
  * Used for applications with controller/resolver support
@@ -163,15 +188,10 @@ export function yalcBaseAppModuleMetadataFactory(
   let _imports: DynamicModule['imports'] = [];
 
   if (hasConfig) {
-    const envFilePath: string[] = [];
-
-    if (!_options.envPath) {
-      Logger.debug(`Loading env from: ${_options.envDir}`);
-
-      envFilePath.push(...envFilePathList(_options.envDir));
-    } else {
-      envFilePath.push(..._options.envPath);
-    }
+    const envFilePath: string[] = buildEnvFilePath(
+      options?.envDir,
+      options?.envPath,
+    );
 
     _imports.push(
       EventModule.forRootAsync({
