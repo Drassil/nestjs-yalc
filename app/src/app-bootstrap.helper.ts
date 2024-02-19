@@ -53,7 +53,7 @@ export class AppBootstrap<
   }
 
   async startServer(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.initApp(options);
