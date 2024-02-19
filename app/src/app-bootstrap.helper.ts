@@ -71,7 +71,7 @@ export class AppBootstrap<
   }
 
   async initApp(options?: {
-    createOptions?: ICreateOptions;
+    createOptions?: INestCreateOptions;
     fastifyInstance?: FastifyInstance;
   }) {
     await this.createApp({
