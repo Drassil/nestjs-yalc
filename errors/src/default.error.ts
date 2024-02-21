@@ -57,8 +57,14 @@ export interface IHttpExceptionParentArguments
   extends Omit<IHttpExceptionArguments, 'errorCode'> {}
 
 export interface IErrorPayload
-  extends ISharedErrorProperties,
-    IHttpExceptionArguments {
+  extends ISharedErrorProperties {
+  
+  /**
+   * The response that can be sent to the client. It can be a string or an object (including an error object)
+   * It must not contain sensitive data.
+   */
+  response?: Partial<IBetterResponseInterface>;
+
   /**
    * The original cause of the error.
    */
