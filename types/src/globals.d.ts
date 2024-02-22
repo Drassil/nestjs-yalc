@@ -70,6 +70,9 @@ type Spread<L, R> = Id<
 
 type NotVoid<T extends Function> = (() => void) extends T ? never : T;
 
+
+type ReturnOrFunctionReturnType<T> = T extends (...input: any[]) => infer R ? R : T;
+
 type HTTPMethods =
   | 'DELETE'
   | 'delete'
