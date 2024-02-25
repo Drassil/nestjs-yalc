@@ -41,6 +41,7 @@
     "jest/src/config",
     "logger",
     "types",
+    "types-extends",
     "utils"
   ],
   "peerDependencies": {

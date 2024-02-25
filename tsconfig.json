@@ -60,13 +60,14 @@
       "@nestjs-yalc/jest": ["./jest/src"],
       "@nestjs-yalc/jest/*": ["./jest/src/*"],
       "@nestjs-yalc/types": ["./types/src"],
+      "@nestjs-yalc/types-extends/*": ["./types-extends/src/*"],
       "@nestjs-yalc/types/*": ["./types/src/*"],
       "@nestjs-yalc/kafka": ["./kafka/src"],
       "@nestjs-yalc/kafka/*": ["./kafka/src/*"],
       "@nestjs-yalc/skeleton-module": ["./examples/skeleton-module/src"],
       "@nestjs-yalc/skeleton-module/*": ["./examples/skeleton-module/src/*"]
     },
-    "typeRoots": ["././node_modules/@types", "./types", "./types/src/nestjs"]
+    "typeRoots": ["./node_modules/@types", "./types", "./types-extends"]
   },
   "include": ["./**/src/**/*.ts"],
   "exclude": [
