@@ -1,6 +1,7 @@
 /* eslint-disable no-var */
 import { LogLevel } from '@nestjs/common';
 import { MigrationInterface } from 'typeorm';
+import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 
 declare global {
   var TypeORM_Seeding_Connection: any;
