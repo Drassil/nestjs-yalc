@@ -57,6 +57,15 @@ type Spread<L, R> = Id<
 
 type NotVoid<T extends Function> = (() => void) extends T ? never : T;
 
+type XOR<T, Tcopy> = T extends object ? Without<Exclude<Tcopy, T>, T> & T : T;
+
+type CommonKeys<T, U> = {
+  [K in keyof T & keyof U]: T[K] extends U[K] ? K : never
+}[keyof T & keyof U];
+
+// This utility type creates a new type with only the common properties
+type Intersect<T, U> = Pick<T, CommonKeys<T, U>>;
+
 
 type ReturnOrFunctionReturnType<T> = T extends (...input: any[]) => infer R ? R : T;
 
