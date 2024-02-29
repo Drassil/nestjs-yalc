@@ -57,6 +57,8 @@ type Spread<L, R> = Id<
 
 type NotVoid<T extends Function> = (() => void) extends T ? never : T;
 
+type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+
 type XOR<T, Tcopy> = T extends object ? Without<Exclude<Tcopy, T>, T> & T : T;
 
 type CommonKeys<T, U> = {
