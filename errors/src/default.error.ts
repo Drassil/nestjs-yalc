@@ -23,6 +23,11 @@ export interface ISharedErrorProperties {
   data?: any;
 
   /**
+   * Configuration for alarms and event handling
+   */  
+  config?: any;
+
+  /**
    * The message that will be used internally. It can contain sensitive data.
    */
   internalMessage?: string;
