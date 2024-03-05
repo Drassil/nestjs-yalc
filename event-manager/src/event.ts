@@ -41,6 +41,7 @@ export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
 > {
   data?: any;
+  config?: any;
   mask?: string[];
   event?: IEventEmitterOptions<TFormatter> | false;
   message?: string;
@@ -134,7 +135,7 @@ export function event<
   eventName: Parameters<TFormatter> | string,
   options?: TOption,
 ): Promise<ReturnType<TOption>> | ReturnType<TOption> {
-  let { data: receivedData, event, logger, mask, trace } = options ?? {};
+  let { data: receivedData, event, logger, mask, trace, config } = options ?? {};
 
   const formattedEventName = formatName(
     eventName,
@@ -188,6 +189,7 @@ export function event<
         errorPayload = {
           ...(errorInstance as any),
           data: receivedData,
+          config,
         };
       }
     }
