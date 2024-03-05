@@ -32,6 +32,10 @@ export interface IDataInfo {
 
 export interface IEventPayload {
   message?: string;
+  /**
+   * The data is the place where you want to add the extra information 
+   * that are not returned back as a response but they can be sent to the logger or the event emitter.
+   */
   data?: IDataInfo;
   eventName: string;
   errorInfo?: IErrorPayload;
@@ -39,8 +43,17 @@ export interface IEventPayload {
 
 export interface IEventOptions<
   TFormatter extends EventNameFormatter = EventNameFormatter,
-> {
+  > {
+  /**
+   * The data is the place where you want to add the extra information 
+   * that are not returned back as a response but they can be sent to the logger or the event emitter.
+   */
   data?: any;
+  /**
+   * This can be used to log the configuration values of the event.
+   * This might be helpful to filter the logs based on extra configuration values
+   * that are not the basic error level, statusCode etc.
+   */
   config?: any;
   mask?: string[];
   event?: IEventEmitterOptions<TFormatter> | false;
@@ -189,7 +202,7 @@ export function event<
         errorPayload = {
           ...(errorInstance as any),
           data: receivedData,
-          config,
+          config
         };
       }
     }
@@ -216,12 +229,14 @@ export function event<
       instance.error(message, trace ?? errorPayload?.trace, {
         data: { ...data, ...errorPayload },
         event: false,
+        config,
         trace: trace ?? errorPayload?.trace,
       });
     } else {
       instance[level]?.(message, {
         data: { ...data, ...errorPayload },
         event: false,
+        config,
         trace: trace ?? errorPayload?.trace,
       });
     }
