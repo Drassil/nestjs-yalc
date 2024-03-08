@@ -20,7 +20,7 @@ export type InstanceType<T> = T extends new (...args: any[]) => infer R
   ? R
   : never;
 
-export declare type ClassType<TClass = any, TArgs = any[]> = {
+export declare type ClassType<TClass = any, TArgs extends any[] = any[]> = {
   new (...args: TArgs): TClass;
 };
 
