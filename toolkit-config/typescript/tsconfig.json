@@ -12,8 +12,8 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
     "outDir": "var/dist",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -29,6 +29,7 @@
     "importHelpers": true,
     "isolatedModules": true,
     "preserveConstEnums": true,
+    "allowImportingTsExtensions": true,
     "noEmit": true,
     "typeRoots": [
       "node_modules/@types",

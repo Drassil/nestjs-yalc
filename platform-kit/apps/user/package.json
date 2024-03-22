@@ -1,5 +1,5 @@
 {
-  "name": "@nestjs-yalc/app-user",
+  "name": "@nestjs-yalc/pk-app-user",
   "version": "1.0.0",
   "type": "module",
   "description": "",

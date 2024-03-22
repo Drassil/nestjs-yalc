@@ -1,7 +1,6 @@
 {
   "collection": "@nestjs/schematics",
   "monorepo": true,
-  "root": "apps/sk-app",
   "compilerOptions": {
     "webpack": true,
     "webpackConfigPath": "webpack.config.cjs",
