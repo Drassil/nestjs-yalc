@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../../../user/src/user.module.js';
+import { YalcPlatformAppModule } from './platform.module.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(YalcPlatformAppModule);
   await app.listen(3000);
 }
 

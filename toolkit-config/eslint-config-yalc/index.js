@@ -5,7 +5,12 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
-  extends: ['eslint:recommended', 'prettier'],
+  extends: [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    'prettier'
+  ],
   root: true,
   env: {
     node: true,
@@ -17,7 +22,9 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-floating-promises': ['warn'],
+    '@typescript-eslint/no-empty-interface' : 'off',
     'no-console': 'error',
+    'no-redeclare' : 'off',
     eqeqeq: 1,
   },
   ignorePatterns: [

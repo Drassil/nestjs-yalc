@@ -118,11 +118,11 @@ module.exports = (nestJsOptions) => {
   ];
 
   const appPathParts = nestJsOptions?.output?.filename?.split('/') || [];
-  const folderName = appPathParts[1];
+  const folderName = appPathParts[appPathParts.length - 2];
   /**
    * @type {string} fileName
    */
-  const fileName = appPathParts[2];
+  const fileName = appPathParts[appPathParts.length - 1];
 
   // small hack/workaround to get the app name and the command
   // if run with nest build, then we have a filename, otherwise fallback to 'all'

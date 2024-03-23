@@ -62,7 +62,7 @@ export interface IErrorPayload
   /**
    * The original cause of the error.
    */
-  cause?: IFormattedCause;
+  cause?: IFormattedCause | unknown;
 
   /**
    * When the error is specified, it includes the error name
@@ -248,7 +248,10 @@ export const DefaultErrorMixin = <
       const stack = this.stack;
       const errorCode = this.getStatus();
 
-      this.internalMessage = options.internalMessage ?? this.cause?.message;
+      const causeMessage = `${(this.cause as Error)?.message ?? this.cause}`;
+      
+
+      this.internalMessage = options.internalMessage ?? causeMessage;
       this.eventName = options.eventName;
 
       this.description =
@@ -265,7 +268,7 @@ export const DefaultErrorMixin = <
         ? maskDataInObject(options.data, options.masks)
         : options.data;
 
-      let cause = formatCause(this.cause);
+      const formattedCause = formatCause(this.cause);
 
       const payload: ILogErrorPayload = {
         data: this.data,
@@ -275,7 +278,7 @@ export const DefaultErrorMixin = <
         errorName: this.name,
         ...this.betterResponse,
         trace: stack,
-        cause,
+        cause: formattedCause,
       };
 
       this.eventPayload = payload;

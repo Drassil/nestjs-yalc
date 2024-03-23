@@ -188,7 +188,7 @@ export class GQLDataLoader<Entity extends Record<string, any> = any> {
       this.keyMap.set(findOptions, DLKey);
     }
 
-    if (this.dataLoaders.hasOwnProperty(DLKey)) {
+    if (Object.prototype.hasOwnProperty.call(this.dataLoaders,DLKey)) {
       return this.dataLoaders[DLKey];
     }
 
@@ -294,7 +294,7 @@ export function DataLoaderFactory<Entity extends Record<string, any>>(
     },
     inject: [
       serviceToken ?? getServiceToken(entity),
-      eventemitter2.EventEmitter2,
+      eventemitter2,
     ],
     scope: Scope.REQUEST,
   };
