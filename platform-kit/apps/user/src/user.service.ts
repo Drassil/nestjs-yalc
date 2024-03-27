@@ -1,5 +1,5 @@
 import { GenericService } from '@nestjs-yalc/crud-gen/typeorm/generic.service.js';
-import { SkeletonUser } from './user.entity.js';
+import { YalcUserEntity } from './user.entity.js';
 import * as crypto from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GenericTypeORMRepository } from '@nestjs-yalc/crud-gen/typeorm/generic.repository.js';
@@ -7,7 +7,7 @@ import { ClassType } from '@nestjs-yalc/types/globals.d.js';
 import { Injectable } from '@nestjs/common';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 
-export interface SkeletonUserService extends GenericService<SkeletonUser> {
+export interface SkeletonUserService extends GenericService<YalcUserEntity> {
   resetPassword(guid: string): Promise<string>;
 }
 
@@ -17,12 +17,12 @@ export const skeletonUserServiceFactory = (
 ): ClassType<SkeletonUserService> => {
   @Injectable()
   class SkeletonUserService
-    extends GenericService<SkeletonUser>
+    extends GenericService<YalcUserEntity>
     implements SkeletonUserService
   {
     constructor(
-      @InjectRepository(SkeletonUser, dbConnection)
-      protected repository: GenericTypeORMRepository<SkeletonUser>,
+      @InjectRepository(YalcUserEntity, dbConnection)
+      protected repository: GenericTypeORMRepository<YalcUserEntity>,
     ) {
       super(repository);
     }

@@ -1,18 +1,18 @@
 import { CrudGenDependencyFactory } from '@nestjs-yalc/crud-gen/crud-gen.helpers.js';
 import {
-  SkeletonPhoneType,
+  YalcPhoneType,
   SkeletonPhoneCreateInput,
   SkeletonPhoneUpdateInput,
   SkeletonPhoneCondition,
 } from './user-phone.dto.js';
-import { SkeletonPhone } from './user-phone.entity.js';
+import { YalcUserPhoneEntity } from './user-phone.entity.js';
 
-export const skeletonPhoneProvidersFactory = (dbConnection: string) =>
-  CrudGenDependencyFactory<SkeletonPhone>({
+export const yalcPhoneProviderFactory = (dbConnection: string) =>
+  CrudGenDependencyFactory<YalcUserPhoneEntity>({
     // The model used for TypeORM
-    entityModel: SkeletonPhone,
+    entityModel: YalcUserPhoneEntity,
     resolver: {
-      dto: SkeletonPhoneType,
+      dto: YalcPhoneType,
       input: {
         create: SkeletonPhoneCreateInput,
         update: SkeletonPhoneUpdateInput,

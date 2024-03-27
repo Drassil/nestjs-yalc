@@ -8,12 +8,13 @@ import {
   JoinColumn,
   OneToMany,
   PrimaryColumn,
+  type Relation,
 } from 'typeorm';
-import { SkeletonPhone } from './user-phone.entity.js';
+import { YalcUserPhoneEntity } from './user-phone.entity.js';
 
 @Entity('user')
 @ObjectType({ isAbstract: true })
-export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
+export class YalcUserEntity extends EntityWithTimestamps(BaseEntity) {
   @PrimaryColumn('varchar', { name: 'guid', length: 36 })
   guid!: string;
 
@@ -49,10 +50,10 @@ export class SkeletonUser extends EntityWithTimestamps(BaseEntity) {
 
   @OneToMany(
     /* istanbul ignore next */
-    () => SkeletonPhone,
+    () => YalcUserPhoneEntity,
     /* istanbul ignore next */
     (meta) => meta.SkeletonUser,
   )
   @JoinColumn([{ name: 'guid', referencedColumnName: 'userId' }])
-  SkeletonPhone?: SkeletonPhone[];
+  SkeletonPhone?: Relation<YalcUserPhoneEntity[]>;
 }

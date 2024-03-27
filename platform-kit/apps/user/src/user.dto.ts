@@ -9,23 +9,24 @@ import {
   ModelField,
   ModelObject,
 } from '@nestjs-yalc/crud-gen/object.decorator.js';
-import { SkeletonUser } from './user.entity.js';
+import { YalcUserEntity } from './user.entity.js';
 import returnValue from '@nestjs-yalc/utils/returnValue.js';
 import { UUIDScalar } from '@nestjs-yalc/graphql/scalars/uuid.scalar.js';
-import { SkeletonPhoneType } from './user-phone.dto.js';
+import { YalcPhoneType } from './user-phone.dto.js';
+import { type TypeRef } from '@nestjs-yalc/types';
 
 @ObjectType()
 @ModelObject()
-export class SkeletonUserType extends SkeletonUser {
-  @ModelField<SkeletonPhoneType>({
+export class YalcUserType extends YalcUserEntity {
+  @ModelField<YalcPhoneType>({
     relation: {
-      type: () => SkeletonPhoneType,
+      type: () => YalcPhoneType,
       relationType: 'one-to-many',
       sourceKey: { dst: 'guid', alias: 'guid' },
       targetKey: { dst: 'userId', alias: 'userId' },
     },
   })
-  declare SkeletonPhone?: SkeletonPhoneType[];
+  declare SkeletonPhone?: TypeRef<YalcPhoneType[]>;
 
   @HideField()
   declare password: string;
@@ -57,22 +58,22 @@ export class SkeletonUserType extends SkeletonUser {
 @InputType()
 @ModelObject()
 export class SkeletonUserCreateInput extends OmitType(
-  SkeletonUserType,
+  YalcUserType,
   ['SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
   InputType,
 ) {}
 
 @InputType()
-@ModelObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: YalcUserType })
 export class SkeletonUserCondition extends PartialType(
   SkeletonUserCreateInput,
   InputType,
 ) {}
 
 @InputType()
-@ModelObject({ copyFrom: SkeletonUserType })
+@ModelObject({ copyFrom: YalcUserType })
 export class SkeletonUserUpdateInput extends OmitType(
-  SkeletonUserType,
+  YalcUserType,
   ['guid', 'SkeletonPhone', 'fullName', 'createdAt', 'updatedAt'] as const,
   InputType,
 ) {}

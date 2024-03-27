@@ -6,12 +6,12 @@ import { UseGuards } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { GqlExecutionContext, Mutation, Resolver } from '@nestjs/graphql';
 import {
-  SkeletonUserType,
+  YalcUserType,
   SkeletonUserCreateInput,
   SkeletonUserUpdateInput,
   SkeletonUserCondition,
 } from './user.dto.js';
-import { SkeletonUser } from './user.entity.js';
+import { YalcUserEntity } from './user.entity.js';
 import { RoleAuth, RoleEnum } from './role.guard.js';
 import * as skeletonUserServiceJs from './user.service.js';
 import { InputArgs } from '@nestjs-yalc/crud-gen/api-graphql/gqlmapper.decorator.js';
@@ -23,7 +23,7 @@ import {
 
 export const lowerCaseEmailMiddleware = (
   _ctx: GqlExecutionContext,
-  input: SkeletonUserType,
+  input: YalcUserType,
   value: boolean,
 ) => {
   if (value === true) {
@@ -31,10 +31,10 @@ export const lowerCaseEmailMiddleware = (
   }
 };
 
-@Resolver(returnValue(SkeletonUserType))
+@Resolver(returnValue(YalcUserType))
 export class SkeletonUserResolver extends resolverFactory({
-  entityModel: SkeletonUser,
-  dto: SkeletonUserType,
+  entityModel: YalcUserEntity,
+  dto: YalcUserType,
   input: {
     create: SkeletonUserCreateInput,
     update: SkeletonUserUpdateInput,
@@ -137,16 +137,16 @@ export class SkeletonUserResolver extends resolverFactory({
 }
 
 export const skeletonUserProvidersFactory = (dbConnection: string) =>
-  CrudGenDependencyFactory<SkeletonUser>({
+  CrudGenDependencyFactory<YalcUserEntity>({
     // The model used for TypeORM
-    entityModel: SkeletonUser,
+    entityModel: YalcUserEntity,
     resolver: {
       provider: SkeletonUserResolver,
     },
 
     service: {
       dbConnection: dbConnection,
-      entityModel: SkeletonUser,
+      entityModel: YalcUserEntity,
       provider: {
         provide: 'SkeletonUserGenericService',
         useClass:

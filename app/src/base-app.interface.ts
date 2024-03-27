@@ -34,7 +34,7 @@ export interface IYalcBaseAppOptions extends Partial<ISingletonDynamicModule> {
   envDir?: string;
   migrations?: ClassType[];
   skipDuplicateAppCheck?: boolean;
-  logger?: boolean | typeof LoggerServiceFactory;
+  logger?: typeof LoggerServiceFactory;
 }
 
 export type BaseAppStaticOptions = Omit<IYalcBaseAppOptions, 'module'>;

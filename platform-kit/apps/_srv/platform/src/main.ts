@@ -1,9 +1,18 @@
-import { NestFactory } from '@nestjs/core';
-import { YalcPlatformAppModule } from './platform.module.js';
+import {
+  YALC_ALIAS_PLATFORM,
+  YalcPlatformAppModule,
+} from './platform.module.js';
+import { AppBootstrap } from '@nestjs-yalc/app/app-bootstrap.helper.js';
 
 async function bootstrap() {
-  const app = await NestFactory.create(YalcPlatformAppModule);
-  await app.listen(3000);
+  await new AppBootstrap(
+    YALC_ALIAS_PLATFORM,
+    YalcPlatformAppModule,
+  ).startServer({
+    createOptions: {
+      enableSwagger: true,
+    },
+  });
 }
 
 void bootstrap();

@@ -27,9 +27,7 @@ const apps = options.apps || process.env.BUILD_APPS?.split(',') || [];
 
 const nestCliJsonCopy = JSON.parse(JSON.stringify(nestCliJson));
 
-const isCdkDeployment = process.env.CDK_BUILD === 'true';
-const useLambdaLayerPaths = isCdkDeployment;
-const LAMBDA_ROOT = `var/task/`;
+const ROOT_DIR = `var/task/`;
 
 /**
  * Run nestjs actions like copy assets. This is needed because we are running
@@ -54,9 +52,7 @@ function runNestJsActions(appName) {
          * We want to make sure that the outDir for the assets is always the right one
          * in case we are building for lambda layers or not
          */
-        const fixedOutDir = useLambdaLayerPaths
-          ? outDir.replace(`dist/`, `dist/${LAMBDA_ROOT}`)
-          : outDir.replace(`dist/${LAMBDA_ROOT}`, 'dist/');
+        const fixedOutDir = outDir.replace(`dist/`, `dist/${ROOT_DIR}`);
 
         console.log('Copying in ', fixedOutDir);
 
@@ -287,9 +283,7 @@ module.exports = (nestJsOptions) => {
     // ...options,
   };
 
-  const isProd = process.env.NODE_ENV
-    ? process.env.NODE_ENV === 'production'
-    : isCdkDeployment;
+  const isProd =  process.env.NODE_ENV === 'production';
 
   console.log('Project name', appName);
   console.log('Command', command);
@@ -302,7 +296,7 @@ module.exports = (nestJsOptions) => {
     output: {
       ...(defaultNest.output ?? {}),
       // the file should reside in a folder with its own name
-      filename: `${useLambdaLayerPaths ? LAMBDA_ROOT : ``}[name]/main.cjs`,
+      filename: `${ROOT_DIR}[name]/main.cjs`,
       path: `${__dirname}/dist`,
       /**
        * ESM and CommonJS code can't be bundled together without

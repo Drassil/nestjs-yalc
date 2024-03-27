@@ -8,13 +8,14 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  type Relation,
 } from 'typeorm';
-import { SkeletonUser } from './user.entity.js';
+import { YalcUserEntity } from './user.entity.js';
 
 @Entity('phone')
 @Index('unique_phone', ['phoneNumber', 'userId'], { unique: true })
 @ObjectType({ isAbstract: true })
-export class SkeletonPhone extends EntityWithTimestamps(BaseEntity) {
+export class YalcUserPhoneEntity extends EntityWithTimestamps(BaseEntity) {
   // if not specifiec elsewhere
   // ID field name will be used by default from the single
   // resource get query as argument to use to select the resource
@@ -29,10 +30,10 @@ export class SkeletonPhone extends EntityWithTimestamps(BaseEntity) {
 
   @OneToOne(
     /* istanbul ignore next */
-    () => SkeletonUser,
+    () => YalcUserEntity,
     /* istanbul ignore next */
     (meta) => meta.SkeletonPhone,
   )
   @JoinColumn([{ name: 'userId', referencedColumnName: 'guid' }])
-  SkeletonUser?: SkeletonUser;
+  SkeletonUser?: Relation<YalcUserEntity>;
 }

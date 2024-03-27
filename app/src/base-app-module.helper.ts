@@ -120,35 +120,29 @@ export function yalcBaseAppModuleMetadataFactory(
     },
   ];
 
-  if (options?.logger) {
-    _providers.push(
-      (options?.logger === true ? LoggerServiceFactory : options?.logger)(
-        appAlias,
-        APP_LOGGER_SERVICE,
-        appAlias,
-      ),
-    );
+  _providers.push({
+    provide: getAppLoggerToken(appAlias),
+    useExisting: APP_LOGGER_SERVICE,
+  });
 
-    _providers.push({
-      provide: getAppLoggerToken(appAlias),
-      useExisting: APP_LOGGER_SERVICE,
-    });
-  }
+  _providers.push(
+    (options?.logger ?? LoggerServiceFactory)(
+      appAlias,
+      APP_LOGGER_SERVICE,
+      appAlias,
+    ),
+  );
 
-  const hasConfig = _options.extraConfigs || _options.configFactory;
-
-  if (hasConfig) {
-    _providers.push(
-      createAppConfigProvider(appAlias),
-      /**
-       * Alias
-       */
-      {
-        provide: AppConfigService,
-        useExisting: getAppConfigToken(appAlias),
-      },
-    );
-  }
+  _providers.push(
+    createAppConfigProvider(appAlias),
+    /**
+     * Alias
+     */
+    {
+      provide: AppConfigService,
+      useExisting: getAppConfigToken(appAlias),
+    },
+  );
 
   if (!_options.skipDuplicateAppCheck) {
     _providers.push(LifeCycleHandler);
@@ -160,69 +154,70 @@ export function yalcBaseAppModuleMetadataFactory(
     _providers.push(...providers);
   }
 
-  let _imports: DynamicModule['imports'] = [];
+  const _imports: DynamicModule['imports'] = [
+    EventModule.forRootAsync({
+      imports: [module],
+      loggerProvider: options?.logger
+        ? {
+            provide: 'INTERNAL_APP_LOGGER_SERVICE',
+            useExisting: getAppLoggerToken(appAlias),
+          }
+        : undefined,
+      eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
+      eventEmitter: {
+        global: true,
+        wildcard: true,
+        maxListeners: 1000,
+      },
+    }),
+  ];
 
-  if (hasConfig) {
-    const envFilePath: string[] = [];
+  const envFilePath: string[] = [];
 
-    if (!_options.envPath) {
-      Logger.debug(`Loading env from: ${_options.envDir}`);
+  if (!_options.envPath) {
+    Logger.debug(`Loading env from: ${_options.envDir}`);
 
-      envFilePath.push(...envFilePathList(_options.envDir));
-    } else {
-      envFilePath.push(..._options.envPath);
-    }
-
-    _imports.push(
-      EventModule.forRootAsync({
-        imports: [module],
-        loggerProvider: {
-          provide: 'INTERNAL_APP_LOGGER_SERVICE',
-          useExisting: getAppLoggerToken(appAlias),
-        },
-        eventServiceToken: 'INTERNAL_APP_EVENT_SERVICE',
-        eventEmitter: {
-          global: true,
-          wildcard: true,
-          maxListeners: 1000,
-        },
-      }),
-      ConfigModule.forRoot({
-        envFilePath,
-        load: [
-          registerAs(appAlias, async () => {
-            /**
-             * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
-             */
-            await ConfigModule.envVariablesLoaded;
-
-            return await (_options.configFactory?.() ?? {});
-          }),
-          ...(_options.extraConfigs ?? []),
-        ],
-        validationSchema: Joi.object({
-          NODE_ENV: Joi.string()
-            .valid(
-              NODE_ENV.DEVELOPMENT,
-              NODE_ENV.PRODUCTION,
-              NODE_ENV.TEST,
-              NODE_ENV.PIPELINE,
-            )
-            .default(NODE_ENV.DEVELOPMENT),
-        }),
-        validationOptions: {
-          allowUnknown: true,
-          abortEarly: true,
-        },
-        /**
-         * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
-         * It allows us to use the ConfigService in any module without having to import the ConfigModule
-         */
-        isGlobal: true,
-      }),
-      YalcClsModule,
-    );
+    envFilePath.push(...envFilePathList(_options.envDir));
+  } else {
+    envFilePath.push(..._options.envPath);
   }
+
+  _imports.push(
+    ConfigModule.forRoot({
+      envFilePath,
+      load: [
+        registerAs(appAlias, async () => {
+          /**
+           * @see https://docs.nestjs.com/techniques/configuration#environment-variables-loaded-hook
+           */
+          await ConfigModule.envVariablesLoaded;
+
+          return await (_options.configFactory?.() ?? {});
+        }),
+        ...(_options.extraConfigs ?? []),
+      ],
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid(
+            NODE_ENV.DEVELOPMENT,
+            NODE_ENV.PRODUCTION,
+            NODE_ENV.TEST,
+            NODE_ENV.PIPELINE,
+          )
+          .default(NODE_ENV.DEVELOPMENT),
+      }),
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: true,
+      },
+      /**
+       * It can be global because the ConfigService registers configurations by using an alias, hence there won't be any conflict
+       * It allows us to use the ConfigService in any module without having to import the ConfigModule
+       */
+      isGlobal: true,
+    }),
+    YalcClsModule,
+  );
 
   if (imports) {
     _imports.push(...imports);
@@ -230,13 +225,9 @@ export function yalcBaseAppModuleMetadataFactory(
 
   const _exports: DynamicModule['exports'] = [getAppEventToken(appAlias)];
 
-  if (options?.logger) {
-    _exports.push(getAppLoggerToken(appAlias));
-  }
+  _exports.push(getAppLoggerToken(appAlias));
 
-  if (hasConfig) {
-    _exports.push(getAppConfigToken(appAlias));
-  }
+  _exports.push(getAppConfigToken(appAlias));
 
   if (exports) {
     _exports.push(...exports);

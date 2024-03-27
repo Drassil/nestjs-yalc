@@ -19,13 +19,13 @@ export const LoggerServiceFactory = (
 ): FactoryProvider<ImprovedLoggerService> => ({
   provide: provide,
   useFactory: (
-    config: AppConfigService<IServiceConf>,
     eventEmitter: EventEmitter2,
+    config?: AppConfigService<IServiceConf>,
   ): ImprovedLoggerService => {
-    const conf = config.values;
-    const loggerType = conf.loggerType;
+    const conf = config?.values;
+    const loggerType = conf?.loggerType;
     const loggerLevels: LogLevel[] =
-      conf.logContextLevels?.[context] || conf.logLevels || [];
+      conf?.logContextLevels?.[context] || conf?.logLevels || [];
 
     return AppLoggerFactory(context, loggerLevels, loggerType, {
       event:
@@ -36,5 +36,8 @@ export const LoggerServiceFactory = (
           : false,
     });
   },
-  inject: [getAppConfigToken(appAlias), EventEmitter2],
+  inject: [
+    EventEmitter2,
+    { token: getAppConfigToken(appAlias), optional: true },
+  ],
 });

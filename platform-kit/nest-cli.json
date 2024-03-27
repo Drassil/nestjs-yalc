@@ -19,7 +19,7 @@
     "platform": {
       "type": "application",
       "root": "apps/_srv/platform",
-      "entryFile": "main",
+      "entryFile": "main.cjs",
       "sourceRoot": "apps/_srv/platform/src",
       "compilerOptions": {
         "tsConfigPath": "apps/_srv/platform/tsconfig.app.json"
